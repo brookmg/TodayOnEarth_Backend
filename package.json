@@ -1,0 +1,15 @@
+{
+  "name": "ollaapi",
+  "version": "0.1.0",
+  "description": "API to serve the universe",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "API",
+    "Universe"
+  ],
+  "author": "Brook Mezgebu",
+  "license": "Apache-2.0"
+}
