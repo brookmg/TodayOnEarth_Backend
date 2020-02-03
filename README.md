@@ -1,3 +1,3 @@
-# MeseretAPI
+# TodayOnEarth
 ---
-## ` I AM JUST A TEMPLATE, NOTHING INTERESTING HERE `
+## ` This is a start of something great `
