@@ -13,6 +13,7 @@
   "runOnChangeOnly": false,
   "watch": [
     "src/**/*.js",
+    "src/**/*.ts",
     "src/**/*.graphql",
     "src/**/*.gql"
   ],

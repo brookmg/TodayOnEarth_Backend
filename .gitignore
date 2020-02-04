@@ -61,5 +61,7 @@ typings/
 .next
 
 dist
+
 jest_0
 .vscode
+build
