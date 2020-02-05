@@ -35,7 +35,9 @@ export default class InstagramFetcher extends PostFetcherBase {
 
                 userPosts.forEach((e, i) => {
                     const postId = e.node.id
-                    const postText = e.node.edge_media_to_caption.edges[0].node.text
+                    const postText =               
+                    e.node.edge_media_to_caption.edges[0] != undefined ?
+                    e.node.edge_media_to_caption.edges[0].node.text : '';
 
                     const postUrl = `https://www.instagram.com/p/${e.node.shortcode}`
                     const postCommentCount = e.node.edge_media_to_comment.count
