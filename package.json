@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "babel src --out-dir dist",
-    "test": "SET NODE_ENV=testing && jest --runInBand --forceExit --silent",
+    "test": "jest --coverage --silent",
     "dev": "nodemon --exec npm run restart",
     "restart": "rimraf dist && npm run build && npm run start",
     "start": "node dist/index.js"
