@@ -127,17 +127,15 @@ export default class InstagramFetcher extends PostFetcherBase {
                     posts.push(post)
                 })
 
-                if (this.from > 0) {
-                    posts = posts.filter(e => e.published_on > this.from)
-                }
-
-                return posts;
             }
 
         });
 
 
+        if (this.from > 0) {
+            posts = posts.filter(e => e.published_on > this.from)
+        }
 
-        return [];
+        return posts;
     }
 }
