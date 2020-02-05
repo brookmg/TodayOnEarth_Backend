@@ -13,7 +13,8 @@ module.exports = {
 
   // Automatically clear mock calls and instances between every test
   clearMocks: true,
-
+  
+  testPathIgnorePatterns: ["<rootDir>/dist/", "<rootDir>/node_modules/"],
   // Indicates whether the coverage information should be collected while executing the test
   // collectCoverage: false,
 
