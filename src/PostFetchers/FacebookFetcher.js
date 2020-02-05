@@ -74,7 +74,8 @@ export default class FacebookFetcher extends PostFetcherBase {
                 if (word.length > 0) {
                     if (word[0] === "#") { // if word is hashtag
                         // extract just the hashtag
-                        postKeywords.push(word.match(/#[\w]+/gi)[0])
+                        if (word.match(/#[\w]+/gi) != null) // edge case where posts contain nothing after hash sign `# Hollywood` 
+                            postKeywords.push(word.match(/#[\w]+/gi)[0])
                     } else {
                         postKeywords.push(word)
                     }
