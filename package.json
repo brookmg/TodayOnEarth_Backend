@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "babel src --out-dir dist",
-    "test": "SET NODE_ENV=testing && jest --runInBand --forceExit --silent",
+    "test": "jest --coverage --silent",
     "dev": "nodemon --exec npm run restart",
     "restart": "rimraf dist && npm run build && npm run start",
     "start": "node dist/index.js"
@@ -19,9 +19,12 @@
   "dependencies": {
     "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-proposal-object-rest-spread": "^7.7.7",
+    "axios": "^0.19.2",
     "body-parser": "^1.19.0",
+    "cheerio": "^1.0.0-rc.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "jest": "^25.1.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "morgan": "^1.9.1",
