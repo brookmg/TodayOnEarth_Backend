@@ -13,7 +13,7 @@ export class Post extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['postid' , 'provider' , 'source_link' , 'published_on' , 'scraped_on'],
+            required: ['provider' , 'source_link' , 'published_on' , 'scraped_on'],
             properties: {
                 postid: { type: 'interger' },
                 title: { type: 'string' },
