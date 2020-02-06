@@ -25,7 +25,7 @@ export class Keyword extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['keyword_id' , 'keyword' , 'post_id'],
+            required: ['keyword' , 'post_id'],
             properties: {
                 keyword_id: { type: 'integer'},
                 keyword: { type: 'string'},
