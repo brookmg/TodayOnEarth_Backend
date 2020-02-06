@@ -13,30 +13,35 @@ Post.knex(KnexI);
 */
 
 export async function createPostScheme() : Promise<any> {
-    if (await KnexI.schema.hasTable('post')) return; // We don't need to create it again
+    let exists = await KnexI.schema.hasTable('post');
+    if (exists) return; // We don't need to create it again
 
     return KnexI.schema.createTable('post', table => {
         table.increments('postid').primary();
 
-        table.string('title');
-        table.string('body');
-        table.string('provider');
-        table.string('source_link');
+        table.text('title', 'longtext');
+        table.text('body', 'longtext');
+        table.text('provider', 'longtext');
+        table.text('source_link', 'mediumtext');
 
         table.date('published_on');
         table.date('scraped_on');
 
-        table.string('metadata');
+        table.text('metadata', 'longtext');
     })
 
 }
 
 export async function insertItem(postData) : Promise<Post> {
-    return Post.query().insert(postData);
+    return createPostScheme().then(() => Post.query().insert(postData));
 }
 
 export async function deleteItem(id: number) : Promise<number> {
     return Post.query().deleteById(id);
+}
+
+export async function getAllPosts() : Promise<Post[]> {
+    return Post.query().where('1');
 }
 
 export async function getItemById(id: number) : Promise<Post> {
