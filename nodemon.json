@@ -20,5 +20,5 @@
   "env": {
     "NODE_ENV": "development"
   },
-  "ext": "js,json,graphql"
+  "ext": "js,json,graphql,ts"
 }
