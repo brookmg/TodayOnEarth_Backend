@@ -4,7 +4,7 @@
   "description": "API to serve the universe",
   "main": "index.js",
   "scripts": {
-    "build": "babel src --out-dir dist",
+    "build": "tsc && babel build --out-dir dist",
     "test": "jest --coverage --silent",
     "dev": "nodemon --exec npm run restart",
     "restart": "rimraf dist && npm run build && npm run start",
@@ -17,8 +17,7 @@
   "author": "Brook Mezgebu",
   "license": "Apache-2.0",
   "dependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.7.4",
-    "@babel/plugin-proposal-object-rest-spread": "^7.7.7",
+    "@babel/types": "^7.8.3",
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "cheerio": "^1.0.0-rc.3",
@@ -26,18 +25,24 @@
     "express": "^4.17.1",
     "jest": "^25.1.0",
     "jsonwebtoken": "^8.5.1",
+    "knex": "^0.20.8",
     "lodash": "^4.17.15",
     "morgan": "^1.9.1",
     "nodemon": "^2.0.2",
+    "objection": "^2.1.2",
+    "pg": "^7.18.1",
     "rimraf": "^3.0.1",
-    "validator": "^12.1.0"
+    "tsc": "^1.20150623.0",
+    "typescript": "^3.7.5",
+    "validator": "^12.2.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0",
-    "@babel/core": "^7.0.0",
-    "@babel/plugin-proposal-class-properties": "^7.0.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@types/node": "^13.7.0",
     "babel-core": "7.0.0-bridge.0"
   }
 }
