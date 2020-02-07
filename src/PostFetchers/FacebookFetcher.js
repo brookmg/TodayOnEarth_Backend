@@ -16,9 +16,7 @@ export default class FacebookFetcher extends PostFetcherBase {
     getPosts = async () => {
         const url = `https://www.facebook.com/${this.source}/posts/`;
 
-        console.log("brfore")
         const response = await this.downloadWebPage({ url });
-        console.log("after")
 
         const webpageContent = response.data
         // const webpageContent = this.getPageContentFromSampleData();
@@ -40,6 +38,7 @@ export default class FacebookFetcher extends PostFetcherBase {
             const postMediaImg = $(e).find(".scaledImageFitWidth").attr("src")
             const postMediaMetadata = $(e).find(".scaledImageFitWidth").attr("aria-label") || ""
 
+            const postId = $(e).find("[name=ft_ent_identifier]").attr('value')
 
             const postLinks = [];
             $(e).find("a").each((i, e) => {
@@ -90,7 +89,7 @@ export default class FacebookFetcher extends PostFetcherBase {
                 title: postTitle,
                 body: postText,
                 provider: this.source,
-                source_link: url,
+                source_link: url + postId,
 
                 published_on: postTimestamp,
                 scraped_on: Date.now(),
