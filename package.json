@@ -21,6 +21,7 @@
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "bull": "^3.12.1",
+    "bull-arena": "^2.7.1",
     "cheerio": "^1.0.0-rc.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
