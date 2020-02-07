@@ -1,4 +1,6 @@
 import Queue from 'bull'
+import { insertItem } from '../db/post_table'
+import TwitterFetcher from '../PostFetchers/TwitterFetcher'
 
 const TwitterQueue = new Queue('twitter_queue'); 
 const FacebookQueue = new Queue('facebook_queue'); 
@@ -8,8 +10,21 @@ const TelegramQueue = new Queue('telegram_queue');
 TwitterQueue.process((job, done) => {
     // twitter scraper module => push to db
     // ,then
-    console.log('twitter' , job.data)
-    done();
+    
+    new TwitterFetcher(job.data.from , job.data.source).getPosts().then(
+        posts => posts.forEach(
+            post => {
+                post.metadata = JSON.stringify(post.metadata);
+                if (typeof post.published_on === 'string') 
+                    post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
+                post.scraped_on = new Date(post.scraped_on).toUTCString()
+                insertItem(post).then(() => 
+                    console.log(`added ${post.source_link} from ${post.provider}`)
+                ).catch(err => console.error(err));
+            }
+        )
+    ).then(() => done());
+
 })
 
 FacebookQueue.process((job, done) => {
