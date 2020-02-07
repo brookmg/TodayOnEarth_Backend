@@ -22,7 +22,7 @@ export async function createPostScheme() : Promise<any> {
         table.text('title', 'longtext');
         table.text('body', 'longtext');
         table.text('provider', 'longtext');
-        table.text('source_link', 'mediumtext');
+        table.text('source_link', 'mediumtext').unique();
 
         table.date('published_on');
         table.date('scraped_on');
