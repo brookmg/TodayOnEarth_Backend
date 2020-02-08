@@ -41,7 +41,7 @@ export async function deletePost(postid: number) : Promise<number> {
 }
 
 export async function getAllPosts() : Promise<Post[]> {
-    return Post.query().where('1');
+    return Post.query();
 }
 
 export async function getPostById(postid: number) : Promise<Post> {
