@@ -48,6 +48,14 @@ export async function getPostById(postid: number) : Promise<Post> {
     return Post.query().findById(postid);
 }
 
+export async function getAllPostsFromProvider(provider: string) : Promise<Post[]> {
+    return Post.query().where('provider' , provider);
+}
+
+export async function getAllPostsFromSource(source: string) : Promise<Post[]> {
+    return Post.query().where('source_link' , 'like' ,  `%${source}%`);
+}
+
 export async function updatePostById(postid: number , update: Post) : Promise<Post> {
     return Post.query()
         .updateAndFetchById(postid, update);
