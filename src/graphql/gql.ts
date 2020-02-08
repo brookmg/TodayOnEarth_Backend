@@ -33,6 +33,16 @@ const resolvers = {
             return posts
         }
     },
+
+    Post: {
+        published_on: (incoming) => {
+            return new Date(incoming.published_on).getTime() / 1000
+        },
+        scraped_on: (incoming) => {
+            return new Date(incoming.scraped_on).getTime() / 1000   // sec time instead of micro
+        }
+    },
+
     Mutation: {
         getPost: async (_,{ id }) => {
             let posts = await getPostById(id);
