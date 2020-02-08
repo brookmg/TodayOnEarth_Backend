@@ -1,5 +1,5 @@
 import Queue from 'bull'
-import { insertItem } from '../db/post_table'
+import { insertPost } from '../db/post_table'
 import TwitterFetcher from '../PostFetchers/TwitterFetcher'
 import FacebookFetcher from '../PostFetchers/FacebookFetcher'
 import TelegramFetcher from '../PostFetchers/TelegramFetcher'
@@ -21,7 +21,7 @@ TwitterQueue.process((job) => {
                 if (typeof post.published_on === 'string') 
                     post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
                 post.scraped_on = new Date(post.scraped_on).toUTCString()
-                insertItem(post).then(() => 
+                insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
                 )
             }
@@ -43,7 +43,7 @@ FacebookQueue.process((job) => {
                 const keywords = post.keywords;
                 post.keywords = undefined;
                 console.log(post)
-                insertItem(post).then(() => 
+                insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
                 )
             }
@@ -62,7 +62,7 @@ InstagramQueue.process((job) => {
                     post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
                 else post.published_on = new Date(post.published_on).toUTCString()
                 post.scraped_on = new Date(post.scraped_on).toUTCString()
-                insertItem(post).then(() => 
+                insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
                 );
             }
@@ -81,7 +81,7 @@ TelegramQueue.process((job) => {
                     post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
                 else post.published_on = new Date(post.published_on).toUTCString()
                 post.scraped_on = new Date(post.scraped_on).toUTCString()
-                insertItem(post).then(() => 
+                insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
                 )
             }

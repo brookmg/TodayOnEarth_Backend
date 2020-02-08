@@ -32,23 +32,23 @@ export async function createPostScheme() : Promise<any> {
 
 }
 
-export async function insertItem(postData) : Promise<Post> {
+export async function insertPost(postData) : Promise<Post> {
     return createPostScheme().then(() => Post.query().insert(postData));
 }
 
-export async function deleteItem(id: number) : Promise<number> {
-    return Post.query().deleteById(id);
+export async function deletePost(postid: number) : Promise<number> {
+    return Post.query().deleteById(postid);
 }
 
 export async function getAllPosts() : Promise<Post[]> {
     return Post.query().where('1');
 }
 
-export async function getItemById(id: number) : Promise<Post> {
-    return Post.query().findById(id);
+export async function getPostById(postid: number) : Promise<Post> {
+    return Post.query().findById(postid);
 }
 
-export async function updateItemById(id: number , update: Post) : Promise<Post> {
+export async function updatePostById(postid: number , update: Post) : Promise<Post> {
     return Post.query()
-        .updateAndFetchById(id, update);
+        .updateAndFetchById(postid, update);
 }
