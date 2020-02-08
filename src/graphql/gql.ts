@@ -1,5 +1,5 @@
 const { ApolloServer, gql } = require('apollo-server');
-import { getAllPosts, getPostById, getAllPostsFromProvider, getAllPostsFromSource} from '../db/post_table'
+import { getAllPosts, getPostById, getAllPostsFromProvider, getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate, getAllPostsSincePublishedDate} from '../db/post_table'
 
 const typeDef = gql`
 
@@ -22,6 +22,10 @@ const typeDef = gql`
         getPost(id: Int) : Post
         getPostFromProvider(provider: String): [Post]
         getPostFromSource(source: String): [Post]
+
+        getPostScrapedSince(time: Int): [Post]
+        getPostFrom(time: Int): [Post]
+        getPostPublishedOn(time: Int): [Post]
     } 
 
 `;
@@ -40,6 +44,9 @@ const resolvers = {
         },
         scraped_on: (incoming) => {
             return new Date(incoming.scraped_on).getTime() / 1000   // sec time instead of micro
+        },
+        metadata: (incoming) => {
+            return JSON.stringify(incoming.metadata)
         }
     },
 
@@ -54,6 +61,18 @@ const resolvers = {
         },
         getPostFromSource: async (_, {source}) => {
             let posts = await getAllPostsFromSource(source)
+            return posts
+        },
+        getPostScrapedSince: async (_, {time}) => {
+            let posts = await getAllPostsSinceScrapedDate(time)
+            return posts
+        },
+        getPostPublishedOn: async (_, {time}) => {
+            let posts = await getAllPostsOnPublishedDate(time)
+            return posts
+        },
+        getPostFrom: async (_, {time}) => {
+            let posts = await getAllPostsSincePublishedDate(time)
             return posts
         }
     }
