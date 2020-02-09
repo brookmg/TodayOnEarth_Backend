@@ -3,14 +3,9 @@ import { Keyword } from './keyword'
 
 export class Post extends Model {
 
-    $parseJson(json, opt) {
-        // one thing objection really lacks is to handle date 
-        // datatype converstions so we will do it here
-        
-        json = super.$parseJson(json, opt);
-
-        json.metadata = JSON.parse(json.metadata)
-
+    $parseDatabaseJson(json, opt) {
+        json = super.$parseDatabaseJson(json, opt);
+        if (json.metadata) json.metadata = JSON.parse(json.metadata)
         return json;
     }
 
