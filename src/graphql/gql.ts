@@ -25,7 +25,7 @@ const typeDef = gql`
     }
 
     type CommunityInteraction {
-        view: Int,
+        views: Int,
         likes: Int,
         replies: Int,
         retweets: Int,
