@@ -1,4 +1,5 @@
 const { Model } = require('objection')
+import { Keyword } from './keyword'
 
 export class Post extends Model {
 
@@ -20,6 +21,17 @@ export class Post extends Model {
     static get idColumn() {
         return 'postid';
     }
+
+    static relationMappings = {
+        keywords: {
+          relation: Model.HasManyRelation,
+          modelClass: Keyword,
+          join: {
+            from: 'post.postid',
+            to: 'keyword.post_id'
+          }
+        }
+      };
 
     static get jsonSchema() {
         return {
