@@ -22,7 +22,7 @@ export async function createKeywordScheme() : Promise<any> {
 }
 
 export async function insertItem(keywordData: Keyword) : Promise<Keyword> {
-    return Keyword.query().insert(keywordData);
+    return createKeywordScheme().then(() => Keyword.query().insert(keywordData));
 }
 
 export async function deleteItem(id : number) : Promise<number> {
