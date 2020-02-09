@@ -11,7 +11,13 @@ const typeDef = gql`
         source_link: String, 
         published_on: Int,
         scraped_on: Int,
-        metadata: Metadata
+        metadata: Metadata,
+        keywords: [Keyword]
+    }
+
+    type Keyword {
+        keyword: String,
+        postid: Int
     }
 
     type Query {
