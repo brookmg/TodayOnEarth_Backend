@@ -2,6 +2,17 @@ const { Model } = require('objection')
 
 export class Post extends Model {
 
+    $parseJson(json, opt) {
+        // one thing objection really lacks is to handle date 
+        // datatype converstions so we will do it here
+        
+        json = super.$parseJson(json, opt);
+
+        json.metadata = JSON.parse(json.metadata)
+
+        return json;
+    }
+
     static get tableName() {
         return 'post';
     } 
