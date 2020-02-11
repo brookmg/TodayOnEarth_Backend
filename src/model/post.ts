@@ -5,9 +5,8 @@ export class Post extends Model {
 
     $parseDatabaseJson(json) {
         json = super.$parseDatabaseJson(json);
-        console.log(json.metadata)
+        
         if (json.metadata && typeof json.metadata == 'string') {
-            console.log(json)
             json.metadata = JSON.parse(json.metadata)
         }
         return json;
