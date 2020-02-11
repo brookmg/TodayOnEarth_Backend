@@ -1,16 +1,45 @@
 const { Model } = require('objection')
+import { Keyword } from './keyword'
 
 export class Post extends Model {
 
-    $parseJson(json, opt) {
-        // one thing objection really lacks is to handle date 
-        // datatype converstions so we will do it here
+    $parseDatabaseJson(json) {
+        json = super.$parseDatabaseJson(json);
         
-        json = super.$parseJson(json, opt);
-
-        json.metadata = JSON.parse(json.metadata)
-
+        if (json.metadata && typeof json.metadata == 'string') {
+            json.metadata = JSON.parse(json.metadata)
+        }
         return json;
+    }
+
+    $parseJson(json) {
+        json = super.$parseJson(json);
+
+        if (Array.isArray(json.keywords)) {
+            // we have keywords now let's iterate and fix them
+            let finalKeywords = []
+            json.keywords.forEach(element => {
+                if (typeof element === 'object') {
+                    if (element instanceof Keyword) finalKeywords.push(element)    // nothing to do here
+                    // but if ☝ is false ... something is messed up so don't push anything 
+                } else if (typeof element === 'string') {
+                    finalKeywords.push(Keyword.fromJson({"keyword" : element}));
+                }
+            });
+            json.keywords = finalKeywords
+        }
+        
+        return json
+    }
+
+    $formatDatabaseJson(json, opt) {
+        json = super.$formatDatabaseJson(json,opt);
+        json.published_on = new Date(Number.parseInt(json.published_on)).toUTCString()
+        json.scraped_on = new Date(Number.parseInt(json.scraped_on)).toUTCString()
+
+        if (typeof json.metadata === 'object') json.metadata = JSON.stringify(json.metadata)
+
+        return json
     }
 
     static get tableName() {
@@ -20,6 +49,17 @@ export class Post extends Model {
     static get idColumn() {
         return 'postid';
     }
+
+    static relationMappings = {
+        keywords: {
+          relation: Model.HasManyRelation,
+          modelClass: Keyword,
+          join: {
+            from: 'post.postid',
+            to: 'keyword.post_id'
+          }
+        }
+      };
 
     static get jsonSchema() {
         return {
@@ -31,9 +71,10 @@ export class Post extends Model {
                 body: { type: 'string' },
                 provider: { type: 'string' },
                 source_link: { type: 'string' }, 
+                keywords: { type: 'array'},
                 published_on: { type: 'date'},
                 scraped_on: { type: 'date'},
-                metadata: { type: 'string' }
+                metadata: { type: 'string|object' }
             }
         }
     }
