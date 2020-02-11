@@ -19,8 +19,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/types": "^7.8.3",
+    "@types/jest": "^25.1.2",
     "apollo-server": "^2.10.0",
     "axios": "^0.19.2",
+    "bcrypt": "^3.0.8",
     "body-parser": "^1.19.0",
     "bull": "^3.12.1",
     "bull-arena": "^2.7.1",
