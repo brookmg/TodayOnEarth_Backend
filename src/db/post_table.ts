@@ -1,7 +1,9 @@
 import { Post } from '../model/post'
 import { KnexI } from './db'
+import { Keyword } from '../model/keyword';
 
 Post.knex(KnexI);
+Keyword.knex(KnexI);
 
 // --- Create scheme functions ----
 
@@ -51,7 +53,11 @@ export async function getAllPosts() : Promise<Post[]> {
 }
 
 export async function getPostWithKeyword(keyword: String) : Promise<Post[]> {
-    return []
+    return Post.query().findByIds(
+        Keyword.query().where('keyword' , keyword).select('post_id')
+    ).withGraphFetched({
+        keywords: true
+    })
 }
 
 export async function getPostById(postid: number) : Promise<Post> {
