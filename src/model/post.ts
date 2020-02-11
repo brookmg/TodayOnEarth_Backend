@@ -13,6 +13,26 @@ export class Post extends Model {
         return json;
     }
 
+    $parseJson(json) {
+        json = super.$parseJson(json);
+
+        if (Array.isArray(json.keywords)) {
+            // we have keywords now let's iterate and fix them
+            let finalKeywords = []
+            json.keywords.forEach(element => {
+                if (typeof element === 'object') {
+                    if (element instanceof Keyword) finalKeywords.push(element)    // nothing to do here
+                    // but if ☝ is false ... something is messed up so don't push anything 
+                } else if (typeof element === 'string') {
+                    finalKeywords.push(Keyword.fromJson({"keyword" : element}));
+                }
+            });
+            json.keywords = finalKeywords
+        }
+        
+        return json
+    }
+
     $formatDatabaseJson(json, opt) {
         json = super.$formatDatabaseJson(json,opt);
         json.published_on = new Date(Number.parseInt(json.published_on)).toUTCString()
@@ -52,6 +72,7 @@ export class Post extends Model {
                 body: { type: 'string' },
                 provider: { type: 'string' },
                 source_link: { type: 'string' }, 
+                keywords: { type: 'array'},
                 published_on: { type: 'date'},
                 scraped_on: { type: 'date'},
                 metadata: { type: 'string|object' }

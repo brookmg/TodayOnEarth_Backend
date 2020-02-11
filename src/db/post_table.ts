@@ -33,7 +33,7 @@ export async function createPostScheme() : Promise<any> {
 }
 
 export async function insertPost(postData) : Promise<Post> {
-    return createPostScheme().then(() => Post.query().insert(postData));
+    return createPostScheme().then(() => Post.query().insertGraph(postData));
 }
 
 export async function getAllPostsGraphed() : Promise<Post[]> {
