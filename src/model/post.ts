@@ -3,10 +3,24 @@ import { Keyword } from './keyword'
 
 export class Post extends Model {
 
-    $parseDatabaseJson(json, opt) {
-        json = super.$parseDatabaseJson(json, opt);
-        if (json.metadata) json.metadata = JSON.parse(json.metadata)
+    $parseDatabaseJson(json) {
+        json = super.$parseDatabaseJson(json);
+        console.log(json.metadata)
+        if (json.metadata && typeof json.metadata == 'string') {
+            console.log(json)
+            json.metadata = JSON.parse(json.metadata)
+        }
         return json;
+    }
+
+    $formatDatabaseJson(json, opt) {
+        json = super.$formatDatabaseJson(json,opt);
+        json.published_on = new Date(Number.parseInt(json.published_on)).toUTCString()
+        json.scraped_on = new Date(Number.parseInt(json.scraped_on)).toUTCString()
+
+        if (typeof json.metadata === 'object') json.metadata = JSON.stringify(json.metadata)
+
+        return json
     }
 
     static get tableName() {
@@ -40,7 +54,7 @@ export class Post extends Model {
                 source_link: { type: 'string' }, 
                 published_on: { type: 'date'},
                 scraped_on: { type: 'date'},
-                metadata: { type: 'string' }
+                metadata: { type: 'string|object' }
             }
         }
     }
