@@ -17,10 +17,10 @@ TwitterQueue.process((job) => {
     return new TwitterFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
-                post.metadata = JSON.stringify(post.metadata);
-                if (typeof post.published_on === 'string') 
-                    post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
-                post.scraped_on = new Date(post.scraped_on).toUTCString()
+                // post.metadata = JSON.stringify(post.metadata);
+                // if (typeof post.published_on === 'string') 
+                //     post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
+                // post.scraped_on = new Date(post.scraped_on).toUTCString()
                 insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
                 )
@@ -36,12 +36,13 @@ FacebookQueue.process((job) => {
     return new FacebookFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
-                post.metadata = JSON.stringify(post.metadata);
-                if (typeof post.published_on === 'string') 
-                    post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
-                post.scraped_on = new Date(post.scraped_on).toUTCString()
+                // post.metadata = JSON.stringify(post.metadata);
+                // if (typeof post.published_on === 'string') 
+                //     post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
+                // post.scraped_on = new Date(post.scraped_on).toUTCString()
                 const keywords = post.keywords;
                 post.keywords = undefined;
+                post.metadata.keywords = keywords
                 console.log(post)
                 insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
@@ -57,11 +58,11 @@ InstagramQueue.process((job) => {
     return new InstagramFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
-                post.metadata = JSON.stringify(post.metadata);
-                if (typeof post.published_on === 'string') 
-                    post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
-                else post.published_on = new Date(post.published_on).toUTCString()
-                post.scraped_on = new Date(post.scraped_on).toUTCString()
+                // post.metadata = JSON.stringify(post.metadata);
+                // if (typeof post.published_on === 'string') 
+                //     post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
+                // else post.published_on = new Date(post.published_on).toUTCString()
+                // post.scraped_on = new Date(post.scraped_on).toUTCString()
                 insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
                 );
@@ -76,11 +77,11 @@ TelegramQueue.process((job) => {
     return new TelegramFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
-                post.metadata = JSON.stringify(post.metadata);
-                if (typeof post.published_on === 'string') 
-                    post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
-                else post.published_on = new Date(post.published_on).toUTCString()
-                post.scraped_on = new Date(post.scraped_on).toUTCString()
+                // post.metadata = JSON.stringify(post.metadata);
+                // if (typeof post.published_on === 'string') 
+                //     post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
+                // else post.published_on = new Date(post.published_on).toUTCString()
+                // post.scraped_on = new Date(post.scraped_on).toUTCString()
                 insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
                 )
