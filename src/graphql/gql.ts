@@ -1,5 +1,7 @@
 const { ApolloServer, gql } = require('apollo-server');
-import { getAllPosts, getPostById, getAllPostsFromProvider, getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate, getAllPostsSincePublishedDate} from '../db/post_table'
+import { getAllPosts, getPostById, getAllPostsFromProvider, 
+    getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate, 
+    getAllPostsSincePublishedDate, getPostWithKeyword} from '../db/post_table'
 
 const typeDef = gql`
 
@@ -11,7 +13,13 @@ const typeDef = gql`
         source_link: String, 
         published_on: Int,
         scraped_on: Int,
-        metadata: Metadata
+        metadata: Metadata,
+        keywords: [Keyword]
+    }
+
+    type Keyword {
+        keyword: String,
+        postid: Int
     }
 
     type Query {
@@ -19,7 +27,7 @@ const typeDef = gql`
     }
 
     type CommunityInteraction {
-        view: Int,
+        views: Int,
         likes: Int,
         replies: Int,
         retweets: Int,
@@ -131,6 +139,8 @@ const typeDef = gql`
         getPostScrapedSince(time: Int): [Post]
         getPostFrom(time: Int): [Post]
         getPostPublishedOn(time: Int): [Post]
+
+        getPostWithKeyword(keyword: String): [Post]
     } 
 
 `;
@@ -188,6 +198,10 @@ const resolvers = {
         },
         getPostFrom: async (_, {time}) => {
             let posts = await getAllPostsSincePublishedDate(time)
+            return posts
+        },
+        getPostWithKeyword: async (_, {keyword}) => {
+            let posts = await getPostWithKeyword(keyword)
             return posts
         }
     }

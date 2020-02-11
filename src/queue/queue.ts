@@ -17,13 +17,15 @@ TwitterQueue.process((job) => {
     return new TwitterFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
-                post.metadata = JSON.stringify(post.metadata);
-                if (typeof post.published_on === 'string') 
-                    post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
-                post.scraped_on = new Date(post.scraped_on).toUTCString()
+                if (post.metadata) {
+                    // move keywords outside
+                    if (typeof post.metadata === 'string') post.metadata = JSON.parse(post.metadata)
+                    if (post.metadata.keywords != undefined) post.keywords = post.metadata.keywords
+                    post.metadata.keywords = undefined
+                }
                 insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
-                )
+                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
             }
         )
     )
@@ -36,16 +38,14 @@ FacebookQueue.process((job) => {
     return new FacebookFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
-                post.metadata = JSON.stringify(post.metadata);
-                if (typeof post.published_on === 'string') 
-                    post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
-                post.scraped_on = new Date(post.scraped_on).toUTCString()
-                const keywords = post.keywords;
-                post.keywords = undefined;
-                console.log(post)
+                if (post.metadata && post.metadata.keywords) {
+                    // move keywords outside
+                    post.keywords = post.metadata.keywords
+                    post.metadata.keywords = undefined
+                }
                 insertPost(post).then(() => 
-                    console.log(`added ${post.source_link} from ${post.provider}`)
-                )
+                    console.log(`added ${post.source_link} from ${post.provider}`)                
+                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
             }
         )
     )
@@ -57,14 +57,14 @@ InstagramQueue.process((job) => {
     return new InstagramFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
-                post.metadata = JSON.stringify(post.metadata);
-                if (typeof post.published_on === 'string') 
-                    post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
-                else post.published_on = new Date(post.published_on).toUTCString()
-                post.scraped_on = new Date(post.scraped_on).toUTCString()
+                if (post.metadata && post.metadata.keywords) {
+                    // move keywords outside
+                    post.keywords = post.metadata.keywords
+                    post.metadata.keywords = undefined
+                }
                 insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
-                );
+                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
             }
         )
     )
@@ -76,14 +76,15 @@ TelegramQueue.process((job) => {
     return new TelegramFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
-                post.metadata = JSON.stringify(post.metadata);
-                if (typeof post.published_on === 'string') 
-                    post.published_on = new Date(Number.parseInt(post.published_on)).toUTCString()
-                else post.published_on = new Date(post.published_on).toUTCString()
-                post.scraped_on = new Date(post.scraped_on).toUTCString()
+
+                if (post.metadata && post.metadata.keywords) {
+                    post.keywords = post.metadata.keywords
+                    post.metadata.keywords = undefined
+                }
+
                 insertPost(post).then(() => 
                     console.log(`added ${post.source_link} from ${post.provider}`)
-                )
+                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
             }
         )
     );
