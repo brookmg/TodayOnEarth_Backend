@@ -79,6 +79,12 @@ export async function signUpUser(
     phone_number: string, username: string, country: string,
     email: string, password: string): Promise<User> {
 
+    if (!username) throw new Error('username is required')
+    else if (await isUsernameTaken(username)) throw new Error('username already taken')
+
+    if (!email) throw new Error('email is required')
+    else if (await isEmailUsed(email)) throw new Error('email already used by someone else')
+
     if (!password) throw new Error('password is required')
     const hashed = await hash(password, 10)
     return insertUser({

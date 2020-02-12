@@ -16,9 +16,9 @@ export class User extends Model {
             required: ['email', 'first_name' , 'last_name', 'password_hash', 'username'],
             properties: {
                 uid: { type: 'integer'},
-                first_name: { type: 'string'},
+                first_name: { type: 'string', minLength: 3},
                 middle_name: { type: 'string' },
-                last_name: { type: 'string' },
+                last_name: { type: 'string', minLength: 2},
                 email: { type: 'email' },
                 role: { type: 'integer'},    //not used right now but in the future to have admin | pro | normal users
                 phone_number: { type: 'string'},
