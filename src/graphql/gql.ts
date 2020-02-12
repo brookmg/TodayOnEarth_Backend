@@ -3,6 +3,8 @@ import { getAllPosts, getPostById, getAllPostsFromProvider,
     getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate,
     getAllPostsSincePublishedDate, getPostWithKeyword, getPostsCustom } from '../db/post_table'
 
+import { signInUser, signUpUser } from '../db/user_table';
+
 const typeDef = gql`
 
     type Post {
@@ -15,6 +17,34 @@ const typeDef = gql`
         scraped_on: Int,
         metadata: Metadata,
         keywords: [Keyword]
+    }
+
+    type User {
+        uid: Int!,
+        first_name: String!,
+        middle_name: String,
+        last_name: String!,
+        email: String!,
+        username: String!,
+        phone_number: String,
+        country: String,
+        last_location: String
+    }
+
+    input IUser {
+        first_name: String!,
+        middle_name: String,
+        last_name: String!,
+        email: String!,
+        username: String!,
+        phone_number: String,
+        country: String,
+        last_location: String,
+        password: String!
+    }
+
+    type Token {
+        token: String
     }
 
     type Keyword {
@@ -180,6 +210,15 @@ const typeDef = gql`
         thumbnail_image: String
     }
 
+    type Mutation {
+        # Auth
+
+        getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
+        signIn(email: String!, password: String!) : Token
+        signUp(new_user: IUser) : Boolean
+
+    } 
+
 `;
 
 const resolvers = {
@@ -248,6 +287,19 @@ const resolvers = {
         // metadata: (incoming) => {
         //     return JSON.stringify(incoming.metadata)
         // }
+    },
+
+    Mutation: {
+        signIn: async (_, { email, password }) => {
+            let token = await signInUser(email, password)
+            return { token }
+        },
+        signUp: async (_, { new_user }) => {
+            let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name, 
+                new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password)
+           return token ? true : false
+        },
+        
     },
 
 };
