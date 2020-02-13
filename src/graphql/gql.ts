@@ -24,6 +24,15 @@ const typeDef = gql`
 
     type Query {
         getPosts: [Post]
+        getPost(id: Int) : Post
+        getPostFromProvider(provider: String): [Post]
+        getPostFromSource(source: String): [Post]
+
+        getPostScrapedSince(time: Int): [Post]
+        getPostFrom(time: Int): [Post]
+        getPostPublishedOn(time: Int): [Post]
+
+        getPostWithKeyword(keyword: String): [Post]
     }
 
     type CommunityInteraction {
@@ -131,18 +140,6 @@ const typeDef = gql`
         thumbnail_image: String
     }
 
-    type Mutation {
-        getPost(id: Int) : Post
-        getPostFromProvider(provider: String): [Post]
-        getPostFromSource(source: String): [Post]
-
-        getPostScrapedSince(time: Int): [Post]
-        getPostFrom(time: Int): [Post]
-        getPostPublishedOn(time: Int): [Post]
-
-        getPostWithKeyword(keyword: String): [Post]
-    } 
-
 `;
 
 const resolvers = {
@@ -150,32 +147,7 @@ const resolvers = {
         getPosts: async () => {
             let posts = await getAllPosts()
             return posts
-        }
-    },
-
-    Metadata: {
-        __resolveType(metadata, context, info) {
-            if (metadata.message) return 'TelegramMetadata';
-            else if (metadata.post && metadata.post.additional_thumbnails) return 'InstagramMetadata';
-            else if (metadata.post) return 'FacebookMetadata';
-            else if (metadata.tweet) return 'TwitterMetadata';
-            else return null
         },
-    },
-
-    Post: {
-        published_on: (incoming) => {
-            return new Date(incoming.published_on).getTime() / 1000
-        },
-        scraped_on: (incoming) => {
-            return new Date(incoming.scraped_on).getTime() / 1000   // sec time instead of micro
-        },
-        // metadata: (incoming) => {
-        //     return JSON.stringify(incoming.metadata)
-        // }
-    },
-
-    Mutation: {
         getPost: async (_,{ id }) => {
             let posts = await getPostById(id);
             return posts
@@ -204,7 +176,29 @@ const resolvers = {
             let posts = await getPostWithKeyword(keyword)
             return posts
         }
-    }
+    },
+
+    Metadata: {
+        __resolveType(metadata, context, info) {
+            if (metadata.message) return 'TelegramMetadata';
+            else if (metadata.post && metadata.post.additional_thumbnails) return 'InstagramMetadata';
+            else if (metadata.post) return 'FacebookMetadata';
+            else if (metadata.tweet) return 'TwitterMetadata';
+            else return null
+        },
+    },
+
+    Post: {
+        published_on: (incoming) => {
+            return new Date(incoming.published_on).getTime() / 1000
+        },
+        scraped_on: (incoming) => {
+            return new Date(incoming.scraped_on).getTime() / 1000   // sec time instead of micro
+        },
+        // metadata: (incoming) => {
+        //     return JSON.stringify(incoming.metadata)
+        // }
+    },
 
 }
 
