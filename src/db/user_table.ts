@@ -70,7 +70,11 @@ export async function signInUser(email: string, password: string): Promise<strin
     const user = await User.query().first().where({ email });
     if (!user) throw new Error('user doesn\'t exist')
     const correct = await compare(password , user.password_hash);
-    if (correct) return generateToken(user);
+    if (correct) {
+        // change last_login_time
+        await User.query().patch({ last_login_time: new Date().toUTCString() }).where('uid' , user.uid)
+        return generateToken(user);
+    }
     else throw new Error('email or password incorrect');
 }
 
@@ -79,17 +83,19 @@ export async function signUpUser(
     phone_number: string, username: string, country: string,
     email: string, password: string): Promise<User> {
 
-    if (!username) throw new Error('username is required')
-    else if (await isUsernameTaken(username)) throw new Error('username already taken')
-
-    if (!email) throw new Error('email is required')
-    else if (await isEmailUsed(email)) throw new Error('email already used by someone else')
-
-    if (!password) throw new Error('password is required')
-    const hashed = await hash(password, 10)
-    return insertUser({
-        first_name, middle_name, last_name, phone_number, username, country,
-        email, password_hash: hashed   
+    return createUserScheme().then(async () => {
+        if (!username) throw new Error('username is required')
+        else if (await isUsernameTaken(username)) throw new Error('username already taken')
+    
+        if (!email) throw new Error('email is required')
+        else if (await isEmailUsed(email)) throw new Error('email already used by someone else')
+    
+        if (!password) throw new Error('password is required')
+        const hashed = await hash(password, 10)
+        return insertUser({
+            first_name, middle_name, last_name, phone_number, username, country,
+            email, password_hash: hashed   
+        })
     })
 
 }

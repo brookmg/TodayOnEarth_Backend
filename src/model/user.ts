@@ -19,7 +19,7 @@ export class User extends Model {
                 first_name: { type: 'string', minLength: 3},
                 middle_name: { type: 'string' },
                 last_name: { type: 'string', minLength: 2},
-                email: { type: 'email' },
+                email: { type: 'email', format: 'email' },
                 role: { type: 'integer'},    //not used right now but in the future to have admin | pro | normal users
                 phone_number: { type: 'string'},
                 username: { type: 'string' },
