@@ -35,6 +35,14 @@ export async function getUser(uid: Number): Promise<User> {
     return User.query().findById(uid)
 }
 
+export async function getUsers(): Promise<User[]> {
+    return User.query();
+}
+
+export async function makeUserAdmin(uid: number): Promise<boolean> {
+    return await User.query().patch({'role': 4}).where('uid', uid) === 1
+}
+
 export async function isUsernameTaken(username: string): Promise<boolean> {
     const count: User[] = await User.query().where('username' , username);
     return count.length > 0;

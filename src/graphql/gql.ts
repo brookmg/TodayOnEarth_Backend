@@ -3,7 +3,7 @@ import { getAllPosts, getPostById, getAllPostsFromProvider,
     getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate,
     getAllPostsSincePublishedDate, getPostWithKeyword, getPostsCustom } from '../db/post_table'
 
-import { signInUser, signUpUser, verifyUser, getUser } from '../db/user_table';
+import { signInUser, signUpUser, verifyUser, getUser, getUsers, makeUserAdmin } from '../db/user_table';
 
 const typeDef = gql`
 
@@ -82,6 +82,8 @@ const typeDef = gql`
             published_on: Int,
             scraped_on: Int,
         ) : [Post]
+
+        getAllUsers: [User]
     }
 
     type CommunityInteraction {
@@ -216,6 +218,7 @@ const typeDef = gql`
         getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
         signIn(email: String!, password: String!) : Token
         signUp(new_user: IUser) : Boolean
+        makeUserAdmin(uid: Int) : Boolean
 
     } 
 
@@ -264,6 +267,13 @@ const resolvers = {
         getPostWithKeyword: async (_, {keyword}) => {
             let posts = await getPostWithKeyword(keyword);
             return posts
+        },
+        getAllUsers: async (_ , __, { user }) => {
+            if (!user) throw new Error('You must be authenticated & be an admin to access this')
+            if (!user.role && user.role < 2) throw new Error('You must be an admin')    // These numbers might change
+
+            let users = await getUsers()
+            return users
         }
     },
 
@@ -295,6 +305,12 @@ const resolvers = {
             if (!user) throw new Error('You must be authenticated to access this')
             return getUser(uid)
         },
+        makeUserAdmin: async (_, { uid }, { user }) => {
+            console.log(user)
+            if (!user) throw new Error('You must be authenticated to access this')
+            if (user.role < 4) throw new Error('You are not an admin')
+            return makeUserAdmin(uid)
+        },
         signIn: async (_, { email, password }) => {
             let token = await signInUser(email, password)
             return { token }
@@ -318,7 +334,7 @@ export function startGQLServer() {
             } else return { user: null }
         }
     });
-    
+
     server.listen().then(({ url }) => {
         console.log(`🚀  Server ready at ${url}`);
     });
