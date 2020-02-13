@@ -3,7 +3,7 @@ import { getAllPosts, getPostById, getAllPostsFromProvider,
     getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate,
     getAllPostsSincePublishedDate, getPostWithKeyword, getPostsCustom } from '../db/post_table'
 
-import { signInUser, signUpUser } from '../db/user_table';
+import { signInUser, signUpUser, verifyUser, getUser } from '../db/user_table';
 
 const typeDef = gql`
 
@@ -290,6 +290,11 @@ const resolvers = {
     },
 
     Mutation: {
+        getUserWithId: async (_, { uid }, { user }) => {
+            console.log(user)
+            if (!user) throw new Error('You must be authenticated to access this')
+            return getUser(uid)
+        },
         signIn: async (_, { email, password }) => {
             let token = await signInUser(email, password)
             return { token }
@@ -305,7 +310,15 @@ const resolvers = {
 };
 
 export function startGQLServer() {
-    const server = new ApolloServer({ typeDefs: typeDef , resolvers });
+    const server = new ApolloServer({ typeDefs: typeDef , resolvers, context: async ({ req }) => {
+            const token = req.headers.authorization || '';
+            if (token) {
+                const user = await verifyUser(token);
+                return { user };
+            } else return { user: null }
+        }
+    });
+    
     server.listen().then(({ url }) => {
         console.log(`🚀  Server ready at ${url}`);
     });
