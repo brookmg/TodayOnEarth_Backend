@@ -1,9 +1,17 @@
 const { ApolloServer, gql } = require('apollo-server');
-import { getAllPosts, getPostById, getAllPostsFromProvider,
-    getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate,
-    getAllPostsSincePublishedDate, getPostWithKeyword, getPostsCustom } from '../db/post_table'
+import {
+    getAllPosts,
+    getAllPostsFromProvider,
+    getAllPostsFromSource,
+    getAllPostsOnPublishedDate,
+    getAllPostsSincePublishedDate,
+    getAllPostsSinceScrapedDate,
+    getPostById,
+    getPostsCustom,
+    getPostWithKeyword
+} from '../db/post_table'
 
-import { signInUser, signUpUser, verifyUser, getUser, getUsers, makeUserAdmin } from '../db/user_table';
+import {getUser, getUsers, makeUserAdmin, signInUser, signUpUser, verifyUser} from '../db/user_table';
 
 const typeDef = gql`
 
@@ -208,52 +216,41 @@ const typeDef = gql`
 const resolvers = {
     Query: {
         getPostCustomized: async (_ , { jsonQuery }) => {
-            let posts = getPostsCustom(jsonQuery);
-            return posts
+            return await getPostsCustom(jsonQuery)
         },
         getPosts: async () => {
-            let posts = await getAllPosts();
-            return posts
+            return await getAllPosts()
         },
         getPost: async (_,{ id }) => {
-            let posts = await getPostById(id);
-            return posts
+            return await getPostById(id)
         },
         getPostFromProvider: async (_ , {provider}) => {
-            let posts = await getAllPostsFromProvider(provider);
-            return posts
+            return await getAllPostsFromProvider(provider)
         },
         getPostFromSource: async (_, {source}) => {
-            let posts = await getAllPostsFromSource(source);
-            return posts
+            return await getAllPostsFromSource(source)
         },
         getPostScrapedSince: async (_, {time}) => {
-            let posts = await getAllPostsSinceScrapedDate(time);
-            return posts
+            return await getAllPostsSinceScrapedDate(time)
         },
         getPostPublishedOn: async (_, {time}) => {
-            let posts = await getAllPostsOnPublishedDate(time);
-            return posts
+            return await getAllPostsOnPublishedDate(time)
         },
         getPostFrom: async (_, {time}) => {
-            let posts = await getAllPostsSincePublishedDate(time);
-            return posts
+            return await getAllPostsSincePublishedDate(time)
         },
         getPostWithKeyword: async (_, {keyword}) => {
-            let posts = await getPostWithKeyword(keyword);
-            return posts
+            return await getPostWithKeyword(keyword)
         },
         getAllUsers: async (_ , __, { user }) => {
             if (!user) throw new Error('You must be authenticated & be an admin to access this');
             if (!user.role && user.role < 2) throw new Error('You must be an admin');    // These numbers might change
-
-            let users = await getUsers();
-            return users
+            return await getUsers();
         }
     },
 
     Metadata: {
-        __resolveType(metadata, context, info) {
+        __resolveType(metadata) {
             if (metadata.message) return 'TelegramMetadata';
             else if (metadata.post && metadata.post.additional_thumbnails) return 'InstagramMetadata';
             else if (metadata.post) return 'FacebookMetadata';
@@ -268,10 +265,7 @@ const resolvers = {
         },
         scraped_on: (incoming) => {
             return new Date(incoming.scraped_on).getTime() / 1000   // sec time instead of micro
-        },
-        // metadata: (incoming) => {
-        //     return JSON.stringify(incoming.metadata)
-        // }
+        }
     },
 
     Mutation: {
@@ -311,6 +305,6 @@ export function startGQLServer() {
     });
 
     server.listen().then(({ url }) => {
-        console.log(`🚀  Server ready at ${url}`);
+        console.log(`🚀 Server ready at ${url}`);
     });
 }
