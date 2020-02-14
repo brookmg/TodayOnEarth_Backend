@@ -1,7 +1,7 @@
 const { ApolloServer, gql } = require('apollo-server');
-import { getAllPosts, getPostById, getAllPostsFromProvider, 
-    getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate, 
-    getAllPostsSincePublishedDate, getPostWithKeyword} from '../db/post_table'
+import { getAllPosts, getPostById, getAllPostsFromProvider,
+    getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate,
+    getAllPostsSincePublishedDate, getPostWithKeyword, getPostsCustom } from '../db/post_table'
 
 const typeDef = gql`
 
@@ -33,6 +33,25 @@ const typeDef = gql`
         getPostPublishedOn(time: Int): [Post]
 
         getPostWithKeyword(keyword: String): [Post]
+        getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
+
+        getPostsWithANDConnector(
+            title: String,
+            body: String,
+            provider: String,
+            source_link: String, 
+            published_on: Int,
+            scraped_on: Int,
+        ) : [Post]
+
+        getPostsWithORConnector(
+            title: String,
+            body: String,
+            provider: String,
+            source_link: String, 
+            published_on: Int,
+            scraped_on: Int,
+        ) : [Post]
     }
 
     type CommunityInteraction {
@@ -42,6 +61,27 @@ const typeDef = gql`
         retweets: Int,
         comments: Int,
         video_views: Int
+    }
+    
+    input FilterQuery {
+        title: String,
+        body: String,
+        provider: String,
+        source: String,
+        keyword: String,
+        published_on: String,
+        scraped_on: String,
+        metadata: String,
+
+        _title: String,
+        _body: String,
+        _provider: String,
+        _source: String,
+        _keyword: String,
+        _published_on: String,
+        _scraped_on: String,
+
+        connector: String
     }
 
     type Owner {
@@ -144,8 +184,18 @@ const typeDef = gql`
 
 const resolvers = {
     Query: {
+        getPostCustomized: async (_ , { jsonQuery }) => {
+            let posts = getPostsCustom(jsonQuery);
+            return posts
+        },
+        getPostsWithANDConnector: async (_ , query) => {
+            
+        },
+        getPostsWithORConnector: async (_ , query) => {
+
+        },
         getPosts: async () => {
-            let posts = await getAllPosts()
+            let posts = await getAllPosts();
             return posts
         },
         getPost: async (_,{ id }) => {
@@ -153,27 +203,27 @@ const resolvers = {
             return posts
         },
         getPostFromProvider: async (_ , {provider}) => {
-            let posts = await getAllPostsFromProvider(provider)
+            let posts = await getAllPostsFromProvider(provider);
             return posts
         },
         getPostFromSource: async (_, {source}) => {
-            let posts = await getAllPostsFromSource(source)
+            let posts = await getAllPostsFromSource(source);
             return posts
         },
         getPostScrapedSince: async (_, {time}) => {
-            let posts = await getAllPostsSinceScrapedDate(time)
+            let posts = await getAllPostsSinceScrapedDate(time);
             return posts
         },
         getPostPublishedOn: async (_, {time}) => {
-            let posts = await getAllPostsOnPublishedDate(time)
+            let posts = await getAllPostsOnPublishedDate(time);
             return posts
         },
         getPostFrom: async (_, {time}) => {
-            let posts = await getAllPostsSincePublishedDate(time)
+            let posts = await getAllPostsSincePublishedDate(time);
             return posts
         },
         getPostWithKeyword: async (_, {keyword}) => {
-            let posts = await getPostWithKeyword(keyword)
+            let posts = await getPostWithKeyword(keyword);
             return posts
         }
     },
@@ -200,7 +250,7 @@ const resolvers = {
         // }
     },
 
-}
+};
 
 export function startGQLServer() {
     const server = new ApolloServer({ typeDefs: typeDef , resolvers });
