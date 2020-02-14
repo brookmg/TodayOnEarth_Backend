@@ -1,5 +1,5 @@
 const { ApolloServer, gql } = require('apollo-server');
-import { getAllPosts, getPostById, getAllPostsFromProvider, 
+import { getAllPosts, getPostById, getAllPostsFromProvider,
     getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate, 
     getAllPostsSincePublishedDate, getPostWithKeyword, getPostsCustom } from '../db/post_table'
 
@@ -174,7 +174,7 @@ const resolvers = {
 
         },
         getPosts: async () => {
-            let posts = await getAllPosts()
+            let posts = await getAllPosts();
             return posts
         },
         getPost: async (_,{ id }) => {
@@ -182,27 +182,27 @@ const resolvers = {
             return posts
         },
         getPostFromProvider: async (_ , {provider}) => {
-            let posts = await getAllPostsFromProvider(provider)
+            let posts = await getAllPostsFromProvider(provider);
             return posts
         },
         getPostFromSource: async (_, {source}) => {
-            let posts = await getAllPostsFromSource(source)
+            let posts = await getAllPostsFromSource(source);
             return posts
         },
         getPostScrapedSince: async (_, {time}) => {
-            let posts = await getAllPostsSinceScrapedDate(time)
+            let posts = await getAllPostsSinceScrapedDate(time);
             return posts
         },
         getPostPublishedOn: async (_, {time}) => {
-            let posts = await getAllPostsOnPublishedDate(time)
+            let posts = await getAllPostsOnPublishedDate(time);
             return posts
         },
         getPostFrom: async (_, {time}) => {
-            let posts = await getAllPostsSincePublishedDate(time)
+            let posts = await getAllPostsSincePublishedDate(time);
             return posts
         },
         getPostWithKeyword: async (_, {keyword}) => {
-            let posts = await getPostWithKeyword(keyword)
+            let posts = await getPostWithKeyword(keyword);
             return posts
         }
     },
@@ -229,7 +229,7 @@ const resolvers = {
         // }
     },
 
-}
+};
 
 export function startGQLServer() {
     const server = new ApolloServer({ typeDefs: typeDef , resolvers });
