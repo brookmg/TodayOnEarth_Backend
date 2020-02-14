@@ -33,7 +33,7 @@ const typeDef = gql`
         getPostPublishedOn(time: Int): [Post]
 
         getPostWithKeyword(keyword: String): [Post]
-        getPostCustomized(jsonQuery: String): [Post]
+        getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
 
         getPostsWithANDConnector(
             title: String,
@@ -61,6 +61,27 @@ const typeDef = gql`
         retweets: Int,
         comments: Int,
         video_views: Int
+    }
+    
+    input FilterQuery {
+        title: String,
+        body: String,
+        provider: String,
+        source: String,
+        keyword: String,
+        published_on: String,
+        scraped_on: String,
+        metadata: String,
+
+        _title: String,
+        _body: String,
+        _provider: String,
+        _source: String,
+        _keyword: String,
+        _published_on: String,
+        _scraped_on: String,
+
+        connector: String
     }
 
     type Owner {
@@ -164,7 +185,7 @@ const typeDef = gql`
 const resolvers = {
     Query: {
         getPostCustomized: async (_ , { jsonQuery }) => {
-            let posts = getPostsCustom(JSON.parse(jsonQuery));
+            let posts = getPostsCustom(jsonQuery);
             return posts
         },
         getPostsWithANDConnector: async (_ , query) => {
