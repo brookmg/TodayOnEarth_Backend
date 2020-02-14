@@ -1,7 +1,7 @@
 const { ApolloServer, gql } = require('apollo-server');
 import { getAllPosts, getPostById, getAllPostsFromProvider, 
     getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate, 
-    getAllPostsSincePublishedDate, getPostWithKeyword} from '../db/post_table'
+    getAllPostsSincePublishedDate, getPostWithKeyword, getPostsCustom } from '../db/post_table'
 
 const typeDef = gql`
 
@@ -33,6 +33,25 @@ const typeDef = gql`
         getPostPublishedOn(time: Int): [Post]
 
         getPostWithKeyword(keyword: String): [Post]
+        getPostCustomized(jsonQuery: String): [Post]
+
+        getPostsWithANDConnector(
+            title: String,
+            body: String,
+            provider: String,
+            source_link: String, 
+            published_on: Int,
+            scraped_on: Int,
+        ) : [Post]
+
+        getPostsWithORConnector(
+            title: String,
+            body: String,
+            provider: String,
+            source_link: String, 
+            published_on: Int,
+            scraped_on: Int,
+        ) : [Post]
     }
 
     type CommunityInteraction {
@@ -144,6 +163,16 @@ const typeDef = gql`
 
 const resolvers = {
     Query: {
+        getPostCustomized: async (_ , { jsonQuery }) => {
+            let posts = getPostsCustom(JSON.parse(jsonQuery));
+            return posts
+        },
+        getPostsWithANDConnector: async (_ , query) => {
+            
+        },
+        getPostsWithORConnector: async (_ , query) => {
+
+        },
         getPosts: async () => {
             let posts = await getAllPosts()
             return posts
