@@ -129,7 +129,7 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
         case 2: await returnable.push(['provider' , 'LIKE' , `%${processFrom[1]}%`]); break;
         case 3: await returnable.push(['source_link' , 'LIKE' , `%${processFrom[1]}%`]); break;
 
-        case 4: /* KEYWORD REQUIRES SOME CREATIVITY */  break;
+        case 4: await returnable.push(['keywords.keyword' , 'LIKE' , `%${processFrom[1]}%`]); break;
         case 5: await returnable.push(['published_on' , '>=' , new Date(`${processFrom[1]}`)]); break;
         case 6: await returnable.push(['scraped_on' , '>=' , new Date(`${processFrom[1]}`)]); break;
         case 7: await returnable.push(['metadata', '~*' , `${processFrom[1]}`]); break;
@@ -139,8 +139,9 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
         case 10: await returnable.push(['provider' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
         case 11: await returnable.push(['source_link' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
 
-        case 12: await returnable.push(['published_on' , '<' , new Date(`${processFrom[1]}`)]); break;
-        case 13: await returnable.push(['scraped_on' , '<' , new Date(`${processFrom[1]}`)]); break;
+        case 12: await returnable.push(['keywords.keyword' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
+        case 13: await returnable.push(['published_on' , '<' , new Date(`${processFrom[1]}`)]); break;
+        case 14: await returnable.push(['scraped_on' , '<' , new Date(`${processFrom[1]}`)]); break;
         default: await returnable.push(['' , '' , '']);
     }
 
@@ -181,10 +182,12 @@ export async function getPostsCustom(jsonQuery: QueryObject[]): Promise<Post[]> 
         if (prevConnector === 'AND' || prevConnector === '') {
             // we have an and connector so use `andWhere`
             let whereArgs = (await getWhereValues([indexOfProp , operationItem[props[0]]]))[0];
+            if (whereArgs[0].startsWith('keyword')) qBuilder.joinRelation('keywords');
             qBuilder.andWhere(whereArgs[0] , whereArgs[1] , whereArgs[2]);
         } else if (prevConnector === 'OR') {
             // we have an or connector so use `orWhere`
             let whereArgs = (await getWhereValues([indexOfProp , operationItem[props[0]]]))[0];
+            if (whereArgs[0].startsWith('keyword')) qBuilder.joinRelation('keywords');
             qBuilder.orWhere(whereArgs[0] , whereArgs[1] , whereArgs[2]);
         } else {
             throw new Error(`parse error: Connector value not identified`);
