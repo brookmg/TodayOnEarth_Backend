@@ -64,25 +64,6 @@ const typeDef = gql`
 
         getPostWithKeyword(keyword: String): [Post]
         getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
-
-        getPostsWithANDConnector(
-            title: String,
-            body: String,
-            provider: String,
-            source_link: String, 
-            published_on: Int,
-            scraped_on: Int,
-        ) : [Post]
-
-        getPostsWithORConnector(
-            title: String,
-            body: String,
-            provider: String,
-            source_link: String, 
-            published_on: Int,
-            scraped_on: Int,
-        ) : [Post]
-
         getAllUsers: [User]
     }
 
@@ -230,12 +211,6 @@ const resolvers = {
             let posts = getPostsCustom(jsonQuery);
             return posts
         },
-        getPostsWithANDConnector: async (_ , query) => {
-            
-        },
-        getPostsWithORConnector: async (_ , query) => {
-
-        },
         getPosts: async () => {
             let posts = await getAllPosts();
             return posts
@@ -269,10 +244,10 @@ const resolvers = {
             return posts
         },
         getAllUsers: async (_ , __, { user }) => {
-            if (!user) throw new Error('You must be authenticated & be an admin to access this')
-            if (!user.role && user.role < 2) throw new Error('You must be an admin')    // These numbers might change
+            if (!user) throw new Error('You must be authenticated & be an admin to access this');
+            if (!user.role && user.role < 2) throw new Error('You must be an admin');    // These numbers might change
 
-            let users = await getUsers()
+            let users = await getUsers();
             return users
         }
     },
@@ -301,24 +276,24 @@ const resolvers = {
 
     Mutation: {
         getUserWithId: async (_, { uid }, { user }) => {
-            console.log(user)
-            if (!user) throw new Error('You must be authenticated to access this')
+            console.log(user);
+            if (!user) throw new Error('You must be authenticated to access this');
             return getUser(uid)
         },
         makeUserAdmin: async (_, { uid }, { user }) => {
-            console.log(user)
-            if (!user) throw new Error('You must be authenticated to access this')
-            if (user.role < 4) throw new Error('You are not an admin')
+            console.log(user);
+            if (!user) throw new Error('You must be authenticated to access this');
+            if (user.role < 4) throw new Error('You are not an admin');
             return makeUserAdmin(uid)
         },
         signIn: async (_, { email, password }) => {
-            let token = await signInUser(email, password)
+            let token = await signInUser(email, password);
             return { token }
         },
         signUp: async (_, { new_user }) => {
             let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name, 
-                new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password)
-           return token ? true : false
+                new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password);
+           return !!token
         },
         
     },
