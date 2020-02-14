@@ -132,7 +132,7 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
         case 4: /* KEYWORD REQUIRES SOME CREATIVITY */  break;
         case 5: await returnable.push(['published_on' , '>=' , new Date(`${processFrom[1]}`)]); break;
         case 6: await returnable.push(['scraped_on' , '>=' , new Date(`${processFrom[1]}`)]); break;
-        case 7: await returnable.push(['metadata', 'LIKE' , `%${processFrom[1]}%`]); break;
+        case 7: await returnable.push(['metadata', '~*' , `${processFrom[1]}`]); break;
 
         case 8: await returnable.push(['title' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
         case 9: await returnable.push(['body' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
@@ -141,7 +141,7 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
 
         case 12: await returnable.push(['published_on' , '<' , new Date(`${processFrom[1]}`)]); break;
         case 13: await returnable.push(['scraped_on' , '<' , new Date(`${processFrom[1]}`)]); break;
-        default: await returnable.push(['WAIT' , 'WAIT' , 'WAIT']);
+        default: await returnable.push(['' , '' , '']);
     }
 
     return returnable;

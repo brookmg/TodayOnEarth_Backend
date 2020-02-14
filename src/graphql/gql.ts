@@ -1,6 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server');
 import { getAllPosts, getPostById, getAllPostsFromProvider,
-    getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate, 
+    getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate,
     getAllPostsSincePublishedDate, getPostWithKeyword, getPostsCustom } from '../db/post_table'
 
 const typeDef = gql`
