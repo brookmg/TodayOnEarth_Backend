@@ -38,6 +38,7 @@
     "nodemon": "^2.0.2",
     "objection": "^2.1.2",
     "passport": "^0.4.1",
+    "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "pg": "^7.18.1",
     "rimraf": "^3.0.1",
