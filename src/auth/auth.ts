@@ -21,6 +21,22 @@ authRouter.get('/google/callback' , Passport.authenticate('google', {
     }
 );
 
+authRouter.get('/facebook' , Passport.authenticate('facebook', {
+    authType: 'rerequest', accessType: 'offline', prompt: 'consent', scope: ['email' , 'public_profile']}));
+
+authRouter.get('/facebook/callback' , Passport.authenticate('facebook', {
+        successRedirect: '/auth/success',
+        failureRedirect: '/auth/failure'
+    }),
+    function(req, res) {
+        res.status(200).send({
+            auth: 'success',
+            provider: 'facebook',
+            message: 'You have logged in correctly'
+        })
+    }
+);
+
 authRouter.get('/success' , (req , res) => {
     res.status(200).send({
         auth: 'success',
