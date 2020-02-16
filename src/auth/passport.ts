@@ -5,9 +5,12 @@ import { Strategy as TwitterStrategy } from 'passport-twitter'
 import { Strategy as GithubStrategy } from 'passport-github2'
 import { isUsernameTaken } from '../db/user_table'
 
+const dotenv = require('dotenv');
+dotenv.config();
+
 Passport.use(new GoogleStrategy({
-        clientID: '00',   // 266033008053-06q(MORE).apps.googleusercontent.com
-        clientSecret: '00', // eEriCU9KEX(MORE)
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: "http://localhost:3400/auth/google/callback"
     }, (accessToken , refreshToken, profile, done) => {
         console.log(`${accessToken} -> access token`);
@@ -27,8 +30,8 @@ Passport.use(new GoogleStrategy({
 );
 
 Passport.use(new FacebookStrategy({
-        clientID: '192546__',   // 266033008053-06q(MORE).apps.googleusercontent.com
-        clientSecret: '4d23c218dc4917462__', // eEriCU9KEX(MORE)
+        clientID: process.env.FACEBOOK_CLIENT_ID,   // 266033008053-06q(MORE).apps.googleusercontent.com
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET, // eEriCU9KEX(MORE)
         callbackURL: "http://localhost:3400/auth/facebook/callback",
         graphAPIVersion: 'v6.0',
         enableProof: true
@@ -43,8 +46,8 @@ Passport.use(new FacebookStrategy({
 );
 
 Passport.use(new TwitterStrategy({
-        consumerKey: '2yvX9O66lTAiEgXmSK4tThozA',   // 266033008053-06q(MORE).apps.googleusercontent.com
-        consumerSecret: 'ZDvX2naOdBzUohKsH3MH29cHrGZVXt0nWeYEuYQgACfeMHUz4s', // eEriCU9KEX(MORE)
+        consumerKey: process.env.TWITTER_CONSUMER_ID,   // 266033008053-06q(MORE).apps.googleusercontent.com
+        consumerSecret: process.env.TWITTER_CONSUMER_SECRET, // eEriCU9KEX(MORE)
         callbackURL: "http://localhost:3400/auth/twitter/callback",
     }, (accessToken , refreshToken, profile, done) => {
         console.log(`${accessToken} -> access token`);
@@ -57,8 +60,8 @@ Passport.use(new TwitterStrategy({
 );
 
 Passport.use(new GithubStrategy({
-        clientID: '--',
-        clientSecret: '--',
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: "http://localhost:3400/auth/github/callback",
     }, (accessToken , refreshToken, profile, done) => {
         console.log(`${accessToken} -> access token`);
