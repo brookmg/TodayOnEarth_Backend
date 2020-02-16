@@ -11,6 +11,7 @@ app.use(cors());
 app.use(json());
 
 app.use(Router);
+app.use(require('express-session')({ secret: '0x3349590ac43', resave: true, saveUninitialized: true }));
 app.get('/' , (req, res) => { res.send({ message: 'Hello' }) });
 app.use('/auth' , authRouter);
 

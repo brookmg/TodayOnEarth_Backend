@@ -3,6 +3,7 @@ import Passport  from './passport'
 
 export const authRouter = Router();
 authRouter.use(Passport.initialize());
+authRouter.use(Passport.session());
 
 authRouter.get('/google' , Passport.authenticate('google', {
     authType: 'rerequest', accessType: 'offline', prompt: 'consent', includeGrantedScopes: true,
@@ -32,6 +33,21 @@ authRouter.get('/facebook/callback' , Passport.authenticate('facebook', {
         res.status(200).send({
             auth: 'success',
             provider: 'facebook',
+            message: 'You have logged in correctly'
+        })
+    }
+);
+
+authRouter.get('/twitter' , Passport.authenticate('twitter'));
+
+authRouter.get('/twitter/callback' , Passport.authenticate('twitter', {
+        successRedirect: '/auth/success',
+        failureRedirect: '/auth/failure'
+    }),
+    function(req, res) {
+        res.status(200).send({
+            auth: 'success',
+            provider: 'twitter',
             message: 'You have logged in correctly'
         })
     }

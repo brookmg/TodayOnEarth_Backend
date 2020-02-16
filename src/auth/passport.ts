@@ -1,11 +1,12 @@
 import Passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
+import { Strategy as TwitterStrategy } from 'passport-twitter'
 import { isUsernameTaken } from '../db/user_table'
 
 Passport.use(new GoogleStrategy({
-        clientID: '',   // 266033008053-06q(MORE).apps.googleusercontent.com
-        clientSecret: '', // eEriCU9KEX(MORE)
+        clientID: '00',   // 266033008053-06q(MORE).apps.googleusercontent.com
+        clientSecret: '00', // eEriCU9KEX(MORE)
         callbackURL: "http://localhost:3400/auth/google/callback"
     }, (accessToken , refreshToken, profile, done) => {
         console.log(`${accessToken} -> access token`);
@@ -36,6 +37,20 @@ Passport.use(new FacebookStrategy({
 
         // Store user's token in the db but with more security.
         done(false, {strategy: 'facebook' , accessToken , refreshToken , ...profile});
+
+    })
+);
+
+Passport.use(new TwitterStrategy({
+        consumerKey: '2yvX9O66lTAiEgXmSK4tThozA',   // 266033008053-06q(MORE).apps.googleusercontent.com
+        consumerSecret: 'ZDvX2naOdBzUohKsH3MH29cHrGZVXt0nWeYEuYQgACfeMHUz4s', // eEriCU9KEX(MORE)
+        callbackURL: "http://localhost:3400/auth/twitter/callback",
+    }, (accessToken , refreshToken, profile, done) => {
+        console.log(`${accessToken} -> access token`);
+        console.log(`${refreshToken} -> refresh token`);
+
+        // Store user's token in the db but with more security.
+        done(false, {strategy: 'twitter' , accessToken , refreshToken , ...profile});
 
     })
 );
