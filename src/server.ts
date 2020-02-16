@@ -5,18 +5,21 @@ const json = require('body-parser');
 const cors = require('cors');
 import { Router } from './queue/arena'
 
+const dotenv = require('dotenv');
+dotenv.config();
+
 const app = express();
 
 app.use(cors());
 app.use(json());
 
 app.use(Router);
-app.use(require('express-session')({ secret: '0x3349590ac43', resave: true, saveUninitialized: true }));
+app.use(require('express-session')({ secret: process.env.SESSION_SECRET, resave: true, saveUninitialized: true }));
 app.get('/' , (req, res) => { res.send({ message: 'Hello' }) });
 app.use('/auth' , authRouter);
 
 export function start() {
-    app.listen(3400, () => {
-        console.log(`We are live at http://localhost:3400/`)
+    app.listen(process.env.PORT, () => {
+        console.log(`We are live at ${process.env.HOST}:${process.env.PORT}/`)
     })
 }

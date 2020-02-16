@@ -11,7 +11,7 @@ dotenv.config();
 Passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:3400/auth/google/callback"
+        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/google/callback`
     }, (accessToken , refreshToken, profile, done) => {
         console.log(`${accessToken} -> access token`);
         console.log(`${refreshToken} -> refresh token`);
@@ -32,7 +32,7 @@ Passport.use(new GoogleStrategy({
 Passport.use(new FacebookStrategy({
         clientID: process.env.FACEBOOK_CLIENT_ID,   // 266033008053-06q(MORE).apps.googleusercontent.com
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET, // eEriCU9KEX(MORE)
-        callbackURL: "http://localhost:3400/auth/facebook/callback",
+        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/facebook/callback`,
         graphAPIVersion: 'v6.0',
         enableProof: true
     }, (accessToken , refreshToken, profile, done) => {
@@ -48,7 +48,7 @@ Passport.use(new FacebookStrategy({
 Passport.use(new TwitterStrategy({
         consumerKey: process.env.TWITTER_CONSUMER_ID,   // 266033008053-06q(MORE).apps.googleusercontent.com
         consumerSecret: process.env.TWITTER_CONSUMER_SECRET, // eEriCU9KEX(MORE)
-        callbackURL: "http://localhost:3400/auth/twitter/callback",
+        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/twitter/callback`,
     }, (accessToken , refreshToken, profile, done) => {
         console.log(`${accessToken} -> access token`);
         console.log(`${refreshToken} -> refresh token`);
@@ -62,7 +62,7 @@ Passport.use(new TwitterStrategy({
 Passport.use(new GithubStrategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: "http://localhost:3400/auth/github/callback",
+        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/github/callback`,
     }, (accessToken , refreshToken, profile, done) => {
         console.log(`${accessToken} -> access token`);
         console.log(`${refreshToken} -> refresh token`);
