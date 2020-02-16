@@ -53,6 +53,21 @@ authRouter.get('/twitter/callback' , Passport.authenticate('twitter', {
     }
 );
 
+authRouter.get('/github' , Passport.authenticate('github', { accessType: 'offline' }));
+
+authRouter.get('/github/callback' , Passport.authenticate('github', {
+        successRedirect: '/auth/success',
+        failureRedirect: '/auth/failure'
+    }),
+    function(req, res) {
+        res.status(200).send({
+            auth: 'success',
+            provider: 'github',
+            message: 'You have logged in correctly'
+        })
+    }
+);
+
 authRouter.get('/success' , (req , res) => {
     res.status(200).send({
         auth: 'success',

@@ -2,6 +2,7 @@ import Passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
 import { Strategy as TwitterStrategy } from 'passport-twitter'
+import { Strategy as GithubStrategy } from 'passport-github2'
 import { isUsernameTaken } from '../db/user_table'
 
 Passport.use(new GoogleStrategy({
@@ -54,6 +55,21 @@ Passport.use(new TwitterStrategy({
 
     })
 );
+
+Passport.use(new GithubStrategy({
+        clientID: '--',
+        clientSecret: '--',
+        callbackURL: "http://localhost:3400/auth/github/callback",
+    }, (accessToken , refreshToken, profile, done) => {
+        console.log(`${accessToken} -> access token`);
+        console.log(`${refreshToken} -> refresh token`);
+
+        // Store user's token in the db but with more security.
+        done(false, {strategy: 'github' , accessToken , refreshToken , ...profile});
+
+    })
+);
+
 
 Passport.serializeUser(function(user, done) {
     done(null, user);
