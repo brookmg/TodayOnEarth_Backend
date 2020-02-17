@@ -75,6 +75,8 @@ const typeDef = gql`
         getAllUsers: [User]
 
         getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
+        me: User
+        getUser: User   # The same as the above query but more explainatory naming
     }
 
     type CommunityInteraction {
@@ -255,6 +257,8 @@ const resolvers = {
             return getUser(uid)
         },
 
+        me: async ( _ , __ , { user }) => { return user },
+        getUser: async (_ , __ , { user }) => { return user }
     },
 
     Metadata: {
