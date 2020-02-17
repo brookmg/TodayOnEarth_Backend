@@ -73,6 +73,8 @@ const typeDef = gql`
         getPostWithKeyword(keyword: String): [Post]
         getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
         getAllUsers: [User]
+
+        getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
     }
 
     type CommunityInteraction {
@@ -203,8 +205,7 @@ const typeDef = gql`
 
     type Mutation {
         # Auth
-
-        getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
+        
         signIn(email: String!, password: String!) : Token
         signUp(new_user: IUser) : Boolean
         makeUserAdmin(uid: Int) : Boolean
@@ -246,7 +247,14 @@ const resolvers = {
             if (!user) throw new Error('You must be authenticated & be an admin to access this');
             if (!user.role && user.role < 2) throw new Error('You must be an admin');    // These numbers might change
             return await getUsers();
-        }
+        },
+        
+        getUserWithId: async (_, { uid }, { user }) => {
+            console.log(user);
+            if (!user) throw new Error('You must be authenticated to access this');
+            return getUser(uid)
+        },
+
     },
 
     Metadata: {
@@ -269,11 +277,7 @@ const resolvers = {
     },
 
     Mutation: {
-        getUserWithId: async (_, { uid }, { user }) => {
-            console.log(user);
-            if (!user) throw new Error('You must be authenticated to access this');
-            return getUser(uid)
-        },
+
         makeUserAdmin: async (_, { uid }, { user }) => {
             console.log(user);
             if (!user) throw new Error('You must be authenticated to access this');
