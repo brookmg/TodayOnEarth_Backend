@@ -71,6 +71,6 @@ test('facebook scrapper gives out the right post object' , async () => {
             source_link: expect.any(String),
             metadata: expect.any(Object),
             scraped_on: expect.any(Number),
-            published_on: expect.any(String),   // THIS SHOULD BE NUMBER! We are just making the tests pass
+            published_on: expect.any(Number),
         }))
 } , 10000)
