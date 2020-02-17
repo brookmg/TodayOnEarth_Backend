@@ -54,8 +54,8 @@ export async function createPostScheme() : Promise<any> {
         table.text('provider', 'longtext');
         table.text('source_link', 'mediumtext').unique();
 
-        table.date('published_on');
-        table.date('scraped_on');
+        table.dateTime('published_on');
+        table.dateTime('scraped_on');
 
         table.text('metadata', 'longtext');
     })
@@ -130,8 +130,8 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
         case 3: await returnable.push(['source_link' , 'LIKE' , `%${processFrom[1]}%`]); break;
 
         case 4: await returnable.push(['keywords.keyword' , 'LIKE' , `%${processFrom[1]}%`]); break;
-        case 5: await returnable.push(['published_on' , '>=' , new Date(`${processFrom[1]}`)]); break;
-        case 6: await returnable.push(['scraped_on' , '>=' , new Date(`${processFrom[1]}`)]); break;
+        case 5: await returnable.push(['published_on' , '>=' , new Date(Number(processFrom[1])).toUTCString()]); break;
+        case 6: await returnable.push(['scraped_on' , '>=' , new Date(Number(processFrom[1])).toUTCString()]); break;
         case 7: await returnable.push(['metadata', '~*' , `${processFrom[1]}`]); break;
 
         case 8: await returnable.push(['title' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
@@ -140,8 +140,8 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
         case 11: await returnable.push(['source_link' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
 
         case 12: await returnable.push(['keywords.keyword' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
-        case 13: await returnable.push(['published_on' , '<' , new Date(`${processFrom[1]}`)]); break;
-        case 14: await returnable.push(['scraped_on' , '<' , new Date(`${processFrom[1]}`)]); break;
+        case 13: await returnable.push(['published_on' , '<' , new Date(Number(processFrom[1])).toUTCString()]); break;
+        case 14: await returnable.push(['scraped_on' , '<' , new Date(Number(processFrom[1])).toUTCString()]); break;
         default: await returnable.push(['' , '' , '']);
     }
 
