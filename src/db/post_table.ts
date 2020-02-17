@@ -54,8 +54,8 @@ export async function createPostScheme() : Promise<any> {
         table.text('provider', 'longtext');
         table.text('source_link', 'mediumtext').unique();
 
-        table.date('published_on');
-        table.date('scraped_on');
+        table.dateTime('published_on');
+        table.dateTime('scraped_on');
 
         table.text('metadata', 'longtext');
     })
