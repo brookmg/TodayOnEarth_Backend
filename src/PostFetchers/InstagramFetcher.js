@@ -89,7 +89,7 @@ export default class InstagramFetcher extends PostFetcherBase {
                         provider: this.source,
                         source_link: postUrl,
 
-                        published_on: postTimestamp,
+                        published_on: Number(postTimestamp)*1000,
                         scraped_on: Date.now(),
 
                         metadata: {
@@ -135,6 +135,8 @@ export default class InstagramFetcher extends PostFetcherBase {
         if (this.from > 0) {
             posts = posts.filter(e => e.published_on > this.from)
         }
+
+        console.log(posts);
 
         return posts;
     }
