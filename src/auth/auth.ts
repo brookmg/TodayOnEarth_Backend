@@ -9,16 +9,22 @@ authRouter.get('/google' , Passport.authenticate('google', {
     authType: 'rerequest', accessType: 'offline', prompt: 'consent', includeGrantedScopes: true,
     scope: ['profile' , 'email' , 'openid']}));
 
-authRouter.get('/google/callback' , Passport.authenticate('google', {
-        successRedirect: '/auth/success',
-        failureRedirect: '/auth/failure'
-    }),
-    function(req, res) {
-        res.status(200).send({
-            auth: 'success',
-            provider: 'google',
-            message: 'You have logged in correctly'
-        })
+authRouter.get('/google/callback' , function (req, res) {
+        Passport.authenticate('google', (err, data, info) => {
+            if (err) {
+                res.status(401).send({
+                    auth: 'error',
+                    provider: 'google',
+                    message: `${err}`
+                })
+            } else {
+                res.status(200).send({
+                    auth: 'success',
+                    provider: 'google',
+                    data
+                })
+            }
+        })(req,res);
     }
 );
 
