@@ -155,9 +155,9 @@ Passport.use(new TwitterStrategy({
                 potential_user: {
                     first_name: given_name,
                     middle_name: undefined,
-                    last_name: family_name,
+                    last_name: family_name || '@twitter',
                     email: profile._json.email,
-                    username: await generateUsername(given_name, family_name),
+                    username: await generateUsername(given_name, family_name || `twitter`),
 
                     // this is used to add the access_token as a field in the token table.
                     // We need to insert the user's' uid to do this.
@@ -203,7 +203,7 @@ Passport.use(new GithubStrategy({
                     middle_name: undefined,
                     last_name: family_name || '.git',
                     email: profile._json.email,
-                    username: await generateUsername(given_name, family_name),
+                    username: await generateUsername(given_name, family_name || 'git'),
 
                     // this is used to add the access_token as a field in the token table.
                     // We need to insert the user's' uid to do this.
