@@ -23,18 +23,31 @@ authRouter.get('/google/callback' , Passport.authenticate('google', {
 );
 
 authRouter.get('/facebook' , Passport.authenticate('facebook', {
-    authType: 'rerequest', accessType: 'offline', prompt: 'consent', scope: ['email' , 'public_profile']}));
+    authType: 'rerequest', accessType: 'offline', prompt: 'consent', scope: ['email' , 'public_profile', 'user_age_range', 'user_gender']}));
 
-authRouter.get('/facebook/callback' , Passport.authenticate('facebook', {
-        successRedirect: '/auth/success',
-        failureRedirect: '/auth/failure'
-    }),
+authRouter.get('/facebook/callback' , function(req, res, next) {
+        Passport.authenticate('facebook', function (err, data, info) {
+            // error happened so redirect to /failure
+            res.locals._err = err;
+            res.locals._data = data;
+            res.locals._info = info;
+            next()
+        })(req, res, next)
+    },
     function(req, res) {
-        res.status(200).send({
-            auth: 'success',
-            provider: 'facebook',
-            message: 'You have logged in correctly'
-        })
+        if (res.locals._err) {
+            res.status(401).send({
+                auth: 'error',
+                provider: 'facebook',
+                message: `${res.locals._err}`
+            })
+        } else {
+            res.status(200).send({
+                auth: 'success',
+                provider: 'facebook',
+                data: res.locals._data
+            })
+        }
     }
 );
 

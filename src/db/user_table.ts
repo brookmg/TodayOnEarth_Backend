@@ -53,6 +53,20 @@ export async function isEmailUsed(email: string): Promise<boolean> {
     return count.length > 0
 }
 
+export async function getUsersByEmail(email: string): Promise<User[]> {
+    const users: User[] = await User.query().where('email' , email);
+    return users
+}
+
+export async function generateUsername(first_name: string, last_name: string): Promise<string> {
+    const mash = first_name.toLowerCase() + '.' + last_name.toLowerCase();
+    let addon = 1;
+    while (await isUsernameTaken(`${mash}.${addon}`)) {
+        addon++;
+    }
+    return `${mash}.${addon}`;
+}
+
 export async function verifyUser(token: string): Promise<User> {
     const verified = await verify(token, '0mE09M8N880CDhhJI$9808_369'); // shouldn't be hardcoded like this
     if (verified) {
