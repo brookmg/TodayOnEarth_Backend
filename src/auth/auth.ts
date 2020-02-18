@@ -2,6 +2,8 @@ import { Router } from "express";
 import Passport  from './passport'
 
 export const authRouter = Router();
+require('dotenv').config();
+
 authRouter.use(Passport.initialize());
 authRouter.use(Passport.session());
 
@@ -63,11 +65,11 @@ authRouter.get('/twitter/callback' ,
     function (req, res) {
         Passport.authenticate('twitter', (err, data, info) => {
             if (err) {
-                res.redirect(`/authError?error=${err}`);
+                res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/authError?error=${err}`);
             } else {
-                if (data.potential_user) res.redirect(`/signup?data=${encodeURI(JSON.stringify(data))}`);
-                else if (data.token) res.redirect(`/signin?data=${encodeURI(JSON.stringify(data))}`);
-                else {res.redirect(`/authError?error=${encodeURI('Unknown operation')}`)}
+                if (data.potential_user) res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/signup?data=${encodeURI(JSON.stringify(data))}`);
+                else if (data.token) res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/signin?data=${encodeURI(JSON.stringify(data))}`);
+                else {res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/authError?error=${encodeURI('Unknown operation')}`)}
             }
         })(req,res);
     }
