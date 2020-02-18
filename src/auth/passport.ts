@@ -7,10 +7,7 @@ import {
     generateToken,
     generateUsername,
     getUsersByEmail,
-    isEmailUsed,
-    isUsernameTaken,
-    signInUser,
-    signUpUser
+    isEmailUsed
 } from '../db/user_table'
 import {addTokenForUser} from "../db/token_table";
 const request = require('request');
@@ -140,12 +137,44 @@ Passport.use(new GithubStrategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/github/callback`,
-    }, (accessToken , refreshToken, profile, done) => {
-        console.log(`${accessToken} -> access token`);
-        console.log(`${refreshToken} -> refresh token`);
+    }, async (accessToken , refreshToken, profile, done) => {
 
-        // Store user's token in the db but with more security.
-        done(false, {strategy: 'github' , accessToken , refreshToken , ...profile});
+        if (!profile._json.name) {
+            done('data from github is incomplete. Missing name')
+        } else if (!profile._json.email) {
+            done('data from github is incomplete. Missing email')
+        }
+
+        let result = await isEmailUsed(profile._json.email);
+        if (result) {
+            // we have a user ... just modify the token table
+            let user = (await getUsersByEmail(profile._json.email))[0];
+            let tokenInsert = await addTokenForUser('github' , accessToken , user.uid);
+
+            done(null, {
+                token: await generateToken(user)
+            });
+        } else {
+            // new user, so send it to the front-end to get more info
+
+            let [ given_name , family_name ] = profile._json.name.split(' ');
+
+            done(null, {
+                potential_user: {
+                    first_name: given_name,
+                    middle_name: undefined,
+                    last_name: family_name || '.git',
+                    email: profile._json.email,
+                    username: await generateUsername(given_name, family_name),
+
+                    // this is used to add the access_token as a field in the token table.
+                    // We need to insert the user's' uid to do this.
+                    // ❗❗❗ Github doesn't provide Refresh tokens, token checks should be made ❗❗❗
+                    access_token: accessToken,
+                    provided_by: 'github'
+                }
+            });
+        }
 
     })
 );
