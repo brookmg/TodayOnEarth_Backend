@@ -22,9 +22,9 @@ Passport.use(new GoogleStrategy({
     }, async (accessToken , refreshToken, profile, done) => {
 
         if (!profile._json.given_name || !profile._json.family_name) {
-            throw new Error('data from google is incomplete. Missing name')
+            done('data from google is incomplete. Missing name')
         } else if (!profile._json.email) {
-            throw new Error('data from google is incomplete. Missing email')
+            done('data from google is incomplete. Missing email')
         }
 
         let result = await isEmailUsed(profile._json.email);
@@ -67,54 +67,57 @@ Passport.use(new FacebookStrategy({
         graphAPIVersion: 'v6.0',
         enableProof: true
     }, (accessToken , refreshToken, profile, done) => {
-
-        request(`https://graph.facebook.com/me?fields=email,first_name,middle_name,last_name,address,gender,age_range&access_token=${accessToken}`,
-            async function(err, data ,response) {
-                if (err) {
-                    throw new Error(`error on fb-graph: ${err}`)
-                } else {
-                    const profile = JSON.parse(response);
-
-                    // check if there is a missing data from the provider
-                    if (!profile.first_name || !profile.last_name) {
-                        throw new Error('data from facebook is incomplete. Missing name')
-                    } else if (!profile.email) {
-                        throw new Error('data from facebook is incomplete. Missing email')
-                    }
-
-                    let result = await isEmailUsed(profile.email);
-                    if (result) {
-                            // we have a user ... just modify the token table
-                        let user = (await getUsersByEmail(profile.email))[0];
-                        let tokenInsert = await addTokenForUser('facebook' , accessToken , user.uid);
-
-                        done(null, {
-                            token: await generateToken(user)
-                        });
+        try {
+            request(`https://graph.facebook.com/me?fields=email,first_name,middle_name,last_name,address,gender,age_range&access_token=${accessToken}`,
+                async function (err, data, response) {
+                    if (err) {
+                        done(`error on fb-graph: ${err}`)
                     } else {
-                        // new user, so send it to the front-end to get more info
+                        const profile = JSON.parse(response);
 
-                        done(null, {
-                            potential_user: {
-                                first_name: profile.first_name,
-                                middle_name: profile.middle_name,
-                                last_name: profile.last_name,
-                                email: profile.email,
-                                username: await generateUsername(profile.first_name, profile.last_name),
-                                age_group: profile.age_group,
+                        // check if there is a missing data from the provider
+                        if (!profile.first_name || !profile.last_name) {
+                            done('data from facebook is incomplete. Missing name')
+                        } else if (!profile.email) {
+                            done('data from facebook is incomplete. Missing email')
+                        }
 
-                                // this is used to add the access_token as a field in the token table.
-                                // We need to insert the user's' uid to do this.
-                                // ❗❗❗ Facebook doesn't provide Refresh tokens, so we need check the availability
-                                // of the access_token ❗❗❗
-                                access_token: accessToken,
-                                provided_by: 'facebook'
-                            }
-                        });
+                        let result = await isEmailUsed(profile.email);
+                        if (result) {
+                            // we have a user ... just modify the token table
+                            let user = (await getUsersByEmail(profile.email))[0];
+                            let tokenInsert = await addTokenForUser('facebook', accessToken, user.uid);
+
+                            done(null, {
+                                token: await generateToken(user)
+                            });
+                        } else {
+                            // new user, so send it to the front-end to get more info
+
+                            done(null, {
+                                potential_user: {
+                                    first_name: profile.first_name,
+                                    middle_name: profile.middle_name,
+                                    last_name: profile.last_name,
+                                    email: profile.email,
+                                    username: await generateUsername(profile.first_name, profile.last_name),
+                                    age_group: profile.age_group,
+
+                                    // this is used to add the access_token as a field in the token table.
+                                    // We need to insert the user's' uid to do this.
+                                    // ❗❗❗ Facebook doesn't provide Refresh tokens, so we need check the availability
+                                    // of the access_token ❗❗❗
+                                    access_token: accessToken,
+                                    provided_by: 'facebook'
+                                }
+                            });
+                        }
+
                     }
-
-                }
-        });
+                });
+        } catch (exception) {
+            done(`ex: ${exception}`)
+        }
 
     })
 );
