@@ -70,7 +70,7 @@ authRouter.get('/twitter/callback' ,
                 if (data.potential_user) res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/signup?data=${encodeURI(JSON.stringify(data))}`);
                 else if (data.token) {
                     let time = new Date().getTime() + (7 * 24 * 3600 * 1000);   // one week
-                    res.cookie('token', data.token , {expires: new Date(time).toUTCString()});
+                    res.cookie('token', data.token , {expires: new Date(time)});
                     res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/signin`);
                 }
                 else {res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/auth_error?error=${encodeURI('Unknown operation')}`)}
