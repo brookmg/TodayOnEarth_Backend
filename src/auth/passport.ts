@@ -123,13 +123,48 @@ Passport.use(new TwitterStrategy({
         consumerKey: process.env.TWITTER_CONSUMER_ID,   // 266033008053-06q(MORE).apps.googleusercontent.com
         consumerSecret: process.env.TWITTER_CONSUMER_SECRET, // eEriCU9KEX(MORE)
         callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/twitter/callback`,
-    }, (accessToken , refreshToken, profile, done) => {
-        console.log(`${accessToken} -> access token`);
-        console.log(`${refreshToken} -> refresh token`);
+        includeEmail: true,
+        includeStatus: false,
+        includeEntities: false
+    }, async (accessToken , refreshToken, profile, done) => {
 
-        // Store user's token in the db but with more security.
-        done(false, {strategy: 'twitter' , accessToken , refreshToken , ...profile});
+        if (!profile._json.name) {
+            done('data from Twitter is incomplete. Missing name')
+        } else if (!profile._json.email) {
+            done('data from Twitter is incomplete. Missing email')
+        }
 
+        let result = await isEmailUsed(profile._json.email);
+        if (result) {
+            // we have a user ... just modify the token table
+            let user = (await getUsersByEmail(profile._json.email))[0];
+            let tokenInsert = await addTokenForUser('twitter' , accessToken , user.uid);
+
+            done(null, {
+                token: await generateToken(user)
+            });
+        } else {
+            // new user, so send it to the front-end to get more info
+
+            let [ given_name , family_name ] = profile._json.name.split(' ');
+
+            done(null, {
+                potential_user: {
+                    first_name: given_name,
+                    middle_name: undefined,
+                    last_name: family_name,
+                    email: profile._json.email,
+                    username: await generateUsername(given_name, family_name),
+
+                    // this is used to add the access_token as a field in the token table.
+                    // We need to insert the user's' uid to do this.
+                    // ❗❗❗ Twitter does provide Refresh tokens, resend is required ❗❗❗
+                    access_token: accessToken,
+                    refresh_token: refreshToken,
+                    provided_by: 'twitter'
+                }
+            });
+        }
     })
 );
 
