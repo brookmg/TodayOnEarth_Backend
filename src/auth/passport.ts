@@ -158,12 +158,6 @@ Passport.use(new TwitterStrategy({
                     last_name: family_name || '@twitter',
                     email: profile._json.email,
                     username: await generateUsername(given_name, family_name || `twitter`),
-
-                    // this is used to add the access_token as a field in the token table.
-                    // We need to insert the user's' uid to do this.
-                    // ❗❗❗ Twitter does provide Refresh tokens, resend is required ❗❗❗
-                    access_token: accessToken,
-                    refresh_token: refreshToken,
                     provided_by: 'twitter'
                 }
             });

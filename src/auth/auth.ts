@@ -63,17 +63,11 @@ authRouter.get('/twitter/callback' ,
     function (req, res) {
         Passport.authenticate('twitter', (err, data, info) => {
             if (err) {
-                res.status(401).send({
-                    auth: 'error',
-                    provider: 'twitter',
-                    message: `${err}`
-                })
+                res.redirect(`/authError?error=${err}`);
             } else {
-                res.status(200).send({
-                    auth: 'success',
-                    provider: 'twitter',
-                    data
-                })
+                if (data.potential_user) res.redirect(`/signup?data=${encodeURI(JSON.stringify(data))}`);
+                else if (data.token) res.redirect(`/signin?data=${encodeURI(JSON.stringify(data))}`);
+                else {res.redirect(`/authError?error=${encodeURI('Unknown operation')}`)}
             }
         })(req,res);
     }
