@@ -32,28 +32,34 @@ export async function insertUser(userData: User): Promise<User> {
 }
 
 export async function getUser(uid: Number): Promise<User> {
+    await createUserScheme();
     return User.query().findById(uid)
 }
 
 export async function getUsers(): Promise<User[]> {
+    await createUserScheme();
     return User.query();
 }
 
 export async function makeUserAdmin(uid: number): Promise<boolean> {
+    await createUserScheme();
     return await User.query().patch({'role': 4}).where('uid', uid) === 1
 }
 
 export async function isUsernameTaken(username: string): Promise<boolean> {
+    await createUserScheme();
     const count: User[] = await User.query().where('username' , username);
     return count.length > 0;
 }
 
 export async function isEmailUsed(email: string): Promise<boolean> {
+    await createUserScheme();
     const count: User[] = await User.query().where('email' , email);
     return count.length > 0
 }
 
 export async function getUsersByEmail(email: string): Promise<User[]> {
+    await createUserScheme();
     const users: User[] = await User.query().where('email' , email);
     return users
 }
@@ -80,15 +86,18 @@ export async function generateToken(user: User): Promise<string> {
 }
 
 export async function deleteUser(id: number): Promise<number> {
+    await createUserScheme();
     return User.query().deleteById(id);
 }
 
 export async function updateUserById(id: number , update: User): Promise<User> {
+    await createUserScheme();
     return User.query()
         .updateAndFetchById(id, update);
 }
 
 export async function signInUser(email: string, password: string): Promise<string> {
+    await createUserScheme();
     const user = await User.query().first().where({ email });
     if (!user) throw new Error('user doesn\'t exist')
     const correct = await compare(password , user.password_hash);
