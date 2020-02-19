@@ -336,22 +336,6 @@ export const server = new ApolloServer({ typeDefs: typeDef , resolvers,
     context: async ({ req, res }) => {
         return {user: new UserHandler(req, res)}
     },
-    cors: {
-        credentials: true,
-        origin: (origin, callback) => {
-            console.log(origin);
-            const whitelist = [
-                `${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}`,
-                `${process.env.HOST}:${process.env.PORT}`
-            ];
-
-            if (whitelist.indexOf(origin) !== -1) {
-                callback(null, true)
-            } else {
-                callback(new Error("Not allowed by CORS"))
-            }
-        }
-    },
     playground: {
         settings: {
             // include cookies in the requests from the GraphQL playground
