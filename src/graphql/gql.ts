@@ -209,7 +209,7 @@ const typeDef = gql`
         # Auth
         
         signIn(email: String!, password: String!) : Token
-        signUp(new_user: IUser) : Boolean
+        signUp(new_user: IUser) : Token
         makeUserAdmin(uid: Int) : Boolean
 
     } 
@@ -295,7 +295,7 @@ const resolvers = {
         signUp: async (_, { new_user }) => {
             let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name, 
                 new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password);
-           return !!token
+            return { token }
         },
         
     },
