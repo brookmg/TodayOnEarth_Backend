@@ -152,7 +152,7 @@ export async function getPostsCustom(jsonQuery: QueryObject[]): Promise<Post[]> 
     if (jsonQuery.length === 0) return getAllPosts();  // if the query was []
     let qBuilder = Post.query().withGraphFetched({
         keywords: true
-    }, {joinOperation: 'innerJoin'});
+    }, {joinOperation: 'innerJoin'}).distinct('post.*');
 
     await forEach(jsonQuery, async (operationItem: QueryObject) => {
 
@@ -182,12 +182,12 @@ export async function getPostsCustom(jsonQuery: QueryObject[]): Promise<Post[]> 
         if (prevConnector === 'AND' || prevConnector === '') {
             // we have an and connector so use `andWhere`
             let whereArgs = (await getWhereValues([indexOfProp , operationItem[props[0]]]))[0];
-            if (whereArgs[0].startsWith('keyword')) qBuilder.joinRelation('keywords');
+            if (whereArgs[0].startsWith('keyword')) qBuilder.joinRelated('keywords');
             qBuilder.andWhere(whereArgs[0] , whereArgs[1] , whereArgs[2]);
         } else if (prevConnector === 'OR') {
             // we have an or connector so use `orWhere`
             let whereArgs = (await getWhereValues([indexOfProp , operationItem[props[0]]]))[0];
-            if (whereArgs[0].startsWith('keyword')) qBuilder.joinRelation('keywords');
+            if (whereArgs[0].startsWith('keyword')) qBuilder.joinRelated('keywords');
             qBuilder.orWhere(whereArgs[0] , whereArgs[1] , whereArgs[2]);
         } else {
             throw new Error(`parse error: Connector value not identified`);
