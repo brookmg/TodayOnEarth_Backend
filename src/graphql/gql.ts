@@ -1,7 +1,19 @@
-const { ApolloServer, gql } = require('apollo-server');
-import { getAllPosts, getPostById, getAllPostsFromProvider,
-    getAllPostsFromSource, getAllPostsSinceScrapedDate, getAllPostsOnPublishedDate,
-    getAllPostsSincePublishedDate, getPostWithKeyword, getPostsCustom } from '../db/post_table'
+import {User} from "../model/user";
+
+const { ApolloServer, gql } = require('apollo-server-express');
+import {
+    getAllPosts,
+    getAllPostsFromProvider,
+    getAllPostsFromSource,
+    getAllPostsOnPublishedDate,
+    getAllPostsSincePublishedDate,
+    getAllPostsSinceScrapedDate,
+    getPostById,
+    getPostsCustom,
+    getPostWithKeyword
+} from '../db/post_table'
+
+import {generateToken, getUser, getUsers, makeUserAdmin, signInUser, signUpUser, verifyUser} from '../db/user_table';
 
 const typeDef = gql`
 
@@ -15,6 +27,34 @@ const typeDef = gql`
         scraped_on: Int,
         metadata: Metadata,
         keywords: [Keyword]
+    }
+
+    type User {
+        uid: Int!,
+        first_name: String!,
+        middle_name: String,
+        last_name: String!,
+        email: String!,
+        username: String!,
+        phone_number: String,
+        country: String,
+        last_location: String
+    }
+
+    input IUser {
+        first_name: String!,
+        middle_name: String,
+        last_name: String!,
+        email: String!,
+        username: String!,
+        phone_number: String,
+        country: String,
+        last_location: String,
+        password: String!
+    }
+
+    type Token {
+        token: String
     }
 
     type Keyword {
@@ -34,24 +74,11 @@ const typeDef = gql`
 
         getPostWithKeyword(keyword: String): [Post]
         getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
+        getAllUsers: [User]
 
-        getPostsWithANDConnector(
-            title: String,
-            body: String,
-            provider: String,
-            source_link: String, 
-            published_on: Int,
-            scraped_on: Int,
-        ) : [Post]
-
-        getPostsWithORConnector(
-            title: String,
-            body: String,
-            provider: String,
-            source_link: String, 
-            published_on: Int,
-            scraped_on: Int,
-        ) : [Post]
+        getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
+        me: User
+        getUser: User   # The same as the above query but more explainatory naming
     }
 
     type CommunityInteraction {
@@ -180,56 +207,67 @@ const typeDef = gql`
         thumbnail_image: String
     }
 
+    type Mutation {
+        # Auth
+        
+        signIn(email: String!, password: String!) : Token
+        signUp(new_user: IUser) : Token
+        makeUserAdmin(uid: Int) : Boolean
+        signOut: Boolean
+
+    } 
+
 `;
 
 const resolvers = {
     Query: {
         getPostCustomized: async (_ , { jsonQuery }) => {
-            let posts = getPostsCustom(jsonQuery);
-            return posts
-        },
-        getPostsWithANDConnector: async (_ , query) => {
-            
-        },
-        getPostsWithORConnector: async (_ , query) => {
-
+            return await getPostsCustom(jsonQuery)
         },
         getPosts: async () => {
-            let posts = await getAllPosts();
-            return posts
+            return await getAllPosts()
         },
         getPost: async (_,{ id }) => {
-            let posts = await getPostById(id);
-            return posts
+            return await getPostById(id)
         },
         getPostFromProvider: async (_ , {provider}) => {
-            let posts = await getAllPostsFromProvider(provider);
-            return posts
+            return await getAllPostsFromProvider(provider)
         },
         getPostFromSource: async (_, {source}) => {
-            let posts = await getAllPostsFromSource(source);
-            return posts
+            return await getAllPostsFromSource(source)
         },
         getPostScrapedSince: async (_, {time}) => {
-            let posts = await getAllPostsSinceScrapedDate(time);
-            return posts
+            return await getAllPostsSinceScrapedDate(time)
         },
         getPostPublishedOn: async (_, {time}) => {
-            let posts = await getAllPostsOnPublishedDate(time);
-            return posts
+            return await getAllPostsOnPublishedDate(time)
         },
         getPostFrom: async (_, {time}) => {
-            let posts = await getAllPostsSincePublishedDate(time);
-            return posts
+            return await getAllPostsSincePublishedDate(time)
         },
         getPostWithKeyword: async (_, {keyword}) => {
-            let posts = await getPostWithKeyword(keyword);
-            return posts
-        }
+            return await getPostWithKeyword(keyword)
+        },
+        getAllUsers: async (_ , __, { user }) => {
+            let userObject = (await user.getUser());
+            if (!userObject) throw new Error('You must be authenticated & be an admin to access this');
+            if (!userObject.role && userObject.role < 2) throw new Error('You must be an admin');    // These numbers might change
+            return await getUsers();
+        },
+        
+        getUserWithId: async (_, { uid }, { user }) => {
+            if (!await user.getUser()) throw new Error('You must be authenticated to access this');
+            let returnableUser = await getUser(uid);
+            returnableUser.password_hash = undefined;
+            return returnableUser;
+        },
+
+        me: async ( _ , __ , { user }) => { return user.getUser() },
+        getUser: async (_ , __ , { user }) => { return user.getUser() }
     },
 
     Metadata: {
-        __resolveType(metadata, context, info) {
+        __resolveType(metadata) {
             if (metadata.message) return 'TelegramMetadata';
             else if (metadata.post && metadata.post.additional_thumbnails) return 'InstagramMetadata';
             else if (metadata.post) return 'FacebookMetadata';
@@ -244,17 +282,75 @@ const resolvers = {
         },
         scraped_on: (incoming) => {
             return new Date(incoming.scraped_on).getTime() / 1000   // sec time instead of micro
+        }
+    },
+
+    Mutation: {
+
+        makeUserAdmin: async (_, { uid }, { user }) => {
+            console.log(user);
+            if (!user) throw new Error('You must be authenticated to access this');
+            if (user.role < 4) throw new Error('You are not an admin');
+            return makeUserAdmin(uid)
         },
-        // metadata: (incoming) => {
-        //     return JSON.stringify(incoming.metadata)
-        // }
+        signIn: async (_, { email, password }, { user }) => {
+            let token = await signInUser(email, password);
+            await user.signInUser(token);
+            return { token }
+        },
+        signUp: async (_, { new_user }, {user}) => {
+            let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name, 
+                new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password);
+            const generatedToken = await generateToken(token)
+            await user.signInUser(generatedToken);
+            return { token:  generatedToken}
+        },
+
+        signOut: async (_, __, {user}) => {
+            return !await user.signOutUser();
+        }
+        
     },
 
 };
 
-export function startGQLServer() {
-    const server = new ApolloServer({ typeDefs: typeDef , resolvers });
-    server.listen().then(({ url }) => {
-        console.log(`🚀  Server ready at ${url}`);
-    });
+export class UserHandler {
+    req;
+    res;
+
+    constructor(req, res) {
+        this.req = req;
+        this.res = res;
+    }
+
+    async signOutUser() {
+       await this.res.clearCookie('userId');
+    }
+
+    async signInUser(token) {
+        let time = new Date().getTime() + (process.env.USER_SESSION_EXPIRES_AFTER);   // one week
+        const cookieOptions = { httpOnly: false, expires: new Date(time) };
+        this.res.cookie('userId', token, cookieOptions);
+    }
+
+    async getUser() {
+        let token = this.req.headers.authorization;
+
+        if (!token && this.req.cookies) token = this.req.cookies.userId || '';
+
+        if (token) return await verifyUser(token);
+        else return null
+    }
 }
+
+export const server = new ApolloServer({ typeDefs: typeDef , resolvers,
+    context: async ({ req, res }) => {
+        return {user: new UserHandler(req, res)}
+    },
+    playground: {
+        settings: {
+            // include cookies in the requests from the GraphQL playground
+            'request.credentials': 'include',
+        },
+    },
+});
