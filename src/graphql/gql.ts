@@ -1,4 +1,6 @@
-const { ApolloServer, gql } = require('apollo-server');
+import {User} from "../model/user";
+
+const { ApolloServer, gql } = require('apollo-server-express');
 import {
     getAllPosts,
     getAllPostsFromProvider,
@@ -246,19 +248,21 @@ const resolvers = {
             return await getPostWithKeyword(keyword)
         },
         getAllUsers: async (_ , __, { user }) => {
-            if (!user) throw new Error('You must be authenticated & be an admin to access this');
-            if (!user.role && user.role < 2) throw new Error('You must be an admin');    // These numbers might change
+            let userObject = (await user.getUser());
+            if (!userObject) throw new Error('You must be authenticated & be an admin to access this');
+            if (!userObject.role && userObject.role < 2) throw new Error('You must be an admin');    // These numbers might change
             return await getUsers();
         },
         
         getUserWithId: async (_, { uid }, { user }) => {
-            console.log(user);
-            if (!user) throw new Error('You must be authenticated to access this');
-            return getUser(uid)
+            if (!await user.getUser()) throw new Error('You must be authenticated to access this');
+            let returnableUser = await getUser(uid);
+            returnableUser.password_hash = undefined;
+            return returnableUser;
         },
 
-        me: async ( _ , __ , { user }) => { return user },
-        getUser: async (_ , __ , { user }) => { return user }
+        me: async ( _ , __ , { user }) => { return user.getUser() },
+        getUser: async (_ , __ , { user }) => { return user.getUser() }
     },
 
     Metadata: {
@@ -288,13 +292,15 @@ const resolvers = {
             if (user.role < 4) throw new Error('You are not an admin');
             return makeUserAdmin(uid)
         },
-        signIn: async (_, { email, password }) => {
+        signIn: async (_, { email, password }, { user }) => {
             let token = await signInUser(email, password);
+            await user.signInUser(token);
             return { token }
         },
-        signUp: async (_, { new_user }) => {
+        signUp: async (_, { new_user }, {user}) => {
             let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name, 
                 new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password);
+            await user.signInUser(token);
             return { token }
         },
         
@@ -302,17 +308,54 @@ const resolvers = {
 
 };
 
-export function startGQLServer() {
-    const server = new ApolloServer({ typeDefs: typeDef , resolvers, context: async ({ req }) => {
-            const token = req.headers.authorization || '';
-            if (token) {
-                const user = await verifyUser(token);
-                return { user };
-            } else return { user: null }
-        }
-    });
+export class UserHandler {
+    req;
+    res;
 
-    server.listen().then(({ url }) => {
-        console.log(`🚀 Server ready at ${url}`);
-    });
+    constructor(req, res) {
+        this.req = req;
+        this.res = res;
+    }
+
+    async signInUser(token) {
+        const cookieOptions = { httpOnly: true };
+        this.res.cookie('userId', token, cookieOptions);
+    }
+
+    async getUser() {
+        let token = this.req.headers.authorization;
+
+        if (!token && this.req.cookies) token = this.req.cookies.userId || '';
+
+        if (token) return await verifyUser(token);
+        else return null
+    }
 }
+
+export const server = new ApolloServer({ typeDefs: typeDef , resolvers,
+    context: async ({ req, res }) => {
+        return {user: new UserHandler(req, res)}
+    },
+    cors: {
+        credentials: true,
+        origin: (origin, callback) => {
+            console.log(origin);
+            const whitelist = [
+                `${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}`,
+                `${process.env.HOST}:${process.env.PORT}`
+            ];
+
+            if (whitelist.indexOf(origin) !== -1) {
+                callback(null, true)
+            } else {
+                callback(new Error("Not allowed by CORS"))
+            }
+        }
+    },
+    playground: {
+        settings: {
+            // include cookies in the requests from the GraphQL playground
+            'request.credentials': 'include',
+        },
+    },
+});
