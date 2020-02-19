@@ -13,7 +13,7 @@ import {
     getPostWithKeyword
 } from '../db/post_table'
 
-import {getUser, getUsers, makeUserAdmin, signInUser, signUpUser, verifyUser} from '../db/user_table';
+import {generateToken, getUser, getUsers, makeUserAdmin, signInUser, signUpUser, verifyUser} from '../db/user_table';
 
 const typeDef = gql`
 
@@ -301,7 +301,7 @@ const resolvers = {
             let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name, 
                 new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password);
             await user.signInUser(token);
-            return { token }
+            return { token: await generateToken(token) }
         },
         
     },
