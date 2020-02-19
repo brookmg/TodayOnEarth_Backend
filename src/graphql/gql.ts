@@ -213,6 +213,7 @@ const typeDef = gql`
         signIn(email: String!, password: String!) : Token
         signUp(new_user: IUser) : Token
         makeUserAdmin(uid: Int) : Boolean
+        signOut: Boolean
 
     } 
 
@@ -303,6 +304,10 @@ const resolvers = {
             await user.signInUser(token);
             return { token: await generateToken(token) }
         },
+
+        signOut: async (_, __, {user}) => {
+            return !await user.signOutUser();
+        }
         
     },
 
@@ -317,8 +322,13 @@ export class UserHandler {
         this.res = res;
     }
 
+    async signOutUser() {
+       await this.res.clearCookie('userId');
+    }
+
     async signInUser(token) {
-        const cookieOptions = { httpOnly: true };
+        let time = new Date().getTime() + (process.env.USER_SESSION_EXPIRES_AFTER);   // one week
+        const cookieOptions = { httpOnly: false, expires: new Date(time) };
         this.res.cookie('userId', token, cookieOptions);
     }
 
