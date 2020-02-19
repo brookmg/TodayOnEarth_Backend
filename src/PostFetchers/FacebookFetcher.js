@@ -91,7 +91,7 @@ export default class FacebookFetcher extends PostFetcherBase {
                 provider: this.source,
                 source_link: url + postId,
 
-                published_on: postTimestamp,
+                published_on: Number(postTimestamp)*1000,
                 scraped_on: Date.now(),
 
                 keywords: postKeywords,
@@ -116,6 +116,8 @@ export default class FacebookFetcher extends PostFetcherBase {
         if (this.from > 0) {
             posts = posts.filter(e => e.published_on > this.from)
         }
+
+        console.log(posts);
 
         return posts;
     }
