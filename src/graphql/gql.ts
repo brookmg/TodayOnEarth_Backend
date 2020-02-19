@@ -301,8 +301,9 @@ const resolvers = {
         signUp: async (_, { new_user }, {user}) => {
             let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name, 
                 new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password);
-            await user.signInUser(token);
-            return { token: await generateToken(token) }
+            const generatedToken = await generateToken(token)
+            await user.signInUser(generatedToken);
+            return { token:  generatedToken}
         },
 
         signOut: async (_, __, {user}) => {
