@@ -69,7 +69,7 @@ export async function insertPost(postData) : Promise<Post> {
 export async function getAllPostsGraphed() : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).distinct()
+    }).distinct([`postid`])
 }
 
 export async function deletePost(postid: number) : Promise<number> {
@@ -91,31 +91,31 @@ export async function getPostWithKeyword(keyword: String) : Promise<Post[]> {
 export async function getPostById(postid: number) : Promise<Post> {
     return Post.query().findById(postid).withGraphFetched({
         keywords: true
-    }).distinct();
+    }).distinct([`postid`]);
 }
 
 export async function getAllPostsFromProvider(provider: string) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('provider' , provider).distinct();
+    }).where('provider' , provider).distinct([`postid`]);
 }
 
 export async function getAllPostsFromSource(source: string) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('source_link' , 'like' ,  `%${source}%`).distinct();
+    }).where('source_link' , 'like' ,  `%${source}%`).distinct([`postid`]);
 }
 
 export async function getAllPostsWithTitle(title: string) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('title' , 'like' ,  `%${title}%`).distinct();
+    }).where('title' , 'like' ,  `%${title}%`).distinct([`postid`]);
 }
 
 export async function getAllPostsWithBody(body: string) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('body' , 'like' ,  `%${body}%`).distinct();
+    }).where('body' , 'like' ,  `%${body}%`).distinct([`postid`]);
 }
 
 async function getWhereValues(processFrom: string[]) : Promise<string[]> {
@@ -152,7 +152,7 @@ export async function getPostsCustom(jsonQuery: QueryObject[]): Promise<Post[]> 
     if (jsonQuery.length === 0) return getAllPosts();  // if the query was []
     let qBuilder = Post.query().withGraphFetched({
         keywords: true
-    }).distinct();
+    }, {joinOperation: 'innerJoin'});
 
     await forEach(jsonQuery, async (operationItem: QueryObject) => {
 
@@ -201,37 +201,37 @@ export async function getPostsCustom(jsonQuery: QueryObject[]): Promise<Post[]> 
 export async function getAllPostsBeforeScrapedDate(time: number) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('scraped_on' , '<' , new Date(time)).distinct();
+    }).where('scraped_on' , '<' , new Date(time)).distinct([`postid`]);
 }
 
 export async function getAllPostsSinceScrapedDate(time: number) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('scraped_on' , '>=' , new Date(time)).distinct();
+    }).where('scraped_on' , '>=' , new Date(time)).distinct([`postid`]);
 }
 
 export async function getAllPostsOnScrapedDate(time: number) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('scraped_on' , '=' , new Date(time)).distinct();
+    }).where('scraped_on' , '=' , new Date(time)).distinct([`postid`]);
 }
 
 export async function getAllPostsBeforePublishedDate(time: number) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('published_on' , '<' , new Date(time)).distinct();
+    }).where('published_on' , '<' , new Date(time)).distinct([`postid`]);
 }
 
 export async function getAllPostsSincePublishedDate(time: number) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('published_on' , '>=' , new Date(time)).distinct();
+    }).where('published_on' , '>=' , new Date(time)).distinct([`postid`]);
 }
 
 export async function getAllPostsOnPublishedDate(time: number) : Promise<Post[]> {
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('published_on' , '=' , new Date(time)).distinct();
+    }).where('published_on' , '=' , new Date(time)).distinct([`postid`]);
 }
 
 export async function updatePostById(postid: number , update: Post) : Promise<Post> {
