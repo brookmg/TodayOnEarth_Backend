@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "queue": "rimraf dist && npm run build && node dist/queue/queue_sample.js",
-    "build": "tsc && babel build --out-dir dist",
+    "build": "node-gyp rebuild && tsc && babel build --out-dir dist",
     "test": "jest --coverage --silent",
     "dev": "nodemon --exec npm run restart",
     "restart": "rimraf dist && npm run build && npm run start",
