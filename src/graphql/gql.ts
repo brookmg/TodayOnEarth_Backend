@@ -13,7 +13,16 @@ import {
     getPostWithKeyword
 } from '../db/post_table'
 
-import {generateToken, getUser, getUsers, makeUserAdmin, signInUser, signUpUser, verifyUser} from '../db/user_table';
+import {
+    generateToken,
+    getUser,
+    getUsers, isEmailUsed,
+    isUsernameTaken,
+    makeUserAdmin,
+    signInUser,
+    signUpUser,
+    verifyUser
+} from '../db/user_table';
 
 const typeDef = gql`
 
@@ -60,25 +69,6 @@ const typeDef = gql`
     type Keyword {
         keyword: String,
         postid: Int
-    }
-
-    type Query {
-        getPosts: [Post]
-        getPost(id: Int) : Post
-        getPostFromProvider(provider: String): [Post]
-        getPostFromSource(source: String): [Post]
-
-        getPostScrapedSince(time: Int): [Post]
-        getPostFrom(time: Int): [Post]
-        getPostPublishedOn(time: Int): [Post]
-
-        getPostWithKeyword(keyword: String): [Post]
-        getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
-        getAllUsers: [User]
-
-        getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
-        me: User
-        getUser: User   # The same as the above query but more explainatory naming
     }
 
     type CommunityInteraction {
@@ -207,6 +197,28 @@ const typeDef = gql`
         thumbnail_image: String
     }
 
+    type Query {
+        getPosts: [Post]
+        getPost(id: Int) : Post
+        getPostFromProvider(provider: String): [Post]
+        getPostFromSource(source: String): [Post]
+
+        getPostScrapedSince(time: Int): [Post]
+        getPostFrom(time: Int): [Post]
+        getPostPublishedOn(time: Int): [Post]
+
+        getPostWithKeyword(keyword: String): [Post]
+        getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
+        getAllUsers: [User]
+
+        getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
+        me: User
+        getUser: User   # The same as the above query but more explainatory naming
+        
+        isUserNameTaken(username: String) : Boolean
+        isEmailUsed(email: String) : Boolean
+    }
+
     type Mutation {
         # Auth
         
@@ -263,7 +275,10 @@ const resolvers = {
         },
 
         me: async ( _ , __ , { user }) => { return user.getUser() },
-        getUser: async (_ , __ , { user }) => { return user.getUser() }
+        getUser: async (_ , __ , { user }) => { return user.getUser() },
+
+        isUserNameTaken: async ( _ , { username }) => { return await isUsernameTaken(username) },
+        isEmailUsed: async ( _ , { email }) => { return await isEmailUsed(email) }
     },
 
     Metadata: {
