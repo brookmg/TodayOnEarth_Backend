@@ -38,6 +38,22 @@ export async function updateInterestById(id : number , update : Interest) : Prom
         .updateAndFetchById(id, update));
 }
 
+export async function addInterestForUser(interest: string, uid: number) {
+    await createInterestScheme();
+    let interests = await Interest.query().where({interest, uid});
+
+    if (interests.length == 0){
+        return insertInterest({ interest , uid })
+    } else return false;
+
+}
+
+export async function addInterestListForUser(interests: string[], uid: number) {
+    for (const interest of interests) {
+        await addInterestForUser(interest, uid);
+    }
+}
+
 export async function getInterestsForUser(uid : number) : Promise<Interest[]> {
     return createInterestScheme().then(() => Interest.query().where('uid' , uid))
 }
