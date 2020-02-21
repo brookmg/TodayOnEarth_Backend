@@ -1,3 +1,4 @@
+import {Interest} from "./interest";
 const { Model } = require('objection')
 
 export class User extends Model {
@@ -9,6 +10,17 @@ export class User extends Model {
     static get idColumn() {
         return 'uid'
     }
+
+    static relationMappings = {
+        interests: {
+            relation: Model.HasManyRelation,
+            modelClass: Interest,
+            join: {
+                from: 'user.uid',
+                to: 'interest.uid'
+            }
+        }
+    };
 
     static get jsonSchema() {
         return {
