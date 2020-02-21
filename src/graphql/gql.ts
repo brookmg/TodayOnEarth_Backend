@@ -46,6 +46,7 @@ const typeDef = gql`
         email: String!,
         username: String!,
         phone_number: String,
+        interests: [Interest],
         country: String,
         last_location: String
     }
@@ -71,6 +72,11 @@ const typeDef = gql`
         postid: Int
     }
 
+    type Interest {
+        interest: String,
+        uid: Int
+    }
+    
     type CommunityInteraction {
         views: Int,
         likes: Int,
