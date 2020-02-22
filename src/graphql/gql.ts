@@ -23,6 +23,12 @@ import {
     signUpUser,
     verifyUser
 } from '../db/user_table';
+import {
+    addInterestForUser,
+    addInterestListForUser,
+    muteInterestForUser,
+    removeInterestForUser, unMuteOrResetInterestForUser
+} from "../db/interest_table";
 
 const typeDef = gql`
 
@@ -232,7 +238,13 @@ const typeDef = gql`
         signUp(new_user: IUser) : Token
         makeUserAdmin(uid: Int) : Boolean
         signOut: Boolean
-
+        
+        addInterest(interest: String) : Boolean
+        addInterestList(interests: [String]!) : Boolean
+        muteInterest(interest: String) : Boolean
+        unMuteOrResetInterest(interest: String) : Boolean
+        removeInterest(interest: String) : Boolean
+        
     } 
 
 `;
@@ -329,8 +341,37 @@ const resolvers = {
 
         signOut: async (_, __, {user}) => {
             return !await user.signOutUser();
-        }
-        
+        },
+
+        addInterest: async (_ , {interest} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return !!await addInterestForUser(interest, userObj.uid);
+        },
+
+        addInterestList: async (_ , {interests} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return addInterestListForUser(interests , userObj.uid)
+        },
+
+        muteInterest: async (_ , {interest} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return !!await muteInterestForUser(interest, userObj.uid)
+        },
+
+        unMuteOrResetInterest: async (_ , {interest} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return !!await unMuteOrResetInterestForUser(interest, userObj.uid)
+        },
+
+        removeInterest: async (_ , {interest} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return removeInterestForUser(interest , userObj.uid)
+        },
     },
 
 };
