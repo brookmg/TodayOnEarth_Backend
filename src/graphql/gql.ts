@@ -321,7 +321,7 @@ const resolvers = {
     Mutation: {
 
         makeUserAdmin: async (_, { uid }, { user }) => {
-            console.log(user);
+            user = await user.getUser();
             if (!user) throw new Error('You must be authenticated to access this');
             if (user.role < 4) throw new Error('You are not an admin');
             return makeUserAdmin(uid)
