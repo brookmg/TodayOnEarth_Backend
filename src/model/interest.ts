@@ -13,10 +13,11 @@ export class Interest extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['interest'],
+            required: ['interest' , 'score'],
             properties: {
                 interest_id: { type: 'integer'},
                 interest: { type: 'string'},
+                score: { type: 'float'},
                 uid: { type: 'integer' }
             }
         }

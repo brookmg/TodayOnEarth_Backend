@@ -16,6 +16,7 @@ export async function createInterestScheme() : Promise<any> {
         table.increments('interest_id').primary();
 
         table.string('interest');
+        table.float('score');
         table.integer('uid');
     })
 
@@ -38,14 +39,48 @@ export async function updateInterestById(id : number , update : Interest) : Prom
         .updateAndFetchById(id, update));
 }
 
-export async function addInterestForUser(interest: string, uid: number) {
-    await createInterestScheme();
-    let interests = await Interest.query().where({interest, uid});
+export async function addInterestForUser(interest: string, uid: number) : Promise<boolean>{
+    return createInterestScheme().then(async () => {
+        let interests = await Interest.query().where({interest, uid});
+        if (interests.length == 0){
+            return !!await insertInterest({ interest , score: 0.2, uid })
+        } else return false;
+    });
+}
 
-    if (interests.length == 0){
-        return insertInterest({ interest , uid })
-    } else return false;
+export async function changeInterestScoreForUser(interest: string, by: number , uid: number) {
+    return createInterestScheme().then(async () => {
+    });
+}
 
+export async function muteInterestForUser(interest: string, uid: number) {
+    return createInterestScheme().then(async () => {
+        let interests = await Interest.query().where({interest, uid});
+        if (interests.length == 0) {
+            return !!await insertInterest({interest, score: -1, uid})
+        } else return Interest.query().patch({score: -1}).where({
+            interest, uid
+        });
+    });
+}
+
+export async function unMuteOrResetInterestForUser(interest: string, uid: number) {
+    return createInterestScheme().then(async () => {
+        let interests = await Interest.query().where({interest, uid});
+        if (interests.length == 0) {
+            return !!await insertInterest({interest, score: 0.1, uid})
+        } else return Interest.query().patch({score: 0.1}).where({
+            interest, uid
+        });
+    });
+}
+
+export async function removeInterestForUser(interest: string, uid: number) {
+    return createInterestScheme().then(async () => {
+        return Interest.query().delete().where({
+            interest, uid
+        });
+    });
 }
 
 export async function addInterestListForUser(interests: string[], uid: number) {
