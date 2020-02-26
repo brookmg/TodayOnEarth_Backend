@@ -10,6 +10,12 @@ export class Provider extends Model {
         return 'provider_id';
     }
 
+    $formatJson(json) {
+        json = super.$formatJson(json);
+        json.added_on = new Date(json.added_on).getTime() / 1000;
+        return json;
+    }
+
     static get jsonSchema() {
         return {
             type: 'object',

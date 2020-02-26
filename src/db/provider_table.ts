@@ -16,17 +16,31 @@ export async function createProviderScheme() : Promise<any> {
         table.integer('uid');
         table.dateTime('added_on');
         table.string('frequency');
-
     })
 
 }
 
 export async function insertProvider(providerData: Provider) : Promise<Provider> {
-    return createProviderScheme().then(() => Provider.query().insert(providerData));
+    return createProviderScheme().then(async () => {
+        if ((await Provider.query().where({
+            'uid': providerData.uid,
+            'provider': providerData.provider,
+            'source': providerData.source
+        })).length > 0) throw new Error('Provider record is already present.');
+        return Provider.query().insert(providerData)
+    });
 }
 
 export async function deleteProvider(id : number) : Promise<number> {
     return createProviderScheme().then(() => Provider.query().deleteById(id));
+}
+
+export async function deleteProviderItem(provider : Provider) : Promise<number> {
+    return createProviderScheme().then(() => Provider.query().delete().where({
+        'uid': provider.uid,
+        'source': provider.source,
+        'provider': provider.provider
+    }));
 }
 
 export async function getProviders() : Promise<Provider[]> {
@@ -40,6 +54,13 @@ export async function getProviderById(id : number) : Promise<Provider> {
 export async function updateProviderById(id : number , update : Provider) : Promise<Provider> {
     return createProviderScheme().then(() => Provider.query()
         .updateAndFetchById(id, update));
+}
+
+export async function updateProviderOfUser(update: Provider, provider: string, source: string, uid: number) : Promise<Provider> {
+    return createProviderScheme().then(async () => {
+        let itemToUpdate = await Provider.query().findOne({ uid , provider, source });
+        return itemToUpdate.$query().patchAndFetch(update);
+    });
 }
 
 export async function getProvidersForUser(uid : number) : Promise<Provider[]> {
