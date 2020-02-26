@@ -29,6 +29,10 @@ export async function deleteProvider(id : number) : Promise<number> {
     return createProviderScheme().then(() => Provider.query().deleteById(id));
 }
 
+export async function getProviders() : Promise<Provider[]> {
+    return createProviderScheme().then( () => Provider.query() );
+}
+
 export async function getProviderById(id : number) : Promise<Provider> {
     return createProviderScheme().then(() => Provider.query().findById(id));
 }
