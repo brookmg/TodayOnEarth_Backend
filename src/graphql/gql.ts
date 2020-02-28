@@ -25,7 +25,7 @@ import {
 } from '../db/user_table';
 import {
     addInterestForUser,
-    addInterestListForUser,
+    addInterestListForUser, getInterestsForUser,
     muteInterestForUser,
     removeInterestForUser, unMuteOrResetInterestForUser, updateInterestForUser
 } from "../db/interest_table";
@@ -240,6 +240,8 @@ const typeDef = gql`
         
         isUserNameTaken(username: String) : Boolean
         isEmailUsed(email: String) : Boolean
+        
+        getInterestsOfUser: [Interest]
     }
 
     type Mutation {
@@ -308,7 +310,13 @@ const resolvers = {
         getUser: async (_ , __ , { user }) => { return user.getUser() },
 
         isUserNameTaken: async ( _ , { username }) => { return await isUsernameTaken(username) },
-        isEmailUsed: async ( _ , { email }) => { return await isEmailUsed(email) }
+        isEmailUsed: async ( _ , { email }) => { return await isEmailUsed(email) },
+
+        getInterestsOfUser: async ( _ , __ , { user }) => {
+            user = await user.getUser();
+            if (!user) throw new Error('You must be authenticated to access this');
+            return getInterestsForUser(user.uid);
+        }
     },
 
     Metadata: {
