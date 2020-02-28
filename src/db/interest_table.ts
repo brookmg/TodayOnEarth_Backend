@@ -39,11 +39,11 @@ export async function updateInterestById(id : number , update : Interest) : Prom
         .updateAndFetchById(id, update));
 }
 
-export async function addInterestForUser(interest: string, uid: number) : Promise<boolean>{
+export async function addInterestForUser(interest: string, score: number, uid: number) : Promise<boolean>{
     return createInterestScheme().then(async () => {
         let interests = await Interest.query().where({interest, uid});
         if (interests.length == 0){
-            return !!await insertInterest({ interest , score: 0.2, uid })
+            return !!await insertInterest({ interest , score, uid })
         } else return false;
     });
 }
@@ -59,6 +59,14 @@ export async function muteInterestForUser(interest: string, uid: number) {
         if (interests.length == 0) {
             return !!await insertInterest({interest, score: -1, uid})
         } else return Interest.query().patch({score: -1}).where({
+            interest, uid
+        });
+    });
+}
+
+export async function updateInterestForUser(interest: string, update: Interest, uid: number) {
+    return createInterestScheme().then(async () => {
+        return Interest.query().patch(update).where({
             interest, uid
         });
     });
@@ -83,9 +91,9 @@ export async function removeInterestForUser(interest: string, uid: number) {
     });
 }
 
-export async function addInterestListForUser(interests: string[], uid: number) {
+export async function addInterestListForUser(interests: Interest[], uid: number) {
     for (const interest of interests) {
-        await addInterestForUser(interest, uid);
+        await addInterestForUser(interest.interest , interest.score , uid);
     }
 }
 

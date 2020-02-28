@@ -27,7 +27,7 @@ import {
     addInterestForUser,
     addInterestListForUser,
     muteInterestForUser,
-    removeInterestForUser, unMuteOrResetInterestForUser
+    removeInterestForUser, unMuteOrResetInterestForUser, updateInterestForUser
 } from "../db/interest_table";
 
 const typeDef = gql`
@@ -80,9 +80,20 @@ const typeDef = gql`
 
     type Interest {
         interest: String,
+        score: Float,
         uid: Int
     }
-    
+
+    input IInterest {
+        interest: String!,
+        score: Float!
+    }
+
+    input UInterest {
+        interest: String,
+        score: Float!
+    }
+
     type CommunityInteraction {
         views: Int,
         likes: Int,
@@ -239,11 +250,12 @@ const typeDef = gql`
         makeUserAdmin(uid: Int) : Boolean
         signOut: Boolean
         
-        addInterest(interest: String) : Boolean
-        addInterestList(interests: [String]!) : Boolean
-        muteInterest(interest: String) : Boolean
-        unMuteOrResetInterest(interest: String) : Boolean
-        removeInterest(interest: String) : Boolean
+        addInterest(interest: IInterest!) : Boolean
+        addInterestList(interests: [IInterest]!) : Boolean
+        updateInterest(interest: String!, update: UInterest!) : Boolean
+        muteInterest(interest: String!) : Boolean
+        unMuteOrResetInterest(interest: String!) : Boolean
+        removeInterest(interest: String!) : Boolean
         
     } 
 
@@ -284,7 +296,7 @@ const resolvers = {
             if (!userObject.role && userObject.role < 2) throw new Error('You must be an admin');    // These numbers might change
             return await getUsers();
         },
-        
+
         getUserWithId: async (_, { uid }, { user }) => {
             if (!await user.getUser()) throw new Error('You must be authenticated to access this');
             let returnableUser = await getUser(uid);
@@ -332,7 +344,7 @@ const resolvers = {
             return { token }
         },
         signUp: async (_, { new_user }, {user}) => {
-            let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name, 
+            let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name,
                 new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password);
             const generatedToken = await generateToken(token)
             await user.signInUser(generatedToken);
@@ -346,7 +358,13 @@ const resolvers = {
         addInterest: async (_ , {interest} , {user}) => {
             let userObj = await user.getUser();
             if (!userObj) throw new Error('You must be authenticated to access this');
-            return !!await addInterestForUser(interest, userObj.uid);
+            return !!await addInterestForUser(interest.interest , interest.score, userObj.uid);
+        },
+
+        updateInterest: async (_ , { interest , update } , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return !!await updateInterestForUser(interest , update , userObj.uid);
         },
 
         addInterestList: async (_ , {interests} , {user}) => {
