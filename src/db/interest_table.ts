@@ -91,8 +91,9 @@ export async function removeInterestForUser(interest: string, uid: number) {
     });
 }
 
-export async function addInterestListForUser(interests: Interest[], uid: number) : Promise<boolean> {
+export async function addInterestListForUser(interests: Interest[], uid: number , clear: boolean = false) : Promise<boolean> {
     let promises = [];
+    if (clear) await Interest.query().delete().where(true);
     for (const interest of interests) { promises.push(addInterestForUser(interest.interest , interest.score , uid)); }
 
     return Promise.all(promises).then(results => { return results.every(item => item === true) })

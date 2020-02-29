@@ -253,7 +253,8 @@ const typeDef = gql`
         signOut: Boolean
         
         addInterest(interest: IInterest!) : Boolean
-        addInterestList(interests: [IInterest]!) : Boolean
+        updateInterestList(interests: [IInterest]!) : Boolean
+        cleanUpdateInterestList(interests: [IInterest]!) : Boolean
         updateInterest(interest: String!, update: UInterest!) : Boolean
         muteInterest(interest: String!) : Boolean
         unMuteOrResetInterest(interest: String!) : Boolean
@@ -375,10 +376,16 @@ const resolvers = {
             return !!await updateInterestForUser(interest , update , userObj.uid);
         },
 
-        addInterestList: async (_ , {interests} , {user}) => {
+        updateInterestList: async (_ , {interests} , {user}) => {
             let userObj = await user.getUser();
             if (!userObj) throw new Error('You must be authenticated to access this');
             return addInterestListForUser(interests , userObj.uid)
+        },
+
+        cleanUpdateInterestList: async (_ , {interests} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return addInterestListForUser(interests , userObj.uid , true)
         },
 
         muteInterest: async (_ , {interest} , {user}) => {
