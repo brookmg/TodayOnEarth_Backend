@@ -44,7 +44,7 @@ export async function addInterestForUser(interest: string, score: number, uid: n
         let interests = await Interest.query().where({interest, uid});
         if (interests.length == 0){
             return !!await insertInterest({ interest , score, uid })
-        } else return false;
+        } else return !!await updateInterestForUser(interest, {interest, score}, uid);
     });
 }
 
@@ -91,10 +91,11 @@ export async function removeInterestForUser(interest: string, uid: number) {
     });
 }
 
-export async function addInterestListForUser(interests: Interest[], uid: number) {
-    for (const interest of interests) {
-        await addInterestForUser(interest.interest , interest.score , uid);
-    }
+export async function addInterestListForUser(interests: Interest[], uid: number) : Promise<boolean> {
+    let promises = [];
+    for (const interest of interests) { promises.push(addInterestForUser(interest.interest , interest.score , uid)); }
+
+    return Promise.all(promises).then(results => { return results.every(item => item === true) })
 }
 
 export async function getInterestsForUser(uid : number) : Promise<Interest[]> {
