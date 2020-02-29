@@ -54,12 +54,12 @@ String sortByCommunityInteractionInterfaceMain(const CallbackInfo& info) {
 Object Init(Env env, Object exports) {
     // setting up the exports for this module
     // setting up the python and NLTK remain here so do not initiate
-    //mainPythonObject = initializePythonInterpreter();
+    mainPythonObject = initializePythonInterpreter();
 
-//    exports.Set(
-//        String::New(env, "sortByTrendingKeyword"),
-//        Function::New(env, sortByTrendingKeywordMain)
-//    );
+    exports.Set(
+        String::New(env, "sortByTrendingKeyword"),
+        Function::New(env, sortByTrendingKeywordMain)
+    );
 
     exports.Set(
             String::New(env, "sortByCommunityInteraction"),

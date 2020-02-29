@@ -1,4 +1,7 @@
 #include "includes/main.h"
+#include <string>
+#include <limits.h>
+#include <unistd.h>
 
 json getPosts() {
     std::ifstream i(string("sample_data/") + "serverOut.json");
@@ -73,8 +76,12 @@ PyObject * initializePythonInterpreter() {
     PyObject *folder_path = PyUnicode_FromString(".");
     PyList_Append(sys_path, folder_path);
 
-    PyObject *pModule = PyImport_Import(PyUnicode_FromString("similarity_score_generator"));
+    PyObject *pModule = PyImport_Import(PyUnicode_FromString("/home/wade/JSProjects/TodayOnEarth_Backend/src/native/extra/similarity_score_generator"));
     if (pModule == NULL) {
+          char result[ PATH_MAX ];
+  ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
+  cout<< std::string( result, (count > 0) ? count : 0 ) << endl;
+
         cout << "[ERROR]: Module was NULL" << endl;
         return NULL;
     }
