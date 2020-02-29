@@ -40,7 +40,7 @@ export async function updateInterestById(id : number , update : Interest) : Prom
 }
 
 export async function addInterestForUser(interest: string, score: number, uid: number) : Promise<boolean>{
-    return createInterestScheme().then(async () => {
+    return await createInterestScheme().then(async () => {
         let interests = await Interest.query().where({interest, uid});
         if (interests.length == 0){
             return !!await insertInterest({ interest , score, uid })

@@ -2,6 +2,7 @@ import { KnexI } from './db'
 import { User } from '../model/user'
 import { hash, compare } from 'bcrypt'
 import { verify, sign, TokenExpiredError } from 'jsonwebtoken'
+import {createInterestScheme} from "./interest_table";
 
 User.knex(KnexI);
 
@@ -33,6 +34,7 @@ export async function insertUser(userData: User): Promise<User> {
 
 export async function getUser(uid: Number): Promise<User> {
     await createUserScheme();
+    await createInterestScheme();
     return User.query().findById(uid).withGraphFetched({
         interests: true
     });
@@ -121,15 +123,15 @@ export async function signUpUser(
     return createUserScheme().then(async () => {
         if (!username) throw new Error('username is required')
         else if (await isUsernameTaken(username)) throw new Error('username already taken')
-    
+
         if (!email) throw new Error('email is required')
         else if (await isEmailUsed(email)) throw new Error('email already used by someone else')
-    
+
         if (!password) throw new Error('password is required')
         const hashed = await hash(password, 10)
         return insertUser({
             first_name, middle_name, last_name, phone_number, username, country,
-            email, password_hash: hashed   
+            email, password_hash: hashed
         })
     })
 
