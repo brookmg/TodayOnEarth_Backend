@@ -17,6 +17,7 @@ json getPosts();
 unordered_set<string> splitToUniqueKeywords(string str);
 json fromString(string);
 string toString(json j);
+string getEnvVar( string key ,string defaultValue);
 
 /** TREND.cpp **/
 vector<pair<string, double>> getKeywordFrequency(PyObject* pScoreFunction, json &post,unordered_set<string> &stopWords, bool checkSematicSimilarity);

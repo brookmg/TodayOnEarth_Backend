@@ -58,25 +58,28 @@ unordered_set<string> getStopWords(){
     return splitToUniqueKeywords(output);
 }
 
+string getEnvVar( string key ,string defaultValue) {
+    char * val = getenv( key.c_str() );
+    return val == NULL ? string(defaultValue) : string(val);
+}
+
+
 PyObject * initializePythonInterpreter() {
     // TODO: Discuss with Brook how to initialize/finalize the python interepreter when node starts/exits
 
     wstring programName = L"my python interface";
-
     Py_SetProgramName((wchar_t *)programName.c_str()); /* optional but recommended */
-
-    // cout << "starting" << endl;
 
     Py_Initialize();
 
-    // cout << "initialized" << endl;
-
     PyObject *sys = PyImport_ImportModule("sys");
     PyObject *sys_path = PyObject_GetAttrString(sys, "path");
-    PyObject *folder_path = PyUnicode_FromString(".");
+    PyObject *folder_path = PyUnicode_FromString(getEnvVar("SIMILARITY_SCORE_GENERATOR_PY_FOLDER",".").c_str());
     PyList_Append(sys_path, folder_path);
 
-    PyObject *pModule = PyImport_Import(PyUnicode_FromString("/home/wade/JSProjects/TodayOnEarth_Backend/src/native/extra/similarity_score_generator"));
+    cout << getEnvVar("SIMILARITY_SCORE_GENERATOR_PY_FOLDER",".").c_str();
+
+    PyObject *pModule = PyImport_Import(PyUnicode_FromString("similarity_score_generator.py"));
     if (pModule == NULL) {
           char result[ PATH_MAX ];
   ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
@@ -91,7 +94,6 @@ PyObject * initializePythonInterpreter() {
         cout << "[ERROR]: Function was NULL" << endl;
         return NULL;
     }
-
     return pFunc;
 
 }
