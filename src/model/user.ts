@@ -1,5 +1,6 @@
 import {Interest} from "./interest";
-const { Model } = require('objection')
+const { Model } = require('objection');
+import { USER_ADDED , USER_REMOVED, PubSub} from "../graphql/gql";
 
 export class User extends Model {
 
@@ -21,6 +22,18 @@ export class User extends Model {
             }
         }
     };
+
+    static afterInsert(args) {
+        PubSub.publish(USER_ADDED , {
+            "userAdded": args.inputItems
+        });
+    }
+
+    static afterDelete(args) {
+        PubSub.publish(USER_REMOVED, {
+            "userRemoved": args.items
+        })
+    }
 
     static get jsonSchema() {
         return {
