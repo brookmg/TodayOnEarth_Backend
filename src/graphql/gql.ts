@@ -29,6 +29,9 @@ import {
     muteInterestForUser,
     removeInterestForUser, unMuteOrResetInterestForUser, updateInterestForUser
 } from "../db/interest_table";
+import {RedisPubSub} from "graphql-redis-subscriptions";
+
+export const PubSub = new RedisPubSub();
 
 const typeDef = gql`
 
@@ -261,10 +264,26 @@ const typeDef = gql`
         removeInterest(interest: String!) : Boolean
         
     } 
+    
+    type Subscription {
+        postAdded: [Post]
+        postRemoved: [Post]
+        userAdded: [User]
+        userRemoved: [User]
+    }
 
 `;
 
+export const [ POST_ADDED, POST_REMOVED, USER_ADDED, USER_REMOVED ] = [ "post_added" , "post_removed", "user_added", "user_removed" ];
+
 const resolvers = {
+    Subscription: {
+        postAdded: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([POST_ADDED]) } },
+        postRemoved: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([POST_REMOVED]) } },
+        userAdded: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_ADDED]) } },
+        userRemoved: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_REMOVED]) } },
+    },
+
     Query: {
         getPostCustomized: async (_ , { jsonQuery, page, range }) => {
             return await getPostsCustom(jsonQuery, page, range)
