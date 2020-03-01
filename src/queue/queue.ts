@@ -5,15 +5,15 @@ import FacebookFetcher from '../PostFetchers/FacebookFetcher'
 import TelegramFetcher from '../PostFetchers/TelegramFetcher'
 import InstagramFetcher from '../PostFetchers/InstagramFetcher'
 
-const TwitterQueue = new Queue('twitter_queue'); 
-const FacebookQueue = new Queue('facebook_queue'); 
-const InstagramQueue = new Queue('instagram_queue'); 
+const TwitterQueue = new Queue('twitter_queue');
+const FacebookQueue = new Queue('facebook_queue');
+const InstagramQueue = new Queue('instagram_queue');
 const TelegramQueue = new Queue('telegram_queue');
 
 TwitterQueue.process((job) => {
     // twitter scraper module => push to db
     // ,then
-    
+
     return new TwitterFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
@@ -23,9 +23,9 @@ TwitterQueue.process((job) => {
                     if (post.metadata.keywords != undefined) post.keywords = post.metadata.keywords
                     post.metadata.keywords = undefined
                 }
-                insertPost(post).then(() => 
-                    console.log(`added ${post.source_link} from ${post.provider}`)
-                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                insertPost(post).then(() => {
+                    if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
+                }).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
             }
         )
     )
@@ -43,9 +43,9 @@ FacebookQueue.process((job) => {
                     post.keywords = post.metadata.keywords
                     post.metadata.keywords = undefined
                 }
-                insertPost(post).then(() => 
-                    console.log(`added ${post.source_link} from ${post.provider}`)                
-                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                insertPost(post).then(() => {
+                    if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
+                }).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
             }
         )
     )
@@ -62,9 +62,9 @@ InstagramQueue.process((job) => {
                     post.keywords = post.metadata.keywords
                     post.metadata.keywords = undefined
                 }
-                insertPost(post).then(() => 
-                    console.log(`added ${post.source_link} from ${post.provider}`)
-                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                insertPost(post).then(() => {
+                    if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
+                }).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
             }
         )
     )
@@ -82,9 +82,9 @@ TelegramQueue.process((job) => {
                     post.metadata.keywords = undefined
                 }
 
-                insertPost(post).then(() => 
-                    console.log(`added ${post.source_link} from ${post.provider}`)
-                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                insertPost(post).then(() => {
+                    if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
+                }).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
             }
         )
     );
