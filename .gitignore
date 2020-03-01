@@ -67,3 +67,4 @@ jest_0
 build
 .idea
 cmake-build-debug
+*.pyc
