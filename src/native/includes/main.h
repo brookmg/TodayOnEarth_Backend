@@ -29,6 +29,9 @@ void sortByRelativeCommunityInteraction(json &posts,unordered_set<string> scoreP
 void tagPostsWithRelativeCommunityInteractionScore(json &posts,unordered_set<string> scoreParams); // not worthy
 unordered_map<string, json> getPostCountAndCommunityInteractionByProvider(json &posts);
 void sortByCommunityInteraction(json &posts,unordered_set<string> scoreParams);
+void findFrequency(PyObject* pScoreFunction, unordered_map<string,double> &frequencyMap, unordered_set<string> &currentWords, bool checkSematicSimilarity, double mergeCutOffScore);
+unordered_set<string> postToKeywords(json p, unordered_set<string>& stopWords);
+double generateSimilarityScore(PyObject *pFunc, string w1, string w2, bool checkSematicSimilarity);
 
 /** SAMPLE.cpp **/
 
