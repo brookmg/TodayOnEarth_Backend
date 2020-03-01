@@ -31,15 +31,14 @@ string sortByTrendingKeywordInterface(std::string postsJson, string scoreParamJs
     unordered_set<string> scoreParamSet;
     for(auto& p: scoreParam) scoreParamSet.insert( p.get<string>() );
     auto stopWords = getStopWords();
-
     sortByTrendingKeyword(mainPythonObject , posts, stopWords , checkSematicSimilarity);
     return toString(posts);
 }
 
-string getKeywordFrequencyInterface(string postsJson, bool checkSemanticSimilarity) {
-    json posts = fromString(std::move(postsJson));
+string getKeywordFrequencyInterface(string singlePost, bool checkSemanticSimilarity) {
+    json post = fromString(std::move(singlePost));
     auto stopWords = getStopWords();
-    vector<pair<string,double>> result = getKeywordFrequency(mainPythonObject , posts , stopWords , checkSemanticSimilarity);
+    vector<pair<string,double>> result = getKeywordFrequency(mainPythonObject , post , stopWords , checkSemanticSimilarity);
 
     for(auto word: result) {
       double adjustedFrequency = word.second/2;
