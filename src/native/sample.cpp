@@ -51,7 +51,7 @@ string getKeywordFrequencyInterface(string singlePost, bool checkSemanticSimilar
 
 String sortByTrendingKeywordMain(const CallbackInfo& info) {
     Env env = info.Env();
-    return String::New(env , sortByTrendingKeywordInterface( info[0].As<String>().Utf8Value() , info[1].As<String>().Utf8Value() , info[0].As<Boolean>() ));
+    return String::New(env , sortByTrendingKeywordInterface( info[0].As<String>().Utf8Value() , info[1].As<String>().Utf8Value() , info[2].As<Boolean>() ));
 }
 
 String sortByRelativeCommunityInteractionMain(const CallbackInfo& info) {
