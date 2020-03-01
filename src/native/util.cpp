@@ -93,12 +93,14 @@ PyObject * initializePythonInterpreter() {
     PyObject *pModule = PyImport_Import(PyUnicode_FromString("similarity_score_generator"));
     if (pModule == NULL) {
         cout << "[ERROR]: Module was NULL" << endl;
+        PyErr_Print();
         return NULL;
     }
 
     PyObject *pFunc = PyObject_GetAttrString(pModule, "getSimilarityScore");
     if (!pFunc) {
         cout << "[ERROR]: Function was NULL" << endl;
+        PyErr_Print();
         return NULL;
     }
     return pFunc;
