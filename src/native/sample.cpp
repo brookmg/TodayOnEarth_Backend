@@ -39,14 +39,16 @@ string getKeywordFrequencyInterface(string singlePost, bool checkSemanticSimilar
     json post = fromString(std::move(singlePost));
     auto stopWords = getStopWords();
     vector<pair<string,double>> result = getKeywordFrequency(mainPythonObject , post , stopWords , checkSemanticSimilarity);
-
-    for(auto word: result) {
-      double adjustedFrequency = word.second/2;
-      cout<<"-word: "<<word.first<<" -frequency: "<<adjustedFrequency<<endl;
-    }
-
     json resultJson(result);
     return toString(resultJson);
+}
+
+string sortByUserInterestInterface(string postsJson , string userInterests, bool checkSemanticSimilarity) {
+    json posts = fromString(std::move(postsJson));
+    vector<pair<string, double>> interests = fromString(userInterests).get<vector<pair<string, double>>>();
+    auto stopWords = getStopWords();
+    sortByUserInterest(mainPythonObject , posts , stopWords , interests , checkSemanticSimilarity);
+    return toString(posts);
 }
 
 String sortByTrendingKeywordMain(const CallbackInfo& info) {
@@ -69,6 +71,13 @@ String getKeywordFrequencyMain (const CallbackInfo& info) {
 String sortByCommunityInteractionInterfaceMain(const CallbackInfo& info) {
     Env env = info.Env();
     return String::New(env , sortByCommunityInteractionInterface( info[0].As<String>().Utf8Value() , info[1].As<String>().Utf8Value()));
+}
+
+String sortByUserInterestMain(const CallbackInfo& info) {
+    Env env = info.Env();
+    return String::New(
+        env, sortByUserInterestInterface( info[0].As<String>().Utf8Value() , info[1].As<String>().Utf8Value() , info[2].As<Boolean>())
+    );
 }
 
 Object Init(Env env, Object exports) {
@@ -94,6 +103,11 @@ Object Init(Env env, Object exports) {
     exports.Set(
         String::New(env, "getKeywordFrequency"),
         Function::New(env, getKeywordFrequencyMain)
+    );
+
+    exports.Set(
+        String::New(env, "sortByUserInterest"),
+        Function::New(env, sortByUserInterestMain)
     );
 
     return exports;
