@@ -2,6 +2,7 @@
 #include <string>
 #include <limits.h>
 #include <unistd.h>
+#include <dlfcn.h>
 
 json getPosts() {
     std::ifstream i(string("sample_data/") + "serverOut.json");
@@ -67,24 +68,30 @@ string getEnvVar( string key ,string defaultValue) {
 PyObject * initializePythonInterpreter() {
     // TODO: Discuss with Brook how to initialize/finalize the python interepreter when node starts/exits
 
+    dlopen(getEnvVar("LIBPYTHON_PATH",".").c_str(), RTLD_LAZY | RTLD_GLOBAL);
+
     wstring programName = L"my python interface";
     Py_SetProgramName((wchar_t *)programName.c_str()); /* optional but recommended */
 
     Py_Initialize();
 
     PyObject *sys = PyImport_ImportModule("sys");
+
     PyObject *sys_path = PyObject_GetAttrString(sys, "path");
+
     PyObject *folder_path = PyUnicode_FromString(getEnvVar("SIMILARITY_SCORE_GENERATOR_PY_FOLDER",".").c_str());
-    PyList_Append(sys_path, folder_path);
+    PyList_Insert(sys_path,0, folder_path);
 
-    cout << getEnvVar("SIMILARITY_SCORE_GENERATOR_PY_FOLDER",".").c_str();
+    int listSize = PyList_Size(sys_path);
+    cout<<"Paths to scan for modules:"<<endl;
+    for(int i=0;i<listSize;i++){
+        PyObject *li = PyList_GetItem(sys_path,i);
+        cout<<PyUnicode_AsUTF8(li)<<endl;
+    }
+    cout<<endl;
 
-    PyObject *pModule = PyImport_Import(PyUnicode_FromString("similarity_score_generator.py"));
+    PyObject *pModule = PyImport_Import(PyUnicode_FromString("similarity_score_generator"));
     if (pModule == NULL) {
-          char result[ PATH_MAX ];
-  ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
-  cout<< std::string( result, (count > 0) ? count : 0 ) << endl;
-
         cout << "[ERROR]: Module was NULL" << endl;
         return NULL;
     }
