@@ -21,7 +21,7 @@ string sortByRelativeCommunityInteractionInterface(std::string postsJson, string
     unordered_set<string> scoreParamSet;
     for(auto& p: scoreParam) scoreParamSet.insert( p.get<string>() );
 
-    //sortByRelativeCommunityInteraction(posts, scoreParamSet);
+    sortByRelativeCommunityInteraction(posts, scoreParamSet);
     return toString(posts);
 }
 
@@ -36,6 +36,20 @@ string sortByTrendingKeywordInterface(std::string postsJson, string scoreParamJs
     return toString(posts);
 }
 
+string getKeywordFrequencyInterface(string postsJson, bool checkSemanticSimilarity) {
+    json posts = fromString(std::move(postsJson));
+    auto stopWords = getStopWords();
+    vector<pair<string,double>> result = getKeywordFrequency(mainPythonObject , posts , stopWords , checkSemanticSimilarity);
+
+    for(auto word: result) {
+      double adjustedFrequency = word.second/2;
+      cout<<"-word: "<<word.first<<" -frequency: "<<adjustedFrequency<<endl;
+    }
+
+    json resultJson(result);
+    return toString(resultJson);
+}
+
 String sortByTrendingKeywordMain(const CallbackInfo& info) {
     Env env = info.Env();
     return String::New(env , sortByTrendingKeywordInterface( info[0].As<String>().Utf8Value() , info[1].As<String>().Utf8Value() , info[0].As<Boolean>() ));
@@ -44,6 +58,13 @@ String sortByTrendingKeywordMain(const CallbackInfo& info) {
 String sortByRelativeCommunityInteractionMain(const CallbackInfo& info) {
     Env env = info.Env();
     return String::New(env , sortByRelativeCommunityInteractionInterface( info[0].As<String>().Utf8Value() , info[1].As<String>().Utf8Value()));
+}
+
+String getKeywordFrequencyMain (const CallbackInfo& info) {
+    Env env = info.Env();
+    return String::New(
+            env, getKeywordFrequencyInterface( info[0].As<String>().Utf8Value() , info[1].As<Boolean>())
+    );
 }
 
 String sortByCommunityInteractionInterfaceMain(const CallbackInfo& info) {
@@ -69,6 +90,11 @@ Object Init(Env env, Object exports) {
     exports.Set(
             String::New(env, "sortByRelativeCommunityInteraction"),
             Function::New(env, sortByRelativeCommunityInteractionMain)
+    );
+
+    exports.Set(
+        String::New(env, "getKeywordFrequency"),
+        Function::New(env, getKeywordFrequencyMain)
     );
 
     return exports;
