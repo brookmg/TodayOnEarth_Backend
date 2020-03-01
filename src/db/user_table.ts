@@ -2,6 +2,7 @@ import { KnexI } from './db'
 import { User } from '../model/user'
 import { hash, compare } from 'bcrypt'
 import { verify, sign, TokenExpiredError } from 'jsonwebtoken'
+import {createInterestScheme} from "./interest_table";
 
 User.knex(KnexI);
 
@@ -33,12 +34,17 @@ export async function insertUser(userData: User): Promise<User> {
 
 export async function getUser(uid: Number): Promise<User> {
     await createUserScheme();
-    return User.query().findById(uid)
+    await createInterestScheme();
+    return User.query().findById(uid).withGraphFetched({
+        interests: true
+    });
 }
 
 export async function getUsers(): Promise<User[]> {
     await createUserScheme();
-    return User.query();
+    return User.query().withGraphFetched({
+        interests: true
+    });
 }
 
 export async function makeUserAdmin(uid: number): Promise<boolean> {
@@ -81,7 +87,7 @@ export async function verifyUser(token: string): Promise<User> {
 }
 
 export async function generateToken(user: User): Promise<string> {
-    const token = await sign({ uid: user.uid } , '0mE09M8N880CDhhJI$9808_369') // shouldn't be hardcoded like this
+    const token = await sign({ uid: user.uid } , '0mE09M8N880CDhhJI$9808_369'); // shouldn't be hardcoded like this
     return token;
 }
 
@@ -99,7 +105,7 @@ export async function updateUserById(id: number , update: User): Promise<User> {
 export async function signInUser(email: string, password: string): Promise<string> {
     await createUserScheme();
     const user = await User.query().first().where({ email });
-    if (!user) throw new Error('user doesn\'t exist')
+    if (!user) throw new Error('user doesn\'t exist');
     const correct = await compare(password , user.password_hash);
     if (correct) {
         // change last_login_time
@@ -117,15 +123,15 @@ export async function signUpUser(
     return createUserScheme().then(async () => {
         if (!username) throw new Error('username is required')
         else if (await isUsernameTaken(username)) throw new Error('username already taken')
-    
+
         if (!email) throw new Error('email is required')
         else if (await isEmailUsed(email)) throw new Error('email already used by someone else')
-    
+
         if (!password) throw new Error('password is required')
         const hashed = await hash(password, 10)
         return insertUser({
             first_name, middle_name, last_name, phone_number, username, country,
-            email, password_hash: hashed   
+            email, password_hash: hashed
         })
     })
 

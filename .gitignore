@@ -66,3 +66,4 @@ jest_0
 .vscode
 build
 .idea
+cmake-build-debug

@@ -13,7 +13,22 @@ import {
     getPostWithKeyword
 } from '../db/post_table'
 
-import {generateToken, getUser, getUsers, makeUserAdmin, signInUser, signUpUser, verifyUser} from '../db/user_table';
+import {
+    generateToken,
+    getUser,
+    getUsers, isEmailUsed,
+    isUsernameTaken,
+    makeUserAdmin,
+    signInUser,
+    signUpUser,
+    verifyUser
+} from '../db/user_table';
+import {
+    addInterestForUser,
+    addInterestListForUser, getInterestsForUser,
+    muteInterestForUser,
+    removeInterestForUser, unMuteOrResetInterestForUser, updateInterestForUser
+} from "../db/interest_table";
 
 const typeDef = gql`
 
@@ -37,6 +52,7 @@ const typeDef = gql`
         email: String!,
         username: String!,
         phone_number: String,
+        interests: [Interest],
         country: String,
         last_location: String
     }
@@ -62,23 +78,20 @@ const typeDef = gql`
         postid: Int
     }
 
-    type Query {
-        getPosts: [Post]
-        getPost(id: Int) : Post
-        getPostFromProvider(provider: String): [Post]
-        getPostFromSource(source: String): [Post]
+    type Interest {
+        interest: String,
+        score: Float,
+        uid: Int
+    }
 
-        getPostScrapedSince(time: Int): [Post]
-        getPostFrom(time: Int): [Post]
-        getPostPublishedOn(time: Int): [Post]
+    input IInterest {
+        interest: String!,
+        score: Float!
+    }
 
-        getPostWithKeyword(keyword: String): [Post]
-        getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
-        getAllUsers: [User]
-
-        getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
-        me: User
-        getUser: User   # The same as the above query but more explainatory naming
+    input UInterest {
+        interest: String,
+        score: Float!
     }
 
     type CommunityInteraction {
@@ -207,6 +220,30 @@ const typeDef = gql`
         thumbnail_image: String
     }
 
+    type Query {
+        getPosts: [Post]
+        getPost(id: Int) : Post
+        getPostFromProvider(provider: String): [Post]
+        getPostFromSource(source: String): [Post]
+
+        getPostScrapedSince(time: Int): [Post]
+        getPostFrom(time: Int): [Post]
+        getPostPublishedOn(time: Int): [Post]
+
+        getPostWithKeyword(keyword: String): [Post]
+        getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
+        getAllUsers: [User]
+
+        getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
+        me: User
+        getUser: User   # The same as the above query but more explainatory naming
+        
+        isUserNameTaken(username: String) : Boolean
+        isEmailUsed(email: String) : Boolean
+        
+        getInterestsOfUser: [Interest]
+    }
+
     type Mutation {
         # Auth
         
@@ -214,7 +251,15 @@ const typeDef = gql`
         signUp(new_user: IUser) : Token
         makeUserAdmin(uid: Int) : Boolean
         signOut: Boolean
-
+        
+        addInterest(interest: IInterest!) : Boolean
+        updateInterestList(interests: [IInterest]!) : Boolean
+        cleanUpdateInterestList(interests: [IInterest]!) : Boolean
+        updateInterest(interest: String!, update: UInterest!) : Boolean
+        muteInterest(interest: String!) : Boolean
+        unMuteOrResetInterest(interest: String!) : Boolean
+        removeInterest(interest: String!) : Boolean
+        
     } 
 
 `;
@@ -254,7 +299,7 @@ const resolvers = {
             if (!userObject.role && userObject.role < 2) throw new Error('You must be an admin');    // These numbers might change
             return await getUsers();
         },
-        
+
         getUserWithId: async (_, { uid }, { user }) => {
             if (!await user.getUser()) throw new Error('You must be authenticated to access this');
             let returnableUser = await getUser(uid);
@@ -263,7 +308,16 @@ const resolvers = {
         },
 
         me: async ( _ , __ , { user }) => { return user.getUser() },
-        getUser: async (_ , __ , { user }) => { return user.getUser() }
+        getUser: async (_ , __ , { user }) => { return user.getUser() },
+
+        isUserNameTaken: async ( _ , { username }) => { return await isUsernameTaken(username) },
+        isEmailUsed: async ( _ , { email }) => { return await isEmailUsed(email) },
+
+        getInterestsOfUser: async ( _ , __ , { user }) => {
+            user = await user.getUser();
+            if (!user) throw new Error('You must be authenticated to access this');
+            return getInterestsForUser(user.uid);
+        }
     },
 
     Metadata: {
@@ -288,7 +342,7 @@ const resolvers = {
     Mutation: {
 
         makeUserAdmin: async (_, { uid }, { user }) => {
-            console.log(user);
+            user = await user.getUser();
             if (!user) throw new Error('You must be authenticated to access this');
             if (user.role < 4) throw new Error('You are not an admin');
             return makeUserAdmin(uid)
@@ -299,7 +353,7 @@ const resolvers = {
             return { token }
         },
         signUp: async (_, { new_user }, {user}) => {
-            let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name, 
+            let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name,
                 new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password);
             const generatedToken = await generateToken(token)
             await user.signInUser(generatedToken);
@@ -308,8 +362,49 @@ const resolvers = {
 
         signOut: async (_, __, {user}) => {
             return !await user.signOutUser();
-        }
-        
+        },
+
+        addInterest: async (_ , {interest} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return !!await addInterestForUser(interest.interest , interest.score, userObj.uid);
+        },
+
+        updateInterest: async (_ , { interest , update } , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return !!await updateInterestForUser(interest , update , userObj.uid);
+        },
+
+        updateInterestList: async (_ , {interests} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return addInterestListForUser(interests , userObj.uid)
+        },
+
+        cleanUpdateInterestList: async (_ , {interests} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return addInterestListForUser(interests , userObj.uid , true)
+        },
+
+        muteInterest: async (_ , {interest} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return !!await muteInterestForUser(interest, userObj.uid)
+        },
+
+        unMuteOrResetInterest: async (_ , {interest} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return !!await unMuteOrResetInterestForUser(interest, userObj.uid)
+        },
+
+        removeInterest: async (_ , {interest} , {user}) => {
+            let userObj = await user.getUser();
+            if (!userObj) throw new Error('You must be authenticated to access this');
+            return removeInterestForUser(interest , userObj.uid)
+        },
     },
 
 };
