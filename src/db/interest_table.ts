@@ -48,8 +48,14 @@ export async function addInterestForUser(interest: string, score: number, uid: n
     });
 }
 
-export async function changeInterestScoreForUser(interest: string, by: number , uid: number) {
+function activationFunction(x) { return ( 2 / ( 1 + Math.pow(Math.E,-x)) ) - 1; }
+
+export async function changeInterestScoreForUser(interest: string, to: number , uid: number) {
     return createInterestScheme().then(async () => {
+        let interests = await Interest.query().where({interest, uid});
+        if (interests.length == 0){
+            return !!await insertInterest({ interest , score: activationFunction(to), uid })
+        } else return !!await updateInterestForUser(interest, {interest, score: activationFunction(to)}, uid);
     });
 }
 
