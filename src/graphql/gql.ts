@@ -221,18 +221,18 @@ const typeDef = gql`
     }
 
     type Query {
-        getPosts: [Post]
+        getPosts(page: Int, range: Int): [Post]
         getPost(id: Int) : Post
-        getPostFromProvider(provider: String): [Post]
-        getPostFromSource(source: String): [Post]
-
-        getPostScrapedSince(time: Int): [Post]
-        getPostFrom(time: Int): [Post]
-        getPostPublishedOn(time: Int): [Post]
-
-        getPostWithKeyword(keyword: String): [Post]
-        getPostCustomized(jsonQuery: [FilterQuery!]!): [Post]
-        getAllUsers: [User]
+        getPostFromProvider(provider: String, page: Int, range: Int): [Post]
+        getPostFromSource(source: String, page: Int, range: Int): [Post]
+    
+        getPostScrapedSince(time: Int, page: Int, range: Int): [Post]
+        getPostFrom(time: Int, page: Int, range: Int): [Post]
+        getPostPublishedOn(time: Int, page: Int, range: Int): [Post]
+    
+        getPostWithKeyword(keyword: String, page: Int, range: Int): [Post]
+        getPostCustomized(jsonQuery: [FilterQuery!]!, page: Int, range: Int): [Post]
+        getAllUsers(page: Int, range: Int): [User]
 
         getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
         me: User
@@ -266,38 +266,38 @@ const typeDef = gql`
 
 const resolvers = {
     Query: {
-        getPostCustomized: async (_ , { jsonQuery }) => {
-            return await getPostsCustom(jsonQuery)
+        getPostCustomized: async (_ , { jsonQuery, page, range }) => {
+            return await getPostsCustom(jsonQuery, page, range)
         },
-        getPosts: async () => {
-            return await getAllPosts()
+        getPosts: async (_ , {page , range}) => {
+            return await getAllPosts(page, range)
         },
         getPost: async (_,{ id }) => {
             return await getPostById(id)
         },
-        getPostFromProvider: async (_ , {provider}) => {
-            return await getAllPostsFromProvider(provider)
+        getPostFromProvider: async (_ , {provider, page, range}) => {
+            return await getAllPostsFromProvider(provider, page, range)
         },
-        getPostFromSource: async (_, {source}) => {
-            return await getAllPostsFromSource(source)
+        getPostFromSource: async (_, {source, page, range}) => {
+            return await getAllPostsFromSource(source, page, range)
         },
-        getPostScrapedSince: async (_, {time}) => {
-            return await getAllPostsSinceScrapedDate(time)
+        getPostScrapedSince: async (_, {time, page, range}) => {
+            return await getAllPostsSinceScrapedDate(time, page, range)
         },
-        getPostPublishedOn: async (_, {time}) => {
-            return await getAllPostsOnPublishedDate(time)
+        getPostPublishedOn: async (_, {time, page, range}) => {
+            return await getAllPostsOnPublishedDate(time, page, range)
         },
-        getPostFrom: async (_, {time}) => {
-            return await getAllPostsSincePublishedDate(time)
+        getPostFrom: async (_, {time, page, range}) => {
+            return await getAllPostsSincePublishedDate(time, page, range)
         },
-        getPostWithKeyword: async (_, {keyword}) => {
-            return await getPostWithKeyword(keyword)
+        getPostWithKeyword: async (_, {keyword, page, range}) => {
+            return await getPostWithKeyword(keyword, page, range)
         },
-        getAllUsers: async (_ , __, { user }) => {
+        getAllUsers: async (_ , __, { user, page, range }) => {
             let userObject = (await user.getUser());
             if (!userObject) throw new Error('You must be authenticated & be an admin to access this');
             if (!userObject.role && userObject.role < 2) throw new Error('You must be an admin');    // These numbers might change
-            return await getUsers();
+            return await getUsers(page, range);
         },
 
         getUserWithId: async (_, { uid }, { user }) => {
