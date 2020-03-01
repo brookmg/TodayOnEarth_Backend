@@ -2,7 +2,8 @@
     "targets": [{
         "target_name": "sample",
         "cflags": ['-std=gnu++14','-Wall','-fexceptions'],
-        "libraries": [ 
+        "cflags_cc": ['-std=gnu++14' ],
+        "libraries": [
             "-Wl,-rpath,/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu/libpython3.6.so",
          ],
         "sources": [ "./src/native/sample.cpp" , "./src/native/trend.cpp",
