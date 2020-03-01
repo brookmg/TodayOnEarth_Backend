@@ -51,6 +51,12 @@ string sortByUserInterestInterface(string postsJson , string userInterests, bool
     return toString(posts);
 }
 
+string getPostCountAndCommunityInteractionByProviderInterface(string postsJson) {
+    json posts = fromString(postsJson);
+    auto result = getPostCountAndCommunityInteractionByProvider(posts);
+    return toString(json(result));
+}
+
 String sortByTrendingKeywordMain(const CallbackInfo& info) {
     Env env = info.Env();
     return String::New(env , sortByTrendingKeywordInterface( info[0].As<String>().Utf8Value() , info[1].As<String>().Utf8Value() , info[2].As<Boolean>() ));
@@ -77,6 +83,13 @@ String sortByUserInterestMain(const CallbackInfo& info) {
     Env env = info.Env();
     return String::New(
         env, sortByUserInterestInterface( info[0].As<String>().Utf8Value() , info[1].As<String>().Utf8Value() , info[2].As<Boolean>())
+    );
+}
+
+String getPostCountAndCommunityInteractionByProviderMain( const CallbackInfo& info) {
+    Env env = info.Env();
+    return String::New(
+        env, getPostCountAndCommunityInteractionByProviderInterface( info[0].As<String>().Utf8Value())
     );
 }
 
@@ -108,6 +121,11 @@ Object Init(Env env, Object exports) {
     exports.Set(
         String::New(env, "sortByUserInterest"),
         Function::New(env, sortByUserInterestMain)
+    );
+
+    exports.Set(
+        String::New(env, "getPostCountAndCommunityInteractionByProvider"),
+        Function::New(env, getPostCountAndCommunityInteractionByProviderMain)
     );
 
     return exports;
