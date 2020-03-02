@@ -66,7 +66,6 @@ string getEnvVar( string key ,string defaultValue) {
 
 
 PyObject * initializePythonInterpreter() {
-    // TODO: Discuss with Brook how to initialize/finalize the python interepreter when node starts/exits
 
     dlopen(getEnvVar("LIBPYTHON_PATH",".").c_str(), RTLD_LAZY | RTLD_GLOBAL);
 
