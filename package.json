@@ -5,10 +5,13 @@
   "main": "index.js",
   "scripts": {
     "queue": "rimraf dist && npm run build && node dist/queue/queue_sample.js",
+    "build_c": "node-gyp rebuild && tsc && babel build --out-dir dist",
     "build": "tsc && babel build --out-dir dist",
     "test": "jest --coverage --silent",
     "dev": "nodemon --exec npm run restart",
+    "dev_c": "nodemon --exec npm run restart_c",
     "restart": "rimraf dist && npm run build && npm run start",
+    "restart_c": "rimraf dist && npm run build_c && npm run start",
     "start": "node dist/index.js"
   },
   "keywords": [
@@ -24,6 +27,7 @@
     "apollo-server-express": "^2.10.1",
     "axios": "^0.19.2",
     "bcrypt": "^3.0.8",
+    "bindings": "^1.5.0",
     "body-parser": "^1.19.0",
     "bull": "^3.12.1",
     "bull-arena": "^2.7.1",
@@ -39,6 +43,7 @@
     "knex": "^0.20.8",
     "lodash": "^4.17.15",
     "morgan": "^1.9.1",
+    "node-addon-api": "^2.0.0",
     "nodemon": "^2.0.2",
     "objection": "^2.1.2",
     "passport": "^0.4.1",
@@ -49,8 +54,7 @@
     "pg": "^7.18.1",
     "request": "^2.88.2",
     "rimraf": "^3.0.1",
-    "tsc": "^1.20150623.0",
-    "typescript": "^3.7.5",
+    "typescript": "^3.8.3",
     "validator": "^12.2.0"
   },
   "devDependencies": {
