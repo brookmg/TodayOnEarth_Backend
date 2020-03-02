@@ -67,7 +67,7 @@ export async function insertPost(postData) : Promise<Post> {
 }
 
 export async function getAllPostsGraphed(page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) (await Post.query().withGraphFetched({
+    if (page >= 0 && range) (await Post.query().withGraphFetched({
         keywords: true
     }).distinct([`post.*`]).page(page, range)).results;
     else return Post.query().withGraphFetched({
@@ -80,12 +80,12 @@ export async function deletePost(postid: number) : Promise<number> {
 }
 
 export async function getAllPosts(page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) return (await Post.query().page(page, range)).results;
+    if (page >= 0 && range) return (await Post.query().page(page, range)).results;
     else return Post.query();
 }
 
 export async function getPostWithKeyword(keyword: String, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) return (await Post.query().findByIds(
+    if (page >= 0 && range) return (await Post.query().findByIds(
             Keyword.query().where('keyword' , keyword).select('post_id')
         ).withGraphFetched({
             keywords: true
@@ -104,7 +104,7 @@ export async function getPostById(postid: number) : Promise<Post> {
 }
 
 export async function getAllPostsFromProvider(provider: string, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) return (await Post.query().withGraphFetched({
+    if (page >= 0 && range) return (await Post.query().withGraphFetched({
         keywords: true
     }).where('provider' , provider).distinct([`post.*`]).page(page, range)).results;
     else return Post.query().withGraphFetched({
@@ -113,7 +113,7 @@ export async function getAllPostsFromProvider(provider: string, page: number, ra
 }
 
 export async function getAllPostsFromSource(source: string, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) return (await Post.query().withGraphFetched({
+    if (page >= 0 && range) return (await Post.query().withGraphFetched({
         keywords: true
     }).where('source_link' , 'like' ,  `%${source}%`).distinct([`post.*`]).page(page, range)).results;
     else return Post.query().withGraphFetched({
@@ -122,7 +122,7 @@ export async function getAllPostsFromSource(source: string, page: number, range:
 }
 
 export async function getAllPostsWithTitle(title: string, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) return (await Post.query().withGraphFetched({
+    if (page >= 0 && range) return (await Post.query().withGraphFetched({
         keywords: true
     }).where('title' , 'like' ,  `%${title}%`).distinct([`post.*`]).page(page, range)).results;
     else return Post.query().withGraphFetched({
@@ -131,7 +131,7 @@ export async function getAllPostsWithTitle(title: string, page: number, range: n
 }
 
 export async function getAllPostsWithBody(body: string, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) return (await Post.query().withGraphFetched({
+    if (page >= 0 && range) return (await Post.query().withGraphFetched({
         keywords: true
     }).where('body' , 'like' ,  `%${body}%`).distinct([`post.*`]).page(page, range)).results;
     else return Post.query().withGraphFetched({
@@ -171,7 +171,7 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
 
 export async function getPostsCustom(jsonQuery: QueryObject[], page: number, range: number): Promise<Post[]> {
     if (jsonQuery.length === 0) return getAllPosts(page, range);  // if the query was []
-    let qBuilder = (page > -1 && range) ? Post.query().withGraphFetched({
+    let qBuilder = (page >= 0 && range) ? Post.query().withGraphFetched({
         keywords: true
     }, {joinOperation: 'innerJoin'}).distinct('post.*').page(page, range) : Post.query().withGraphFetched({
         keywords: true
@@ -218,13 +218,13 @@ export async function getPostsCustom(jsonQuery: QueryObject[], page: number, ran
 
     });
 
-    if (page > -1 && range) {
+    if (page >= 0 && range) {
         return (await qBuilder).results;
     } else return qBuilder
 }
 
 export async function getAllPostsBeforeScrapedDate(time: number, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) return (await Post.query().withGraphFetched({
+    if (page >= 0 && range) return (await Post.query().withGraphFetched({
         keywords: true
     }).where('scraped_on' , '<' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
     else return Post.query().withGraphFetched({
@@ -233,7 +233,7 @@ export async function getAllPostsBeforeScrapedDate(time: number, page: number, r
 }
 
 export async function getAllPostsSinceScrapedDate(time: number, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) return (await Post.query().withGraphFetched({
+    if (page >= 0 && range) return (await Post.query().withGraphFetched({
         keywords: true
     }).where('scraped_on' , '>=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
     else return Post.query().withGraphFetched({
@@ -242,7 +242,7 @@ export async function getAllPostsSinceScrapedDate(time: number, page: number, ra
 }
 
 export async function getAllPostsOnScrapedDate(time: number, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range) return (await Post.query().withGraphFetched({
+    if (page >= 0 && range) return (await Post.query().withGraphFetched({
         keywords: true
     }).where('scraped_on' , '=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
 
@@ -258,7 +258,7 @@ export async function getAllPostsBeforePublishedDate(time: number) : Promise<Pos
 }
 
 export async function getAllPostsSincePublishedDate(time: number, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range)
+    if (page >= 0 && range)
         return (await Post.query().withGraphFetched({
             keywords: true
         }).where('published_on' , '>=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
@@ -269,7 +269,7 @@ export async function getAllPostsSincePublishedDate(time: number, page: number, 
 }
 
 export async function getAllPostsOnPublishedDate(time: number, page: number, range: number) : Promise<Post[]> {
-    if (page > -1 && range)
+    if (page >= 0 && range)
         return (await Post.query().withGraphFetched({
             keywords: true
         }).where('published_on' , '=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;

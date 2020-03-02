@@ -42,7 +42,7 @@ export async function getUser(uid: Number): Promise<User> {
 
 export async function getUsers(page: number, range: number): Promise<User[]> {
     await createUserScheme();
-    if (page > -1 && range) return (await User.query().withGraphFetched({
+    if (page >= 0 && range) return (await User.query().withGraphFetched({
         interests: true
     }).page(page, range)).results;
     else return User.query().withGraphFetched({
