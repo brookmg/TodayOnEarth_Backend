@@ -30,6 +30,7 @@ import {
     removeInterestForUser, unMuteOrResetInterestForUser, updateInterestForUser
 } from "../db/interest_table";
 import {RedisPubSub} from "graphql-redis-subscriptions";
+const cookie = require('cookie');
 
 export const PubSub = new RedisPubSub();
 
@@ -278,7 +279,7 @@ export const [ POST_ADDED, POST_REMOVED, USER_ADDED, USER_REMOVED ] = [ "post_ad
 
 const resolvers = {
     Subscription: {
-        postAdded: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([POST_ADDED]) } },
+        postAdded: { subscribe: (_ , __, { currentUser }) => { return PubSub.asyncIterator([POST_ADDED]) } },
         postRemoved: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([POST_REMOVED]) } },
         userAdded: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_ADDED]) } },
         userRemoved: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_REMOVED]) } },
@@ -457,9 +458,28 @@ export class UserHandler {
     }
 }
 
+async function getCookieFromWebSocket(webSocket): Promise<any> {
+    return new Promise((resolve , reject) => resolve(cookie.parse(webSocket.upgradeReq.headers.cookie)));
+}
+
 export const server = new ApolloServer({ typeDefs: typeDef , resolvers,
-    context: async ({ req, res }) => {
-        return {user: new UserHandler(req, res)}
+    subscriptions: {
+        onConnect: async (connectionParams, webSocket) => {
+            if (connectionParams.authToken) {
+                return { currentUser: await verifyUser(connectionParams.authToken) }
+            } else {
+                try {
+                    const cookies = await getCookieFromWebSocket(webSocket);
+                    if (cookies.userId) return {currentUser: await verifyUser(cookies.userId)};
+                } catch (e) {
+                    throw new Error(`You must be signed in. more_info: ${e}`)
+                }
+            }
+        }
+    },
+    context: async ({ req, res, connection }) => {
+        if (!req || !req.headers) return connection.context;
+        else return {user: new UserHandler(req, res)}
     },
     playground: {
         settings: {
