@@ -83,12 +83,12 @@ PyObject * initializePythonInterpreter() {
     PyList_Insert(sys_path,0, folder_path);
 
     int listSize = PyList_Size(sys_path);
-    cout<<"Paths to scan for modules:"<<endl;
-    for(int i=0;i<listSize;i++){
-        PyObject *li = PyList_GetItem(sys_path,i);
-        cout<<PyUnicode_AsUTF8(li)<<endl;
-    }
-    cout<<endl;
+//    cout<<"Paths to scan for modules:"<<endl;
+//    for(int i=0;i<listSize;i++){
+//        PyObject *li = PyList_GetItem(sys_path,i);
+//        cout<<PyUnicode_AsUTF8(li)<<endl;
+//    }
+//    cout<<endl;
 
     PyObject *pModule = PyImport_Import(PyUnicode_FromString("similarity_score_generator"));
     if (pModule == NULL) {

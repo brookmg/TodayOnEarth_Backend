@@ -149,9 +149,6 @@ void findFrequency(PyObject* pScoreFunction, unordered_map<string,double> &frequ
         {
             double currentScore = generateSimilarityScore(pScoreFunction,currentWord,word.first,checkSematicSimilarity);
 
-            cout<<currentScore<<" score for: "<<currentWord<<" and "<<word.first<<endl;
-
-
             if(currentScore >= mergeCutOffScore)
             {
                 frequencyMap[word.first] += currentScore;
@@ -196,9 +193,9 @@ void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<s
     auto firstPost = posts[0];
     auto rootKeywords = postToKeywords(firstPost,stopWords);
 
-    for(auto w: rootKeywords) {
-        cout<<"Root keywords: "<<w<<endl;
-    }
+//    for(auto w: rootKeywords) {
+//        cout<<"Root keywords: "<<w<<endl;
+//    }
 
     unordered_map<string,double> frequencyMap;
 
@@ -212,7 +209,7 @@ void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<s
         unordered_set<string> currentPostWords = postToKeywords(p,stopWords);
         findFrequency(pScoreFunction,frequencyMap,currentPostWords,checkSematicSimilarity);
 
-        cout<<"At "<<i<<endl;
+        //cout<<"At "<<i<<endl;
     }
 
     vector<pair<std::string,double>> sortedFrequencyMap;
@@ -226,9 +223,9 @@ void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<s
     });
 
     // print frequecy of keywords that will be sorted later
-    for(auto word: sortedFrequencyMap) {
-        cout<<"-word: "<<word.first<<" -frequency: "<<word.second<<endl;
-    }
+//    for(auto word: sortedFrequencyMap) {
+//        cout<<"-word: "<<word.first<<" -frequency: "<<word.second<<endl;
+//    }
 
 }
 
@@ -270,7 +267,7 @@ void sortByUserInterest(PyObject* pScoreFunction, json &posts,unordered_set<stri
                 break;
             }
 
-            cout<<"At: "<<i<<endl;
+            //cout<<"At: "<<i<<endl;
         }
 
         if(isUninterestingPost) {
@@ -288,9 +285,9 @@ void sortByUserInterest(PyObject* pScoreFunction, json &posts,unordered_set<stri
 
 vector<pair<string, double>> getKeywordFrequency(PyObject* pScoreFunction, json &post,unordered_set<string> &stopWords, bool checkSematicSimilarity) {
     auto postKeywords = postToKeywords(post,stopWords);
-    for(auto w: postKeywords) {
-        cout<<"Root keywords: "<<w<<endl;
-    }
+//    for(auto w: postKeywords) {
+//        cout<<"Root keywords: "<<w<<endl;
+//    }
 
     unordered_map<string,double> frequencyMap;
 
