@@ -9,9 +9,7 @@
         "sources": [ "./src/native/sample.cpp" , "./src/native/trend.cpp",
                      "./src/native/includes/main.h" , "./src/native/util.cpp" ],
         "include_dirs": ["./node_modules/node-addon-api" ,
-                        "/usr/include/python3.6",
-                         "C:\\Users\\BrookMG\\AppData\\Local\\Programs\\Python\\Python36-32\\include",
-                         "C:\\TDM-GCC-64\\x86_64-w64-mingw32"],
+                        "/usr/include/python3.6"],
         'defines': [ 'NAPI_DISABLE_CPP_EXCEPTIONS']
     }]
 }
