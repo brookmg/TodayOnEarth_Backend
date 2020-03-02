@@ -4,10 +4,10 @@ import sys
 try:
     import os
     from ctypes import PyDLL
-    print("env: ",os.environ)
+    #print("env: ",os.environ)
 
-    print("Python versionL",sys.version)
-    print("Version info:",sys.version_info)
+    #print("Python versionL",sys.version)
+    #print("Version info:",sys.version_info)
 
 
     from nltk.corpus import wordnet as wn
