@@ -47,7 +47,7 @@ void printPrettyJson(json j, string filename) {
 unordered_set<string> getStopWords(){
     unordered_set<string> res;
 
-    std::ifstream i(string("dependencies/") + "common-english-words.txt");
+    std::ifstream i(getEnvVar("SIMILARITY_SCORE_GENERATOR_PY_FOLDER",".") + string("/dependencies/") + "common-english-words.txt");
 
     string output;
 

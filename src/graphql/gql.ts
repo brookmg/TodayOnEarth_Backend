@@ -1,6 +1,6 @@
 import {User} from "../model/user";
 
-const { ApolloServer, gql } = require('apollo-server-express');
+const { ApolloServer, gql , withFilter } = require('apollo-server-express');
 import {
     getAllPosts,
     getAllPostsFromProvider,
@@ -24,12 +24,16 @@ import {
     verifyUser
 } from '../db/user_table';
 import {
+    activationFunction,
     addInterestForUser,
     addInterestListForUser, getInterestsForUser,
     muteInterestForUser,
     removeInterestForUser, unMuteOrResetInterestForUser, updateInterestForUser
 } from "../db/interest_table";
 import {RedisPubSub} from "graphql-redis-subscriptions";
+import {NativeClass} from "../native";
+import {Interest} from "../model/interest";
+import {Post} from "../model/post";
 const cookie = require('cookie');
 
 export const PubSub = new RedisPubSub();
@@ -277,9 +281,33 @@ const typeDef = gql`
 
 export const [ POST_ADDED, POST_REMOVED, USER_ADDED, USER_REMOVED ] = [ "post_added" , "post_removed", "user_added", "user_removed" ];
 
+function getVectorPairFromInterests(interests: Interest[]) {
+    const returnable = [];
+    interests.forEach(interest => returnable.push([ interest.interest , interest.score ]));
+    return returnable;
+}
+
 const resolvers = {
     Subscription: {
-        postAdded: { subscribe: (_ , __, { currentUser }) => { return PubSub.asyncIterator([POST_ADDED]) } },
+        postAdded: {
+            subscribe: withFilter(
+                () => PubSub.asyncIterator(POST_ADDED),
+                (payload , variables, { currentUser }) => {
+
+                    payload.postAdded.forEach((item: Post) => item.keywords = []);
+                    const vector = getVectorPairFromInterests(currentUser.interests);
+
+                    const interestScore = JSON.parse(
+                        NativeClass.sortByUserInterest(
+                            JSON.stringify([payload.postAdded[0]]),
+                            JSON.stringify(vector),
+                            false
+                        )
+                    );
+
+                    return activationFunction(interestScore[0].score_interest_total) > 0.5;
+                })
+        },
         postRemoved: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([POST_REMOVED]) } },
         userAdded: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_ADDED]) } },
         userRemoved: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_REMOVED]) } },
