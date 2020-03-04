@@ -287,28 +287,33 @@ function getVectorPairFromInterests(interests: Interest[]) {
     return returnable;
 }
 
+function filterFn(actualPayload , variables , { currentUser }) {
+    actualPayload.forEach((item: Post) => item.keywords = []);
+    const vector = getVectorPairFromInterests(currentUser.interests);
+
+    const interestScore = JSON.parse(
+        NativeClass.sortByUserInterest(
+            JSON.stringify([actualPayload[0]]),
+            JSON.stringify(vector),
+            false
+        )
+    );
+
+    return activationFunction(interestScore[0].score_interest_total) > 0.5;
+}
+
 const resolvers = {
     Subscription: {
         postAdded: {
             subscribe: withFilter(
                 () => PubSub.asyncIterator(POST_ADDED),
-                (payload , variables, { currentUser }) => {
-
-                    payload.postAdded.forEach((item: Post) => item.keywords = []);
-                    const vector = getVectorPairFromInterests(currentUser.interests);
-
-                    const interestScore = JSON.parse(
-                        NativeClass.sortByUserInterest(
-                            JSON.stringify([payload.postAdded[0]]),
-                            JSON.stringify(vector),
-                            false
-                        )
-                    );
-
-                    return activationFunction(interestScore[0].score_interest_total) > 0.5;
-                })
+                (payload , variables , context) => filterFn(payload.postAdded, variables, context))
         },
-        postRemoved: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([POST_REMOVED]) } },
+        postRemoved: {
+            subscribe: withFilter(
+                () => PubSub.asyncIterator(POST_REMOVED),
+                (payload , variables , context) => filterFn(payload.postRemoved, variables, context))
+        },
         userAdded: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_ADDED]) } },
         userRemoved: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_REMOVED]) } },
     },
