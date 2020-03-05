@@ -6,6 +6,7 @@ import {
     updateProviderOfUser
 } from "../db/provider_table";
 import {Provider} from "../model/provider";
+import {getAllPosts} from "../db/post_table";
 
 const { gql } = require('apollo-server-express');
 
@@ -29,6 +30,7 @@ export const typeDef = gql`
     extend type Query {
         getProviders: [Provider]
         getProvidersForUser: [Provider]
+        getPostsForUser(page: Int, range: Int): [Post]
     }
     
     extend type Mutation {
@@ -44,7 +46,11 @@ export const resolvers = {
         getProvidersForUser: async (_ , __ , { user }) => {
             if (!await user.getUser()) throw new Error('You must be authenticated to access this');
             return getProvidersForUser((await user.getUser()).uid);
-        }
+        },
+        getPostsForUser: async ( _ , { page , range } , { user }) => {
+            if (!await user.getUser()) throw new Error('You must be authenticated to access this');
+            return await getAllPosts(page , range , (await user.getUser()).uid)
+        },
     },
 
     Mutation: {
