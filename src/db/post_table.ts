@@ -2,7 +2,9 @@ import {Post} from '../model/post'
 import {KnexI} from './db'
 import {Keyword} from '../model/keyword';
 import {forEach} from '../utils'
-import {getProvidersForUser} from "./provider_table";
+import {getProvidersForUser, getProvidersForUsers} from "./provider_table";
+import {usersWithPotentiallySimilarInterest} from "./interest_table";
+import {Interest} from "../model/interest";
 
 Post.knex(KnexI);
 Keyword.knex(KnexI);
@@ -93,15 +95,25 @@ export async function deletePost(postid: number) : Promise<number> {
     return Post.query().deleteById(postid);
 }
 
-export async function getAllPosts(page: number, range: number , uid: number = -1) : Promise<Post[]> {
+export async function getAllPosts(page: number, range: number , uid: number = -1, fruitPunch: boolean = false, fruitLimit: number = 10) : Promise<Post[]> {
     let mainQ = Post.query();
-    console.log(uid);
+    let mainQB;
 
     if (uid >= 0) {
         let providerList = [];
         (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
-        console.dir(providerList);
-        mainQ.whereIn(['provider' , 'source'] , providerList)
+
+        if (fruitPunch) {
+            mainQB = Post.query();
+            let providerListB = [];
+            let uids = (await usersWithPotentiallySimilarInterest(uid , 0.2)).map((item: any) => item.uid);
+            (await getProvidersForUsers(uids , 4))
+                .forEach(item => providerListB.push([item.provider , item.source]));
+            mainQB.whereIn(['provider' , 'source'] , providerListB).limit(fruitLimit)
+        }
+
+        mainQ.whereIn(['provider' , 'source'] , providerList);
+        if (mainQB) mainQ.unionAll([mainQB] , true)
     }
 
     if (page >= 0 && range) return (await mainQ.page(page, range)).results;
