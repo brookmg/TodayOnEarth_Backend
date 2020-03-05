@@ -52,6 +52,7 @@ export async function createPostScheme() : Promise<any> {
         table.text('title', 'longtext');
         table.text('body', 'longtext');
         table.text('provider', 'longtext');
+        table.text('source' , 'mediumtext');
         table.text('source_link', 'mediumtext').unique();
 
         table.dateTime('published_on');
@@ -63,7 +64,19 @@ export async function createPostScheme() : Promise<any> {
 }
 
 export async function insertPost(postData) : Promise<Post> {
-    return createPostScheme().then(() => Post.query().insertGraph(postData));
+    return createPostScheme().then(() => {
+        let possibleSource = postData.source_link.split("/")[2];
+        postData.source = ((possibleSource: string) => {
+            console.log(possibleSource);
+            if (possibleSource.indexOf('facebook.com') != -1) return 'facebook';
+            else if (possibleSource.indexOf('instagram.com') != -1) return 'instagram';
+            else if (possibleSource.indexOf('twitter.com') != -1) return 'twitter';
+            else if (possibleSource.indexOf('t.me') != -1) return 'telegram';
+            else return 'unknown';
+        })(possibleSource);
+
+        return Post.query().insertGraph(postData)
+    });
 }
 
 export async function getAllPostsGraphed(page: number, range: number) : Promise<Post[]> {

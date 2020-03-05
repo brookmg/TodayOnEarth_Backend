@@ -83,6 +83,7 @@ export class Post extends Model {
                 title: { type: 'string' },
                 body: { type: 'string' },
                 provider: { type: 'string' },
+                source: { type: 'string'},
                 source_link: { type: 'string' },
                 keywords: { type: 'array'},
                 published_on: { type: 'date'},
