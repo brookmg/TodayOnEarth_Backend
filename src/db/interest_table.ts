@@ -97,9 +97,10 @@ export async function removeInterestForUser(interest: string, uid: number) {
     });
 }
 
-export async function addInterestListForUser(interests: Interest[], uid: number , clear: boolean = false) : Promise<boolean> {
+export async function addInterestListForUser(interests: Interest[], uid: number = -1 , clear: boolean = false) : Promise<boolean> {
     let promises = [];
-    if (clear) await Interest.query().delete().where(true);
+    if (uid < 0) throw new Error('Unknown user');
+    if (clear) await Interest.query().delete().where('uid' , uid);
     for (const interest of interests) { promises.push(addInterestForUser(interest.interest , interest.score , uid)); }
 
     return Promise.all(promises).then(results => { return results.every(item => item === true) })
