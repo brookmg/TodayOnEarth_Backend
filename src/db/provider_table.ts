@@ -63,6 +63,17 @@ export async function updateProviderOfUser(update: Provider, provider: string, s
     });
 }
 
+export async function addProviderListForUser(providers: Provider[], uid: number , clear: boolean = false) : Promise<boolean> {
+    let promises = [];
+    if (clear) await Provider.query().delete().where('uid' , uid);
+
+    for (const provider of providers) {
+        promises.push(insertProvider(Provider.fromJson({ uid , ...provider, added_on: new Date().toUTCString() })));
+    }
+
+    return Promise.all(promises).then(results => { return results.every(item => !!item === true) })
+}
+
 export async function getProvidersForUser(uid : number) : Promise<Provider[]> {
     return createProviderScheme().then(() => Provider.query().where('uid' , uid));
 }

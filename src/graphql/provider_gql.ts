@@ -1,4 +1,5 @@
 import {
+    addProviderListForUser,
     deleteProviderItem,
     getProviders,
     getProvidersForUser,
@@ -48,8 +49,10 @@ export const typeDef = gql`
     
     extend type Mutation {
         addProvider(provider: IProvider) : Provider
+        addProviderList(providers: [IProvider]) : Boolean
         removeProvider(provider: IProvider) : Boolean
-        updateProvider(update: IProvider, provider: String! , source: String!) : Provider
+        updateProvider(provider: String! , source: String!, update: IProvider) : Provider
+        cleanUpdateProviderList(providers: [IProvider]!) : Boolean
     }
 `;
 
@@ -101,6 +104,20 @@ export const resolvers = {
         updateProvider: async ( _, { update, provider, source } , { user }) => {
             if (!await user.getUser()) throw new Error('You must be authenticated to access this');
             return (await updateProviderOfUser(update , provider , source, (await user.getUser()).uid)).toJSON()
+        },
+
+        addProviderList: async ( _ , { providers } , { user }) => {
+            if (!await user.getUser()) throw new Error('You must be authenticated to access this');
+            let uid = (await user.getUser()).uid;
+            //providers.forEach(provider => provider.uid = uid);
+            return addProviderListForUser(providers, uid , false)
+        },
+
+        cleanUpdateProviderList: async ( _ , { providers } , { user }) => {
+            if (!await user.getUser()) throw new Error('You must be authenticated to access this');
+            let uid = (await user.getUser()).uid;
+            //providers.forEach(provider => provider.uid = uid);
+            return addProviderListForUser(providers, uid , true)
         },
     }
 };
