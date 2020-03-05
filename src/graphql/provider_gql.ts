@@ -40,7 +40,7 @@ export const typeDef = gql`
     extend type Query {
         getProviders: [Provider]
         getProvidersForUser: [Provider]
-        getPostsForUser(page: Int, range: Int): [Post]
+        getPostsForUser(page: Int, range: Int, fruitPunch: Boolean, fruitLimit: Int): [Post]
         getPostScrapedSinceForUser(time: Int, page: Int, range: Int): [Post]
         getPostFromForUser(time: Int, page: Int, range: Int): [Post]
         getPostPublishedOnForUser(time: Int, page: Int, range: Int): [Post]
@@ -63,9 +63,9 @@ export const resolvers = {
             if (!await user.getUser()) throw new Error('You must be authenticated to access this');
             return getProvidersForUser((await user.getUser()).uid);
         },
-        getPostsForUser: async ( _ , { page , range } , { user }) => {
+        getPostsForUser: async ( _ , { page , range , fruitPunch , fruitLimit } , { user }) => {
             if (!await user.getUser()) throw new Error('You must be authenticated to access this');
-            return await getAllPosts(page , range , (await user.getUser()).uid)
+            return await getAllPosts(page , range , (await user.getUser()).uid, fruitPunch , fruitLimit)
         },
         getPostCustomizedForUser: async (_ , { jsonQuery, page , range }, { user }) => {
             if (!await user.getUser()) throw new Error('You must be authenticated to access this');
