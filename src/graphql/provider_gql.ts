@@ -6,7 +6,12 @@ import {
     updateProviderOfUser
 } from "../db/provider_table";
 import {Provider} from "../model/provider";
-import {getAllPosts} from "../db/post_table";
+import {
+    getAllPosts, getAllPostsOnPublishedDate,
+    getAllPostsSincePublishedDate,
+    getAllPostsSinceScrapedDate,
+    getPostsCustom
+} from "../db/post_table";
 
 const { gql } = require('apollo-server-express');
 
@@ -31,6 +36,10 @@ export const typeDef = gql`
         getProviders: [Provider]
         getProvidersForUser: [Provider]
         getPostsForUser(page: Int, range: Int): [Post]
+        getPostScrapedSinceForUser(time: Int, page: Int, range: Int): [Post]
+        getPostFromForUser(time: Int, page: Int, range: Int): [Post]
+        getPostPublishedOnForUser(time: Int, page: Int, range: Int): [Post]
+        getPostCustomizedForUser(jsonQuery: [FilterQuery!]!, page: Int, range: Int): [Post]
     }
     
     extend type Mutation {
@@ -51,6 +60,23 @@ export const resolvers = {
             if (!await user.getUser()) throw new Error('You must be authenticated to access this');
             return await getAllPosts(page , range , (await user.getUser()).uid)
         },
+        getPostCustomizedForUser: async (_ , { jsonQuery, page , range }, { user }) => {
+            if (!await user.getUser()) throw new Error('You must be authenticated to access this');
+            return await getPostsCustom(jsonQuery, page, range, (await user.getUser()).uid)
+        },
+        getPostScrapedSinceForUser: async (_, {time, page, range} , { user }) => {
+            if (!await user.getUser()) throw new Error('You must be authenticated to access this');
+            return await getAllPostsSinceScrapedDate(time, page, range , (await user.getUser()).uid)
+        },
+        getPostPublishedOnForUser: async (_, {time, page, range} , { user }) => {
+            if (!await user.getUser()) throw new Error('You must be authenticated to access this');
+            return await getAllPostsOnPublishedDate(time, page, range , (await user.getUser()).uid)
+        },
+        getPostFromForUser: async (_, {time, page, range} , { user }) => {
+            if (!await user.getUser()) throw new Error('You must be authenticated to access this');
+            return await getAllPostsSincePublishedDate(time, page, range, (await user.getUser()).uid)
+        },
+
     },
 
     Mutation: {

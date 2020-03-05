@@ -201,7 +201,7 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
     return returnable;
 }
 
-export async function getPostsCustom(jsonQuery: QueryObject[], page: number, range: number, orderBy: string = '', order: string = ''): Promise<Post[]> {
+export async function getPostsCustom(jsonQuery: QueryObject[], page: number, range: number, orderBy: string = '', order: string = '', uid: number = -1): Promise<Post[]> {
     if (jsonQuery.length === 0) return getAllPosts(page, range);  // if the query was []
     let qBuilder = (page >= 0 && range) ? Post.query().withGraphFetched({
         keywords: true
@@ -252,6 +252,12 @@ export async function getPostsCustom(jsonQuery: QueryObject[], page: number, ran
 
     });
 
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+        qBuilder.whereIn(['provider' , 'source'] , providerList)
+    }
+
     if (page >= 0 && range) {
         return (await qBuilder).results;
     } else return qBuilder
@@ -266,11 +272,19 @@ export async function getAllPostsBeforeScrapedDate(time: number, page: number, r
     }).where('scraped_on' , '<' , new Date(time)).distinct([`post.*`]);
 }
 
-export async function getAllPostsSinceScrapedDate(time: number, page: number, range: number) : Promise<Post[]> {
-    if (page >= 0 && range) return (await Post.query().withGraphFetched({
+export async function getAllPostsSinceScrapedDate(time: number, page: number, range: number, uid: number = -1) : Promise<Post[]> {
+    let mainQ = Post.query();
+
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+        mainQ.whereIn(['provider' , 'source'] , providerList)
+    }
+
+    if (page >= 0 && range) return (await mainQ.withGraphFetched({
         keywords: true
     }).where('scraped_on' , '>=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
-    else return Post.query().withGraphFetched({
+    else return mainQ.withGraphFetched({
         keywords: true
     }).where('scraped_on' , '>=' , new Date(time)).distinct([`post.*`]);
 }
@@ -303,13 +317,21 @@ export async function getAllPostsBeforePublishedDate(time: number) : Promise<Pos
     }).where('published_on' , '<' , new Date(time)).distinct([`post.*`]);
 }
 
-export async function getAllPostsSincePublishedDate(time: number, page: number, range: number) : Promise<Post[]> {
+export async function getAllPostsSincePublishedDate(time: number, page: number, range: number, uid: number = -1) : Promise<Post[]> {
+    let mainQ = Post.query();
+
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+        mainQ.whereIn(['provider' , 'source'] , providerList)
+    }
+
     if (page >= 0 && range)
-        return (await Post.query().withGraphFetched({
+        return (await mainQ.withGraphFetched({
             keywords: true
         }).where('published_on' , '>=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
 
-    else return Post.query().withGraphFetched({
+    else return mainQ.withGraphFetched({
         keywords: true
     }).where('published_on' , '>=' , new Date(time)).distinct([`post.*`]);
 }
@@ -329,13 +351,21 @@ export async function getAllPostsBetweenPublishedDate(startTime: number, endTime
         .orderBy('published_on' , 'ASC');
 }
 
-export async function getAllPostsOnPublishedDate(time: number, page: number, range: number) : Promise<Post[]> {
+export async function getAllPostsOnPublishedDate(time: number, page: number, range: number, uid: number = -1) : Promise<Post[]> {
+    let mainQ = Post.query();
+
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+        mainQ.whereIn(['provider' , 'source'] , providerList)
+    }
+
     if (page >= 0 && range)
-        return (await Post.query().withGraphFetched({
+        return (await mainQ.withGraphFetched({
             keywords: true
         }).where('published_on' , '=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
 
-    else return Post.query().withGraphFetched({
+    else return mainQ.withGraphFetched({
         keywords: true
     }).where('published_on' , '=' , new Date(time)).distinct([`post.*`]);
 }
