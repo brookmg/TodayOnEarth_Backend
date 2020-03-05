@@ -77,3 +77,7 @@ export async function addProviderListForUser(providers: Provider[], uid: number 
 export async function getProvidersForUser(uid : number) : Promise<Provider[]> {
     return createProviderScheme().then(() => Provider.query().where('uid' , uid));
 }
+
+export async function getProvidersForUsers(uid : number[], limit: number = 10) : Promise<Provider[]> {
+    return createProviderScheme().then(() => Provider.query().whereIn('uid' , uid).limit(limit));
+}
