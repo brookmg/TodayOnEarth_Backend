@@ -1,7 +1,8 @@
-import { Post } from '../model/post'
-import { KnexI } from './db'
-import { Keyword } from '../model/keyword';
-import { forEach } from '../utils'
+import {Post} from '../model/post'
+import {KnexI} from './db'
+import {Keyword} from '../model/keyword';
+import {forEach} from '../utils'
+import {getProvidersForUser} from "./provider_table";
 
 Post.knex(KnexI);
 Keyword.knex(KnexI);
@@ -92,9 +93,19 @@ export async function deletePost(postid: number) : Promise<number> {
     return Post.query().deleteById(postid);
 }
 
-export async function getAllPosts(page: number, range: number) : Promise<Post[]> {
-    if (page >= 0 && range) return (await Post.query().page(page, range)).results;
-    else return Post.query();
+export async function getAllPosts(page: number, range: number , uid: number = -1) : Promise<Post[]> {
+    let mainQ = Post.query();
+    console.log(uid);
+
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+        console.dir(providerList);
+        mainQ.whereIn(['provider' , 'source'] , providerList)
+    }
+
+    if (page >= 0 && range) return (await mainQ.page(page, range)).results;
+    else return mainQ;
 }
 
 export async function getAllPostsOrdered(page: number, range: number, orderBy: string = '', order: string = '') : Promise<Post[]> {
