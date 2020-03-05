@@ -45,7 +45,7 @@ export async function getUser(uid: Number): Promise<User> {
     await createUserScheme();
     await createInterestScheme();
     return User.query().findById(uid).withGraphFetched({
-        interests: true
+        interests: true, providers: true
     });
 }
 
@@ -101,10 +101,10 @@ export async function verifyUserEmailWithToken(uid: number, token: string) : Pro
 export async function getUsers(page: number, range: number): Promise<User[]> {
     await createUserScheme();
     if (page >= 0 && range) return (await User.query().withGraphFetched({
-        interests: true
+        interests: true, providers: true
     }).page(page, range)).results;
     else return User.query().withGraphFetched({
-        interests: true
+        interests: true, providers: true
     });
 }
 

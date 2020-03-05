@@ -2,6 +2,8 @@ import {Interest} from "./interest";
 const { Model } = require('objection');
 import { USER_ADDED , USER_REMOVED, PubSub} from "../graphql/gql";
 
+import {Provider} from "./provider";
+
 export class User extends Model {
 
     static get tableName() {
@@ -19,6 +21,14 @@ export class User extends Model {
             join: {
                 from: 'user.uid',
                 to: 'interest.uid'
+            }
+        },
+        providers: {
+            relation: Model.HasManyRelation,
+            modelClass: Provider,
+            join: {
+                from: 'user.uid',
+                to: 'provider.uid'
             }
         }
     };

@@ -32,6 +32,10 @@ export const typeDef = gql`
         frequency: String!
     }
     
+    extend type User {
+        providers: [Provider]
+    }
+    
     extend type Query {
         getProviders: [Provider]
         getProvidersForUser: [Provider]
