@@ -248,6 +248,7 @@ const typeDef = gql`
         getPostsPublishedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]
         
         getPostsSortedByCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
+        getPostsSortedByRelativeCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
         
     }
 
@@ -343,6 +344,16 @@ const resolvers = {
             );
 
             return JSON.parse(value);
+        },
+
+        getPostsSortedByRelativeCommunityInteraction: async (_, { jsonQuery, page, range, orderBy, order, workingOn }) => {
+            let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
+            customQueryPosts.forEach(item => item.keywords = []);
+
+            return JSON.parse(await NativeClass.sortByRelativeCommunityInteraction(
+                JSON.stringify(customQueryPosts),
+                JSON.stringify(workingOn)
+            ));
         }
 
     },
