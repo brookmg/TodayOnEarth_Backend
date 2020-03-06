@@ -1,3 +1,7 @@
+---
+prev: ../
+next: ../models/user
+---
 # Setup
 Our API is 99% graphql based (the 1% accounts for the auth process involving 0Auth). All the tasks you want to command should be given as either gql queries or mutations.
 
@@ -72,7 +76,7 @@ input IUser {
 }
 ```
 
-A user will also be linked with other properties such us [Interest](/components/interest) and [Provider](/components/provider) in a later time. You can access your own interests and providers using the `me` query.
+A user will also be linked with other properties such us [Interest](/models/interest) and [Provider](/models/provider) in a later time. You can access your own interests and providers using the `me` query.
 
 ```graphql
 query {
