@@ -2,7 +2,7 @@ import {User} from "../model/user";
 
 const { ApolloServer, gql } = require('apollo-server-express');
 import {
-    getAllPosts,
+    getAllPosts, getAllPostsBetweenPublishedDate, getAllPostsBetweenScrapedDate,
     getAllPostsFromProvider,
     getAllPostsFromSource,
     getAllPostsOnPublishedDate, getAllPostsOrdered,
@@ -242,6 +242,10 @@ const typeDef = gql`
         isEmailUsed(email: String) : Boolean
         
         getInterestsOfUser: [Interest]
+
+        getPostsScrapedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]
+        getPostsPublishedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]
+        
     }
 
     type Mutation {
@@ -317,7 +321,14 @@ const resolvers = {
             user = await user.getUser();
             if (!user) throw new Error('You must be authenticated to access this');
             return getInterestsForUser(user.uid);
-        }
+        },
+
+        getPostsScrapedBetween: async (_, {startTime, endTime, page, range}) => {
+            return await getAllPostsBetweenScrapedDate(startTime, endTime, page, range)
+        },
+        getPostsPublishedBetween: async (_, {startTime, endTime, page, range}) => {
+            return await getAllPostsBetweenPublishedDate(startTime, endTime, page, range)
+        },
     },
 
     Metadata: {

@@ -251,14 +251,26 @@ export async function getAllPostsSinceScrapedDate(time: number, page: number, ra
     }).where('scraped_on' , '>=' , new Date(time)).distinct([`post.*`]);
 }
 
+export async function getAllPostsBetweenScrapedDate(startTime: number, endTime: number, page: number, range: number) : Promise<Post[]> {
+    if (page >= 0 && range) return (await Post.query().withGraphFetched({
+        keywords: true
+    }).whereBetween('scraped_on' , [new Date(startTime * 1000) , new Date(endTime * 1000)]).distinct([`post.*`]).page(page, range)).results;
+    else return Post.query().withGraphFetched({
+        keywords: true
+    }).whereBetween('scraped_on' , [new Date(startTime * 1000) , new Date(endTime * 1000)]).distinct([`post.*`]);
+}
+
 export async function getAllPostsOnScrapedDate(time: number, page: number, range: number) : Promise<Post[]> {
     if (page >= 0 && range) return (await Post.query().withGraphFetched({
         keywords: true
-    }).where('scraped_on' , '=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
+    }).where('scraped_on' , '=' , new Date(time * 1000)).distinct([`post.*`])
+        .orderBy('scraped_on' , 'ASC')
+        .page(page, range)).results;
 
     return Post.query().withGraphFetched({
         keywords: true
-    }).where('scraped_on' , '=' , new Date(time)).distinct([`post.*`]);
+    }).where('scraped_on' , '=' , new Date(time * 1000)).distinct([`post.*`])
+        .orderBy('scraped_on' , 'ASC');
 }
 
 export async function getAllPostsBeforePublishedDate(time: number) : Promise<Post[]> {
@@ -276,6 +288,21 @@ export async function getAllPostsSincePublishedDate(time: number, page: number, 
     else return Post.query().withGraphFetched({
         keywords: true
     }).where('published_on' , '>=' , new Date(time)).distinct([`post.*`]);
+}
+
+export async function getAllPostsBetweenPublishedDate(startTime: number, endTime: number, page: number, range: number) : Promise<Post[]> {
+    if (page >= 0 && range)
+        return (await Post.query().withGraphFetched({
+            keywords: true
+        }).whereBetween('published_on' , [new Date(startTime * 1000) , new Date(endTime * 1000)])
+            .distinct([`post.*`])
+            .orderBy('published_on' , 'ASC')
+            .page(page, range)).results;
+
+    else return Post.query().withGraphFetched({
+        keywords: true
+    }).whereBetween('published_on' , [new Date(startTime * 1000) , new Date(endTime * 1000)]).distinct([`post.*`])
+        .orderBy('published_on' , 'ASC');
 }
 
 export async function getAllPostsOnPublishedDate(time: number, page: number, range: number) : Promise<Post[]> {
