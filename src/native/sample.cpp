@@ -25,11 +25,8 @@ string sortByRelativeCommunityInteractionInterface(std::string postsJson, string
     return toString(posts);
 }
 
-string sortByTrendingKeywordInterface(std::string postsJson, string scoreParamJson, bool checkSematicSimilarity) {
+string sortByTrendingKeywordInterface(std::string postsJson, bool checkSematicSimilarity) {
     json posts = fromString(std::move(postsJson));
-    json scoreParam = fromString(std::move(scoreParamJson));
-    unordered_set<string> scoreParamSet;
-    for(auto& p: scoreParam) scoreParamSet.insert( p.get<string>() );
     auto stopWords = getStopWords();
     sortByTrendingKeyword(mainPythonObject , posts, stopWords , checkSematicSimilarity);
     return toString(posts);
@@ -59,7 +56,7 @@ string getPostCountAndCommunityInteractionByProviderInterface(string postsJson) 
 
 String sortByTrendingKeywordMain(const CallbackInfo& info) {
     Env env = info.Env();
-    return String::New(env , sortByTrendingKeywordInterface( info[0].As<String>().Utf8Value() , info[1].As<String>().Utf8Value() , info[2].As<Boolean>() ));
+    return String::New(env , sortByTrendingKeywordInterface( info[0].As<String>().Utf8Value() , info[1].As<Boolean>() ));
 }
 
 String sortByRelativeCommunityInteractionMain(const CallbackInfo& info) {
