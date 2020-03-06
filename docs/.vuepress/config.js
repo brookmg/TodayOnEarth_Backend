@@ -3,5 +3,18 @@ module.exports = {
     description: 'A feed aggregator and content delegator API',
     markdown: {
         lineNumbers: true
+    },
+    themeConfig: {
+        sidebar: 'auto',
+        smoothScroll: true,
+        displayAllHeaders: true,
+
+        repo: 'brookmg/TodayOnEarth_Backend',
+        repoLabel: 'Contribute ⚡',
+        docsDir: 'docs',
+        docsBranch: 'docs',
+        editLinks: true,
+        editLinkText: 'Contribute to this project by editing this page'
+
     }
 };
