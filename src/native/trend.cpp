@@ -54,11 +54,15 @@ void tagPostsWithRelativeCommunityInteractionScore(json &posts,unordered_set<str
     for(auto& p: posts){
         for(auto sp: scoreParams){
 
-            auto provider = providerInfo.at(p["provider"]);
-            json& communityInteractionForCurrentParam = p["metadata"]["community_interaction"][sp];
+            try {
+                auto provider = providerInfo.at(p["provider"]);
+                json& communityInteractionForCurrentParam = p["metadata"]["community_interaction"][sp];
 
-            int avgScoreForCurrentParam = provider["community_interaction"][sp].get<int>() / provider["post_count"].get<int>();
-            p["score_relative_:"+sp] = avgScoreForCurrentParam == 0 ? 0 : ((communityInteractionForCurrentParam.get<int>() - avgScoreForCurrentParam) / (double) avgScoreForCurrentParam);
+                int avgScoreForCurrentParam = provider["community_interaction"][sp].get<int>() / provider["post_count"].get<int>();
+                p["score_relative_:"+sp] = avgScoreForCurrentParam == 0 ? 0 : ((communityInteractionForCurrentParam.get<int>() - avgScoreForCurrentParam) / (double) avgScoreForCurrentParam);
+            } catch ( const exception& e) {
+                continue;
+            }
 
         }
     }
