@@ -29,6 +29,7 @@ import {
     muteInterestForUser,
     removeInterestForUser, unMuteOrResetInterestForUser, updateInterestForUser
 } from "../db/interest_table";
+import {NativeClass} from "../native";
 
 const typeDef = gql`
 
@@ -246,6 +247,8 @@ const typeDef = gql`
         getPostsScrapedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]
         getPostsPublishedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]
         
+        getPostsSortedByCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
+        
     }
 
     type Mutation {
@@ -329,6 +332,19 @@ const resolvers = {
         getPostsPublishedBetween: async (_, {startTime, endTime, page, range}) => {
             return await getAllPostsBetweenPublishedDate(startTime, endTime, page, range)
         },
+
+        getPostsSortedByCommunityInteraction: async (_, { jsonQuery, page, range, orderBy, order, workingOn }) => {
+            let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
+            customQueryPosts.forEach(item => item.keywords = []);
+
+            let value = await NativeClass.sortByCommunityInteraction(
+                JSON.stringify(customQueryPosts),
+                JSON.stringify(workingOn)
+            );
+
+            return JSON.parse(value);
+        }
+
     },
 
     Metadata: {
