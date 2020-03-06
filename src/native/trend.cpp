@@ -188,10 +188,12 @@ unordered_set<string> postToKeywords(json p, unordered_set<string>& stopWords) {
     return ret;
 }
 
-void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<string>& stopWords, bool checkSematicSimilarity = true) {
+vector<pair<std::string,double>> sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<string>& stopWords, bool checkSematicSimilarity = true) {
+    vector<pair<std::string,double>> sortedFrequencyMap;
+
     if(posts.size() < 2) {
         cout<<"[ERROR]: sortByTrendingKeyword needs at least 2 posts"<<endl;
-        return;
+        return sortedFrequencyMap;
     }
 
     auto firstPost = posts[0];
@@ -216,8 +218,6 @@ void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<s
         //cout<<"At "<<i<<endl;
     }
 
-    vector<pair<std::string,double>> sortedFrequencyMap;
-
     copy(frequencyMap.begin(),
          frequencyMap.end(),
          std::back_inserter<std::vector<pair<std::string,double>>>(sortedFrequencyMap));
@@ -226,6 +226,8 @@ void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<s
         return m1.second > m2.second;
     });
 
+
+    return sortedFrequencyMap;
     // print frequecy of keywords that will be sorted later
 //    for(auto word: sortedFrequencyMap) {
 //        cout<<"-word: "<<word.first<<" -frequency: "<<word.second<<endl;

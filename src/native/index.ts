@@ -9,4 +9,5 @@ export class NativeClass {
     public static getPostCountAndCommunityInteractionByProvider(posts: string) {
         return greet.getPostCountAndCommunityInteractionByProvider(posts)
     }
+    public static findKeywordListForPosts(posts: string, semantics: boolean) { return greet.findKeywordListForPosts(posts, semantics) }
 }

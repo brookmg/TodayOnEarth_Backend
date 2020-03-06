@@ -32,6 +32,14 @@ string sortByTrendingKeywordInterface(std::string postsJson, bool checkSematicSi
     return toString(posts);
 }
 
+string findKeywordListForPostsInterface(string postsJson, bool checkSemanticSimilarity) {
+    json posts = fromString(std::move(postsJson));
+    auto stopWords = getStopWords();
+    vector<pair<std::string,double>> vectorList = sortByTrendingKeyword(mainPythonObject , posts, stopWords , checkSemanticSimilarity);
+    json resultJson(vectorList);
+    return toString(resultJson);
+}
+
 string getKeywordFrequencyInterface(string singlePost, bool checkSemanticSimilarity) {
     json post = fromString(std::move(singlePost));
     auto stopWords = getStopWords();
@@ -57,6 +65,11 @@ string getPostCountAndCommunityInteractionByProviderInterface(string postsJson) 
 String sortByTrendingKeywordMain(const CallbackInfo& info) {
     Env env = info.Env();
     return String::New(env , sortByTrendingKeywordInterface( info[0].As<String>().Utf8Value() , info[1].As<Boolean>() ));
+}
+
+String findKeywordListForPostsMain(const CallbackInfo& info) {
+    Env env = info.Env();
+    return String::New(env , findKeywordListForPostsInterface( info[0].As<String>().Utf8Value() , info[1].As<Boolean>() ));
 }
 
 String sortByRelativeCommunityInteractionMain(const CallbackInfo& info) {
@@ -98,6 +111,11 @@ Object Init(Env env, Object exports) {
     exports.Set(
         String::New(env, "sortByTrendingKeyword"),
         Function::New(env, sortByTrendingKeywordMain)
+    );
+
+    exports.Set(
+        String::New(env, "findKeywordListForPosts"),
+        Function::New(env, findKeywordListForPostsMain)
     );
 
     exports.Set(
