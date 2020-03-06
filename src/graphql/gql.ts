@@ -250,6 +250,7 @@ const typeDef = gql`
         getPostsSortedByCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
         getPostsSortedByRelativeCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
         getPostsSortedByCustomKeywords(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, keywords: [String]): [Post]
+        getPostsSortedByTrendingKeyword(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean): [Post]
         
     }
 
@@ -369,8 +370,15 @@ const resolvers = {
                 semantics
             ));
         },
+        getPostsSortedByTrendingKeyword: async (_, { jsonQuery, page, range, orderBy, order, semantics }) => {
+            let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
+            customQueryPosts.forEach(item => item.keywords = []);
 
-
+            return JSON.parse(await NativeClass.sortByTrendingKeyword(
+                JSON.stringify(customQueryPosts),
+                semantics
+            ));
+        },
 
     },
 
