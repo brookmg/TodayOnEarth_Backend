@@ -251,6 +251,7 @@ const typeDef = gql`
         getPostsSortedByRelativeCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
         getPostsSortedByCustomKeywords(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, keywords: [String]): [Post]
         getPostsSortedByTrendingKeyword(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean): [Post]
+        getPostTopics(postId: Int, semantics: Boolean) : [Interest]
         
     }
 
@@ -379,6 +380,17 @@ const resolvers = {
                 semantics
             ));
         },
+        getPostTopics: async (_ , { postId, semantics }) => {
+            let post = await getPostById(postId);
+            if (!post) throw new Error(`Post doesn't exist`);
+            let keywords =  JSON.parse(await NativeClass.getKeywordFrequency(JSON.stringify(post), semantics));
+            let returnable = [];
+            keywords.forEach(item => returnable.push({
+                interest: item[0],
+                score: item[1]
+            }));
+            return returnable;
+        }
 
     },
 
