@@ -84,6 +84,14 @@ export async function getAllPosts(page: number, range: number) : Promise<Post[]>
     else return Post.query();
 }
 
+export async function getAllPostsOrdered(page: number, range: number, orderBy: string = '', order: string = '') : Promise<Post[]> {
+    let qBuilder = Post.query();
+    if (orderBy && order) qBuilder.orderBy(orderBy , order);
+
+    if (page >= 0 && range) return (await qBuilder.page(page, range)).results;
+    else return qBuilder;
+}
+
 export async function getPostWithKeyword(keyword: String, page: number, range: number) : Promise<Post[]> {
     if (page >= 0 && range) return (await Post.query().findByIds(
             Keyword.query().where('keyword' , keyword).select('post_id')
@@ -169,13 +177,15 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
     return returnable;
 }
 
-export async function getPostsCustom(jsonQuery: QueryObject[], page: number, range: number): Promise<Post[]> {
+export async function getPostsCustom(jsonQuery: QueryObject[], page: number, range: number, orderBy: string = '', order: string = ''): Promise<Post[]> {
     if (jsonQuery.length === 0) return getAllPosts(page, range);  // if the query was []
     let qBuilder = (page >= 0 && range) ? Post.query().withGraphFetched({
         keywords: true
     }, {joinOperation: 'innerJoin'}).distinct('post.*').page(page, range) : Post.query().withGraphFetched({
         keywords: true
     }, {joinOperation: 'innerJoin'}).distinct('post.*');
+
+    if (orderBy && order) qBuilder.orderBy(orderBy , order);
 
     await forEach(jsonQuery, async (operationItem: QueryObject) => {
 

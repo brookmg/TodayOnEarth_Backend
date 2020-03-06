@@ -5,7 +5,7 @@ import {
     getAllPosts,
     getAllPostsFromProvider,
     getAllPostsFromSource,
-    getAllPostsOnPublishedDate,
+    getAllPostsOnPublishedDate, getAllPostsOrdered,
     getAllPostsSincePublishedDate,
     getAllPostsSinceScrapedDate,
     getPostById,
@@ -221,7 +221,7 @@ const typeDef = gql`
     }
 
     type Query {
-        getPosts(page: Int, range: Int): [Post]
+        getPosts(page: Int, range: Int, orderBy: String, order: String): [Post]
         getPost(id: Int) : Post
         getPostFromProvider(provider: String, page: Int, range: Int): [Post]
         getPostFromSource(source: String, page: Int, range: Int): [Post]
@@ -231,7 +231,7 @@ const typeDef = gql`
         getPostPublishedOn(time: Int, page: Int, range: Int): [Post]
     
         getPostWithKeyword(keyword: String, page: Int, range: Int): [Post]
-        getPostCustomized(jsonQuery: [FilterQuery!]!, page: Int, range: Int): [Post]
+        getPostCustomized(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String): [Post]
         getAllUsers(page: Int, range: Int): [User]
 
         getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
@@ -266,11 +266,11 @@ const typeDef = gql`
 
 const resolvers = {
     Query: {
-        getPostCustomized: async (_ , { jsonQuery, page, range }) => {
-            return await getPostsCustom(jsonQuery, page, range)
+        getPostCustomized: async (_ , { jsonQuery, page, range, orderBy, order }) => {
+            return await getPostsCustom(jsonQuery, page, range, orderBy, order)
         },
-        getPosts: async (_ , {page , range}) => {
-            return await getAllPosts(page, range)
+        getPosts: async (_ , {page , range, orderBy, order}) => {
+            return await getAllPostsOrdered(page, range, orderBy, order)
         },
         getPost: async (_,{ id }) => {
             return await getPostById(id)
