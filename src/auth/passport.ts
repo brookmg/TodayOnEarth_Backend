@@ -85,8 +85,9 @@ Passport.use(new FacebookStrategy({
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
         callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/facebook/callback`,
         graphAPIVersion: 'v6.0',
-        enableProof: true
-    }, (accessToken , refreshToken, profile, done) => {
+        enableProof: true,
+        passReqToCallback: true
+    }, (req, accessToken , refreshToken, profile, done) => {
         try {
             request(`https://graph.facebook.com/me?fields=email,first_name,middle_name,last_name,address,gender,age_range&access_token=${accessToken}`,
                 async function (err, data, response) {
@@ -102,14 +103,27 @@ Passport.use(new FacebookStrategy({
                             done('data from facebook is incomplete. Missing email')
                         }
 
-                        let result = await isEmailUsed(profile.email);
-                        if (result) {
+                        let result = req.cookies.userId;
+                        let clientIdExists = await socialIdExists(SocialType.facebook_id, profile.id);
+
+                        if (result && !clientIdExists) {
                             // we have a user ... just modify the token table
-                            let user = (await getUsersByEmail(profile.email))[0];
-                            let tokenInsert = await addTokenForUser('facebook', accessToken, user.uid);
+
+                            let user = await verifyUser(result);
+                            let addSocial = await addSocialId(user.uid , SocialType.facebook_id , profile.id);
+                            let tokenInsert = await addTokenForUser('facebook' , `${accessToken}|||${refreshToken}` , user.uid);
 
                             done(null, {
                                 token: await generateToken(user)
+                            });
+                        } else if (clientIdExists) {
+                            if (result && (await verifyUser(result)).uid !== clientIdExists.uid) {
+                                return done('This social account is liked with someone else')
+                            }
+
+                            let tokenInsert = await addTokenForUser('facebook' , `${accessToken}|||${refreshToken}` , clientIdExists.uid);
+                            return done(null, {
+                                token: await generateToken(clientIdExists)
                             });
                         } else {
                             // new user, so send it to the front-end to get more info
@@ -122,13 +136,14 @@ Passport.use(new FacebookStrategy({
                                     email: profile.email,
                                     username: await generateUsername(profile.first_name, profile.last_name),
                                     age_group: profile.age_group,
+                                    facebook_id: profile.id
 
                                     // this is used to add the access_token as a field in the token table.
                                     // We need to insert the user's' uid to do this.
                                     // ❗❗❗ Facebook doesn't provide Refresh tokens, so we need check the availability
                                     // of the access_token ❗❗❗
-                                    access_token: accessToken,
-                                    provided_by: 'facebook'
+                                    // access_token: accessToken,
+                                    // provided_by: 'facebook'
                                 }
                             });
                         }
