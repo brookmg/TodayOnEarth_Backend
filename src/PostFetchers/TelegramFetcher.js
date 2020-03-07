@@ -44,9 +44,9 @@ export default class TelegramFetcher extends PostFetcherBase {
                 messageImageSrc = imageMatch[1]
             }
 
-            const messageViews = messageViewsDirty.replace(".", "")
+            const messageViews = Number(messageViewsDirty.replace(".", "")
                 .replace("K", "00")
-                .replace("M", "00000")
+                .replace("M", "00000"))
 
             let allKeyWords = messageText.split(" ");
 
