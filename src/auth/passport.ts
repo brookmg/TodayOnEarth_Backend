@@ -4,12 +4,17 @@ import { Strategy as FacebookStrategy } from 'passport-facebook'
 import { Strategy as TwitterStrategy } from 'passport-twitter'
 import { Strategy as GithubStrategy } from 'passport-github2'
 import {
+    addSocialId,
     generateToken,
     generateUsername,
     getUsersByEmail,
-    isEmailUsed
+    isEmailUsed,
+    socialIdExists,
+    SocialType,
+    verifyUser
 } from '../db/user_table'
 import {addTokenForUser} from "../db/token_table";
+
 const request = require('request');
 
 const dotenv = require('dotenv');
@@ -18,8 +23,9 @@ dotenv.config();
 Passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/google/callback`
-    }, async (accessToken , refreshToken, profile, done) => {
+        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/google/callback`,
+        passReqToCallback: true
+    }, async (req, accessToken , refreshToken, profile, done) => {
 
         if (!profile._json.given_name || !profile._json.family_name) {
             done('data from google is incomplete. Missing name')
@@ -27,14 +33,27 @@ Passport.use(new GoogleStrategy({
             done('data from google is incomplete. Missing email')
         }
 
-        let result = await isEmailUsed(profile._json.email);
-        if (result) {
+        let result = req.cookies.userId;
+        let clientIdExists = await socialIdExists(SocialType.google_id, profile.id);
+
+        if (result && !clientIdExists) {
             // we have a user ... just modify the token table
-            let user = (await getUsersByEmail(profile._json.email))[0];
-            let tokenInsert = await addTokenForUser('google' , accessToken , user.uid);
+
+            let user = await verifyUser(result);
+            let addSocial = await addSocialId(user.uid , SocialType.google_id , profile.id);
+            let tokenInsert = await addTokenForUser('google' , `${accessToken}|||${refreshToken}` , user.uid);
 
             done(null, {
                 token: await generateToken(user)
+            });
+        } else if (clientIdExists) {
+            if (result && (await verifyUser(result)).uid !== clientIdExists.uid) {
+                return done('This social account is liked with someone else')
+            }
+
+            let tokenInsert = await addTokenForUser('google' , `${accessToken}|||${refreshToken}` , clientIdExists.uid);
+            return done(null, {
+                token: await generateToken(clientIdExists)
             });
         } else {
             // new user, so send it to the front-end to get more info
@@ -46,13 +65,14 @@ Passport.use(new GoogleStrategy({
                     last_name: profile._json.family_name,
                     email: profile._json.email,
                     username: await generateUsername(profile._json.given_name, profile._json.family_name),
+                    google_id: profile.id,
 
                     // this is used to add the access_token as a field in the token table.
                     // We need to insert the user's' uid to do this.
                     // ❗❗❗ Google does provide Refresh tokens, should be kept with care until it's sent back ❗❗❗
-                    access_token: accessToken,
-                    refresh_token: refreshToken,
-                    provided_by: 'google'
+                    // access_token: accessToken,
+                    // refresh_token: refreshToken,
+                    // provided_by: 'google'
                 }
             });
         }

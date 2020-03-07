@@ -51,6 +51,9 @@ export class User extends Model {
             required: ['email', 'first_name' , 'last_name', 'password_hash', 'username'],
             properties: {
                 uid: { type: 'integer'},
+                google_id: { type: 'string'},
+                facebook_id: { type: 'string'},
+                twitter_id: { type: 'string'},
                 first_name: { type: 'string', minLength: 3},
                 middle_name: { type: 'string' },
                 last_name: { type: 'string', minLength: 2},

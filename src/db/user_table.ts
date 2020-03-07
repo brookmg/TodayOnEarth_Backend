@@ -27,6 +27,10 @@ export async function createUserScheme(): Promise<any> {
         table.string('last_location');  // comma separated geo data
         table.string('password_hash');
 
+        table.string('google_id').unique();
+        table.string('facebook_id').unique();
+        table.string('twitter_id').unique();
+
         table.string('github_id').unique();
         table.string('linkedin_id').unique();
         table.string('telegram_id').unique();
@@ -96,6 +100,21 @@ export async function verifyUserEmailWithToken(uid: number, token: string) : Pro
     let user = await getUser(uid);
     if (token === user.verification_token) return !! await setUserVerification(uid, true);
     else throw new Error('Token is incorrect');
+}
+
+export enum SocialType { 'google_id' , 'facebook_id' , 'twitter_id', 'instagram_id'}
+
+export async function addSocialId(uid: number, type: SocialType , socialId: string ): Promise<User> {
+    return User.query().patchAndFetchById(uid, {
+        [SocialType[type]]: socialId
+    })
+}
+
+export async function socialIdExists (type: SocialType , socialId: string): Promise<User> {
+    console.log(type, SocialType[type]);
+    const count: User[] = await User.query().where( `${SocialType[type]}` , socialId);
+    if (count.length === 0) return undefined;
+    else return count[0];
 }
 
 export async function getUsers(page: number, range: number): Promise<User[]> {
