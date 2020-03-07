@@ -1,6 +1,6 @@
 import {User} from "../model/user";
 
-const { ApolloServer, gql } = require('apollo-server-express');
+const { ApolloServer, gql , withFilter } = require('apollo-server-express');
 import {
     getAllPosts, getAllPostsBetweenPublishedDate, getAllPostsBetweenScrapedDate,
     getAllPostsFromProvider,
@@ -24,12 +24,20 @@ import {
     verifyUser
 } from '../db/user_table';
 import {
+    activationFunction,
     addInterestForUser,
     addInterestListForUser, getInterestsForUser,
     muteInterestForUser,
     removeInterestForUser, unMuteOrResetInterestForUser, updateInterestForUser
 } from "../db/interest_table";
+
+import {RedisPubSub} from "graphql-redis-subscriptions";
 import {NativeClass} from "../native";
+import {Interest} from "../model/interest";
+import {Post} from "../model/post";
+const cookie = require('cookie');
+
+export const PubSub = new RedisPubSub();
 
 const typeDef = gql`
 
@@ -273,10 +281,55 @@ const typeDef = gql`
         removeInterest(interest: String!) : Boolean
         
     } 
+    
+    type Subscription {
+        postAdded: [Post]
+        postRemoved: [Post]
+        userAdded: [User]
+        userRemoved: [User]
+    }
 
 `;
 
+export const [ POST_ADDED, POST_REMOVED, USER_ADDED, USER_REMOVED ] = [ "post_added" , "post_removed", "user_added", "user_removed" ];
+
+function getVectorPairFromInterests(interests: Interest[]) {
+    const returnable = [];
+    interests.forEach(interest => returnable.push([ interest.interest , interest.score ]));
+    return returnable;
+}
+
+function filterFn(actualPayload , variables , { currentUser }) {
+    actualPayload.forEach((item: Post) => item.keywords = []);
+    const vector = getVectorPairFromInterests(currentUser.interests);
+
+    const interestScore = JSON.parse(
+        NativeClass.sortByUserInterest(
+            JSON.stringify([actualPayload[0]]),
+            JSON.stringify(vector),
+            false
+        )
+    );
+
+    return activationFunction(interestScore[0].score_interest_total) > 0.5;
+}
+
 const resolvers = {
+    Subscription: {
+        postAdded: {
+            subscribe: withFilter(
+                () => PubSub.asyncIterator(POST_ADDED),
+                (payload , variables , context) => filterFn(payload.postAdded, variables, context))
+        },
+        postRemoved: {
+            subscribe: withFilter(
+                () => PubSub.asyncIterator(POST_REMOVED),
+                (payload , variables , context) => filterFn(payload.postRemoved, variables, context))
+        },
+        userAdded: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_ADDED]) } },
+        userRemoved: { subscribe: (_ , __, { user }) => { return PubSub.asyncIterator([USER_REMOVED]) } },
+    },
+
     Query: {
         getPostCustomized: async (_ , { jsonQuery, page, range, orderBy, order }) => {
             return await getPostsCustom(jsonQuery, page, range, orderBy, order)
@@ -531,9 +584,28 @@ export class UserHandler {
     }
 }
 
+async function getCookieFromWebSocket(webSocket): Promise<any> {
+    return new Promise((resolve , reject) => resolve(cookie.parse(webSocket.upgradeReq.headers.cookie)));
+}
+
 export const server = new ApolloServer({ typeDefs: typeDef , resolvers,
-    context: async ({ req, res }) => {
-        return {user: new UserHandler(req, res)}
+    subscriptions: {
+        onConnect: async (connectionParams, webSocket) => {
+            if (connectionParams.authToken) {
+                return { currentUser: await verifyUser(connectionParams.authToken) }
+            } else {
+                try {
+                    const cookies = await getCookieFromWebSocket(webSocket);
+                    if (cookies.userId) return {currentUser: await verifyUser(cookies.userId)};
+                } catch (e) {
+                    throw new Error(`You must be signed in. more_info: ${e}`)
+                }
+            }
+        }
+    },
+    context: async ({ req, res, connection }) => {
+        if (!req || !req.headers) return connection.context;
+        else return {user: new UserHandler(req, res)}
     },
     playground: {
         settings: {

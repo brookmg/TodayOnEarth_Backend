@@ -48,7 +48,7 @@ export async function addInterestForUser(interest: string, score: number, uid: n
     });
 }
 
-function activationFunction(x) { return ( 2 / ( 1 + Math.pow(Math.E,-x)) ) - 1; }
+export function activationFunction(x) { return ( 2 / ( 1 + Math.pow(Math.E,-x)) ) - 1; }
 
 export async function changeInterestScoreForUser(interest: string, to: number , uid: number) {
     return createInterestScheme().then(async () => {
