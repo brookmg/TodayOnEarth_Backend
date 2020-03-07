@@ -54,11 +54,15 @@ void tagPostsWithRelativeCommunityInteractionScore(json &posts,unordered_set<str
     for(auto& p: posts){
         for(auto sp: scoreParams){
 
-            auto provider = providerInfo.at(p["provider"]);
-            json& communityInteractionForCurrentParam = p["metadata"]["community_interaction"][sp];
+            try {
+                auto provider = providerInfo.at(p["provider"]);
+                json& communityInteractionForCurrentParam = p["metadata"]["community_interaction"][sp];
 
-            int avgScoreForCurrentParam = provider["community_interaction"][sp].get<int>() / provider["post_count"].get<int>();
-            p["score_relative_:"+sp] = avgScoreForCurrentParam == 0 ? 0 : ((communityInteractionForCurrentParam.get<int>() - avgScoreForCurrentParam) / (double) avgScoreForCurrentParam);
+                int avgScoreForCurrentParam = provider["community_interaction"][sp].get<int>() / provider["post_count"].get<int>();
+                p["score_relative_:"+sp] = avgScoreForCurrentParam == 0 ? 0 : ((communityInteractionForCurrentParam.get<int>() - avgScoreForCurrentParam) / (double) avgScoreForCurrentParam);
+            } catch ( const exception& e) {
+                continue;
+            }
 
         }
     }
@@ -184,10 +188,12 @@ unordered_set<string> postToKeywords(json p, unordered_set<string>& stopWords) {
     return ret;
 }
 
-void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<string>& stopWords, bool checkSematicSimilarity = true) {
+vector<pair<std::string,double>> sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<string>& stopWords, bool checkSematicSimilarity = true) {
+    vector<pair<std::string,double>> sortedFrequencyMap;
+
     if(posts.size() < 2) {
         cout<<"[ERROR]: sortByTrendingKeyword needs at least 2 posts"<<endl;
-        return;
+        return sortedFrequencyMap;
     }
 
     auto firstPost = posts[0];
@@ -212,8 +218,6 @@ void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<s
         //cout<<"At "<<i<<endl;
     }
 
-    vector<pair<std::string,double>> sortedFrequencyMap;
-
     copy(frequencyMap.begin(),
          frequencyMap.end(),
          std::back_inserter<std::vector<pair<std::string,double>>>(sortedFrequencyMap));
@@ -222,6 +226,8 @@ void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<s
         return m1.second > m2.second;
     });
 
+
+    return sortedFrequencyMap;
     // print frequecy of keywords that will be sorted later
 //    for(auto word: sortedFrequencyMap) {
 //        cout<<"-word: "<<word.first<<" -frequency: "<<word.second<<endl;

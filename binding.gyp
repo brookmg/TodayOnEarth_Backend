@@ -2,7 +2,7 @@
     "targets": [{
         "target_name": "sample",
         "cflags": ['-std=gnu++14','-Wall','-fexceptions'],
-        "cflags_cc": ['-std=gnu++14' ],
+        "cflags_cc": ['-std=gnu++14', '-fexceptions' ],
         "libraries": [
             "-Wl,-rpath,/usr/lib/python3.6/config-3.6m-x86_64-linux-gnu/libpython3.6.so",
          ],

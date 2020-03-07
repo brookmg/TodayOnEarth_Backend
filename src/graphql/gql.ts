@@ -2,10 +2,10 @@ import {User} from "../model/user";
 
 const { ApolloServer, gql } = require('apollo-server-express');
 import {
-    getAllPosts,
+    getAllPosts, getAllPostsBetweenPublishedDate, getAllPostsBetweenScrapedDate,
     getAllPostsFromProvider,
     getAllPostsFromSource,
-    getAllPostsOnPublishedDate,
+    getAllPostsOnPublishedDate, getAllPostsOrdered,
     getAllPostsSincePublishedDate,
     getAllPostsSinceScrapedDate,
     getPostById,
@@ -29,6 +29,7 @@ import {
     muteInterestForUser,
     removeInterestForUser, unMuteOrResetInterestForUser, updateInterestForUser
 } from "../db/interest_table";
+import {NativeClass} from "../native";
 
 const typeDef = gql`
 
@@ -221,7 +222,7 @@ const typeDef = gql`
     }
 
     type Query {
-        getPosts(page: Int, range: Int): [Post]
+        getPosts(page: Int, range: Int, orderBy: String, order: String): [Post]
         getPost(id: Int) : Post
         getPostFromProvider(provider: String, page: Int, range: Int): [Post]
         getPostFromSource(source: String, page: Int, range: Int): [Post]
@@ -231,7 +232,7 @@ const typeDef = gql`
         getPostPublishedOn(time: Int, page: Int, range: Int): [Post]
     
         getPostWithKeyword(keyword: String, page: Int, range: Int): [Post]
-        getPostCustomized(jsonQuery: [FilterQuery!]!, page: Int, range: Int): [Post]
+        getPostCustomized(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String): [Post]
         getAllUsers(page: Int, range: Int): [User]
 
         getUserWithId(uid: Int) : User  # ONLY FOR ADMIN ROLE USERS!
@@ -242,6 +243,17 @@ const typeDef = gql`
         isEmailUsed(email: String) : Boolean
         
         getInterestsOfUser: [Interest]
+
+        getPostsScrapedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]
+        getPostsPublishedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]
+        
+        getPostsSortedByCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
+        getPostsSortedByRelativeCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
+        getPostsSortedByCustomKeywords(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, keywords: [String]): [Post]
+        getPostsSortedByTrendingKeyword(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean): [Post]
+        getPostTopics(postId: Int, semantics: Boolean) : [Interest]
+        getTodaysTrendingKeywords(semantics: Boolean, page: Int, range: Int) : [Interest]
+        
     }
 
     type Mutation {
@@ -266,11 +278,11 @@ const typeDef = gql`
 
 const resolvers = {
     Query: {
-        getPostCustomized: async (_ , { jsonQuery, page, range }) => {
-            return await getPostsCustom(jsonQuery, page, range)
+        getPostCustomized: async (_ , { jsonQuery, page, range, orderBy, order }) => {
+            return await getPostsCustom(jsonQuery, page, range, orderBy, order)
         },
-        getPosts: async (_ , {page , range}) => {
-            return await getAllPosts(page, range)
+        getPosts: async (_ , {page , range, orderBy, order}) => {
+            return await getAllPostsOrdered(page, range, orderBy, order)
         },
         getPost: async (_,{ id }) => {
             return await getPostById(id)
@@ -317,7 +329,88 @@ const resolvers = {
             user = await user.getUser();
             if (!user) throw new Error('You must be authenticated to access this');
             return getInterestsForUser(user.uid);
+        },
+
+        getPostsScrapedBetween: async (_, {startTime, endTime, page, range}) => {
+            return await getAllPostsBetweenScrapedDate(startTime, endTime, page, range)
+        },
+        getPostsPublishedBetween: async (_, {startTime, endTime, page, range}) => {
+            return await getAllPostsBetweenPublishedDate(startTime, endTime, page, range)
+        },
+
+        getPostsSortedByCommunityInteraction: async (_, { jsonQuery, page, range, orderBy, order, workingOn }) => {
+            let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
+            customQueryPosts.forEach(item => item.keywords = []);
+
+            let value = await NativeClass.sortByCommunityInteraction(
+                JSON.stringify(customQueryPosts),
+                JSON.stringify(workingOn)
+            );
+
+            return JSON.parse(value);
+        },
+
+        getPostsSortedByRelativeCommunityInteraction: async (_, { jsonQuery, page, range, orderBy, order, workingOn }) => {
+            let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
+            customQueryPosts.forEach(item => item.keywords = []);
+
+            return JSON.parse(await NativeClass.sortByRelativeCommunityInteraction(
+                JSON.stringify(customQueryPosts),
+                JSON.stringify(workingOn)
+            ));
+        },
+
+        getPostsSortedByCustomKeywords: async (_, { jsonQuery, page, range, orderBy, order, semantics, keywords }) => {
+            let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
+            customQueryPosts.forEach(item => item.keywords = []);
+            let fakeInterests = [];
+            keywords.forEach(keyword => fakeInterests.push([ keyword , 0.5 ]));
+
+            return JSON.parse(await NativeClass.sortByUserInterest(
+                JSON.stringify(customQueryPosts),
+                JSON.stringify(fakeInterests),
+                semantics
+            ));
+        },
+        getPostsSortedByTrendingKeyword: async (_, { jsonQuery, page, range, orderBy, order, semantics }) => {
+            let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
+            customQueryPosts.forEach(item => item.keywords = []);
+
+            return JSON.parse(await NativeClass.sortByTrendingKeyword(
+                JSON.stringify(customQueryPosts),
+                semantics
+            ));
+        },
+        getPostTopics: async (_ , { postId, semantics }) => {
+            let post = await getPostById(postId);
+            if (!post) throw new Error(`Post doesn't exist`);
+            let keywords =  JSON.parse(await NativeClass.getKeywordFrequency(JSON.stringify(post), semantics));
+            let returnable = [];
+            keywords.forEach(item => returnable.push({
+                interest: item[0],
+                score: item[1]
+            }));
+            return returnable;
+        },
+        getTodaysTrendingKeywords: async (_ , { semantics, page, range }) => {
+            let posts = await getAllPostsBetweenPublishedDate(
+                (new Date().getTime() - (24 * 60 * 60 * 1000)) / 1000,
+                new Date().getTime() / 1000,
+                page, range
+            );
+
+            if (posts.length == 0) throw new Error('No post were found in the time period');
+            if (posts.length < 2) throw new Error('This method needs at least 2 posts to function');
+
+            let returnable = [];
+            let keywords = JSON.parse(await NativeClass.findKeywordListForPosts(JSON.stringify(posts) , semantics));
+            keywords.forEach(item => returnable.push({
+                interest: item[0],
+                score: item[1]
+            }));
+            return returnable;
         }
+
     },
 
     Metadata: {
