@@ -12,7 +12,7 @@
     "dev_c": "nodemon --exec npm run restart_c",
     "restart": "rimraf dist && npm run build && npm run start",
     "restart_c": "rimraf dist && npm run build_c && npm run start",
-    "start": "node dist/index.js"
+    "start": "npx knex migrate:latest && node dist/index.js"
   },
   "keywords": [
     "API",
