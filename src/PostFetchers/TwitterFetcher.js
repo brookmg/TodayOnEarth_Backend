@@ -34,9 +34,9 @@ export default class TwitterFetcher extends PostFetcherBase {
             const tweetSource = `https://twitter.com${$(e).find(".tweet-timestamp").attr('href')}`
 
 
-            const tweetReplies = $(e).find(".ProfileTweet-action--reply").find(".ProfileTweet-actionCount").attr('data-tweet-stat-count')
-            const tweetRetweets = $(e).find(".ProfileTweet-action--retweet").find(".ProfileTweet-actionCount").attr('data-tweet-stat-count')
-            const tweetLikes = $(e).find(".ProfileTweet-action--favorite").find(".ProfileTweet-actionCount").attr('data-tweet-stat-count')
+            const tweetReplies = Number($(e).find(".ProfileTweet-action--reply").find(".ProfileTweet-actionCount").attr('data-tweet-stat-count'))
+            const tweetRetweets = Number($(e).find(".ProfileTweet-action--retweet").find(".ProfileTweet-actionCount").attr('data-tweet-stat-count'))
+            const tweetLikes = Number($(e).find(".ProfileTweet-action--favorite").find(".ProfileTweet-actionCount").attr('data-tweet-stat-count'))
 
             const tweetText = utils.removeRedundantWhitespace(tweetTextDirty)
 
