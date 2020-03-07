@@ -163,8 +163,9 @@ Passport.use(new TwitterStrategy({
         callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/twitter/callback`,
         includeEmail: true,
         includeStatus: false,
-        includeEntities: false
-    }, async (accessToken , refreshToken, profile, done) => {
+        includeEntities: false,
+        passReqToCallback: true
+    }, async (req, accessToken , refreshToken, profile, done) => {
 
         if (!profile._json.name) {
             done('data from Twitter is incomplete. Missing name')
@@ -172,14 +173,27 @@ Passport.use(new TwitterStrategy({
             done('data from Twitter is incomplete. Missing email')
         }
 
-        let result = await isEmailUsed(profile._json.email);
-        if (result) {
+        let result = req.cookies.userId;
+        let clientIdExists = await socialIdExists(SocialType.twitter_id, profile.id);
+
+        if (result && !clientIdExists) {
             // we have a user ... just modify the token table
-            let user = (await getUsersByEmail(profile._json.email))[0];
-            let tokenInsert = await addTokenForUser('twitter' , accessToken , user.uid);
+
+            let user = await verifyUser(result);
+            let addSocial = await addSocialId(user.uid , SocialType.twitter_id , profile.id);
+            let tokenInsert = await addTokenForUser('twitter' , `${accessToken}|||${refreshToken}` , user.uid);
 
             done(null, {
                 token: await generateToken(user)
+            });
+        } else if (clientIdExists) {
+            if (result && (await verifyUser(result)).uid !== clientIdExists.uid) {
+                return done('This social account is liked with someone else')
+            }
+
+            let tokenInsert = await addTokenForUser('twitter' , `${accessToken}|||${refreshToken}` , clientIdExists.uid);
+            return done(null, {
+                token: await generateToken(clientIdExists)
             });
         } else {
             // new user, so send it to the front-end to get more info
