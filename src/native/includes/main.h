@@ -23,7 +23,7 @@ string getEnvVar( string key ,string defaultValue);
 /** TREND.cpp **/
 vector<pair<string, double>> getKeywordFrequency(PyObject* pScoreFunction, json &post,unordered_set<string> &stopWords, bool checkSemanticSimilarity);
 void sortByUserInterest(PyObject* pScoreFunction, json &posts,unordered_set<string> &stopWords, vector< pair<std::string,double> > interests, bool checkSemanticSimilarity);
-void sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<string>& stopWords, bool checkSemanticSimilarity);
+vector<pair<string, double>> sortByTrendingKeyword(PyObject* pScoreFunction,json &posts, unordered_set<string>& stopWords, bool checkSemanticSimilarity);
 void tagPostsWithAverageCommunityInteraction(json &posts,unordered_set<string> tagParams);  // not worthy
 void sortByRelativeCommunityInteraction(json &posts,unordered_set<string> scoreParams);
 void tagPostsWithRelativeCommunityInteractionScore(json &posts,unordered_set<string> scoreParams); // not worthy
