@@ -102,7 +102,7 @@ export async function verifyUserEmailWithToken(uid: number, token: string) : Pro
     else throw new Error('Token is incorrect');
 }
 
-export enum SocialType { 'google_id' , 'facebook_id' , 'twitter_id', 'instagram_id' , 'github_id' , 'linkedin_id'}
+export enum SocialType { 'google_id' , 'facebook_id' , 'twitter_id', 'instagram_id' , 'github_id' , 'linkedin_id', 'telegram_id'}
 
 export async function addSocialId(uid: number, type: SocialType , socialId: string ): Promise<User> {
     return User.query().patchAndFetchById(uid, {
