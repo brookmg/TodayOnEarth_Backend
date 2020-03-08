@@ -209,6 +209,7 @@ Passport.use(new TwitterStrategy({
                     last_name: family_name || '@twitter',
                     email: profile._json.email,
                     username: await generateUsername(given_name, family_name || `twitter`),
+                    twitter_id: profile.id,
                     provided_by: 'twitter'
                 }
             });
