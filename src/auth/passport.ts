@@ -3,6 +3,8 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Strategy as FacebookStrategy } from 'passport-facebook'
 import { Strategy as TwitterStrategy } from 'passport-twitter'
 import { Strategy as GithubStrategy } from 'passport-github2'
+import { Strategy as LinkedInStrategy } from 'passport-linkedin-oauth2'
+
 import {
     addSocialId,
     generateToken,
@@ -259,6 +261,68 @@ Passport.use(new GithubStrategy({
 
     })
 );
+
+Passport.use(new LinkedInStrategy({
+        clientID: process.env.LINKEDIN_CLIENT_ID,
+        clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/linkedin/callback`,
+        scope: ['r_emailaddress' , 'r_liteprofile' , 'w_member_social'],
+        state: true,
+        passReqToCallback: true
+    }, async (req, accessToken , refreshToken, profile, done) => {
+
+        if (!profile.name.givenName) {
+            done('data from LinkedIn is incomplete. Missing name')
+        } else if (!profile.emails[0].value) {
+            done('data from LinkedIn is incomplete. Missing email')
+        }
+
+        let result = req.cookies.userId;
+        let clientIdExists = await socialIdExists(SocialType.linkedin_id, profile.id);
+
+        if (result && !clientIdExists) {
+            // we have a user ... just modify the token table
+
+            let user = await verifyUser(result);
+            let addSocial = await addSocialId(user.uid , SocialType.linkedin_id , profile.id);
+            let tokenInsert = await addTokenForUser('linkedin' , `${accessToken}|||${refreshToken}` , user.uid);
+
+            done(null, {
+                token: await generateToken(user)
+            });
+        } else if (clientIdExists) {
+            if (result && (await verifyUser(result)).uid !== clientIdExists.uid) {
+                return done('This social account is liked with someone else')
+            }
+
+            let tokenInsert = await addTokenForUser('linkedin' , `${accessToken}|||${refreshToken}` , clientIdExists.uid);
+            return done(null, {
+                token: await generateToken(clientIdExists)
+            });
+        } else {
+            // new user, so send it to the front-end to get more info
+
+            let { givenName , familyName } = profile;
+
+            done(null, {
+                potential_user: {
+                    first_name: givenName,
+                    middle_name: undefined,
+                    last_name: familyName || '.linkedin',
+                    email: profile.emails[0].value,
+                    username: await generateUsername(givenName, familyName || 'linkedin'),
+                    linkedin_id: profile.id,
+
+                    // this is used to add the access_token as a field in the token table.
+                    // We need to insert the user's' uid to do this.
+                    // ❗❗❗ Github doesn't provide Refresh tokens, token checks should be made ❗❗❗
+                    // access_token: accessToken,
+                    // provided_by: 'linkedin'
+                }
+            });
+        }
+    })
+ );
 
 
 Passport.serializeUser(function(user, done) {

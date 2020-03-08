@@ -61,3 +61,13 @@ authRouter.get('/github/callback' ,
         })(req,res);
     }
 );
+
+authRouter.get('/linkedin' , Passport.authenticate('linkedin', { accessType: 'offline' }));
+
+authRouter.get('/linkedin/callback' ,
+    function (req, res) {
+        Passport.authenticate('linkedin', (err, data) => {
+            redirectionHandlerMiddleware(req, res, err, data)
+        })(req,res);
+    }
+);
