@@ -31,8 +31,8 @@ export async function getTokenById(id : number) : Promise<Token> {
 }
 
 export async function addTokenForUser(type: string, token: string, uid: number) : Promise<boolean> {
-    const allowedTypes = ['google', 'facebook' , 'twitter' , 'instagram'];
-    if (!allowedTypes.includes(type)) throw new Error('Token provided for unknown source')
+    const allowedTypes = ['google', 'facebook' , 'twitter' , 'instagram' , 'github' , 'linkedin'];
+    if (!allowedTypes.includes(type)) throw new Error('Token provided for unknown source');
 
     return await createTokenScheme().then(async () => {
         const countOfToken = (await Token.query().where('uid' , uid)).length;
