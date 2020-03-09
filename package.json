@@ -10,9 +10,11 @@
     "test": "jest --coverage --silent",
     "dev": "nodemon --exec npm run restart",
     "dev_c": "nodemon --exec npm run restart_c",
-    "restart": "rimraf dist && npm run build && npm run start",
-    "restart_c": "rimraf dist && npm run build_c && npm run start",
-    "start": "npx knex migrate:latest && node dist/index.js"
+    "restart": "rimraf dist && npm run build && npm run start_dev",
+    "restart_c": "rimraf dist && npm run build_c && npm run start_dev",
+    "knex:migrate": "npx knex migrate:rollback --env development && npx knex migrate:latest --env development && npx knex seed:run --env development",
+    "start": "npx knex migrate:latest --env production && node dist/index.js",
+    "start_dev": "npx knex migrate:latest --env development && node dist/index.js"
   },
   "keywords": [
     "API",
