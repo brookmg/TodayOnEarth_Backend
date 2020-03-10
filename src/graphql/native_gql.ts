@@ -1,8 +1,15 @@
+import {getInterestsForUser} from "../db/interest_table";
+
 const { gql } = require('apollo-server-express');
 import {getAllPostsBetweenPublishedDate, getPostById, getPostsCustom} from "../db/post_table";
 import {NativeClass} from "../native";
+import {getVectorPairFromInterests} from "./post_gql";
 
 export const typeDef = gql`
+    extend type Post {
+        interests: [Interest]
+    }
+    
     type Query {
         getPostsSortedByCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
         getPostsSortedByRelativeCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
@@ -10,6 +17,8 @@ export const typeDef = gql`
         getPostsSortedByTrendingKeyword(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean): [Post]
         getPostTopics(postId: Int, semantics: Boolean) : [Interest]
         getTodaysTrendingKeywords(semantics: Boolean, page: Int, range: Int) : [Interest]
+        getPostRelevance(postId: Int!, keywords: [String]!, semantics: Boolean) : [Interest]
+        getPostsSortedByUserInterest(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean): [Post]
     }
 `;
 
@@ -86,6 +95,59 @@ export const resolvers = {
                 score: item[1]
             }));
             return returnable;
+        },
+        getPostsSortedByUserInterest: async (_, { jsonQuery, page, range, orderBy, order, semantics }, { user }) => {
+            let userObject = (await user.getUser());
+            if (!userObject) throw new Error('You must be authenticated & be an admin to access this');
+
+            let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
+            customQueryPosts.forEach(item => item.keywords = []);
+            let interestRaw = await getInterestsForUser(userObject.uid);
+            if (!interestRaw) throw new Error('User has no interests');
+
+            let interests = getVectorPairFromInterests(interestRaw);
+            let postsPre = JSON.parse(await NativeClass.sortByUserInterest(
+                JSON.stringify(customQueryPosts),
+                JSON.stringify(interests),
+                semantics
+            ));
+
+            postsPre.forEach(post => {
+                let interestComputations = [];
+                interestRaw.forEach(interest => {
+                    interestComputations.push({
+                        interest: interest.interest,
+                        score: post[`score_interest_:${interest.interest}`]
+                    })
+                });
+                post.interests = interestComputations;
+            });
+
+            return postsPre;
+
+        },
+        getPostRelevance: async (_ , { postId, keywords , semantics}) => {
+            let post = await getPostById(postId);
+            if (!post) throw new Error('Post is not found or available');
+
+            let fakeInterests = [];
+            keywords.forEach(keyword => fakeInterests.push([ keyword , 0.5 ]));
+
+            let postComputations = JSON.parse(await NativeClass.sortByUserInterest(
+                JSON.stringify([post]),
+                JSON.stringify(fakeInterests),
+                semantics
+            ));
+
+            let interestComputations = [];
+            keywords.forEach(keyword => {
+                interestComputations.push({
+                    interest: keyword,
+                    score: postComputations[0][`score_interest_:${keyword}`]
+                })
+            });
+
+            return interestComputations;
         }
     }
 };

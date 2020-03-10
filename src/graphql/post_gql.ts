@@ -182,7 +182,7 @@ export const typeDef = gql`
     
 `;
 
-function getVectorPairFromInterests(interests: Interest[]) {
+export function getVectorPairFromInterests(interests: Interest[]) {
     const returnable = [];
     interests.forEach(interest => returnable.push([ interest.interest , interest.score ]));
     return returnable;
