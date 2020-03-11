@@ -6,11 +6,9 @@ import { Strategy as GithubStrategy } from 'passport-github2'
 import { Strategy as LinkedInStrategy } from 'passport-linkedin-oauth2'
 
 import {
-    addSocialId,
+    addSocialId, generateEmail,
     generateToken,
     generateUsername,
-    getUsersByEmail,
-    isEmailUsed,
     socialIdExists,
     SocialType,
     verifyUser
@@ -31,8 +29,6 @@ Passport.use(new GoogleStrategy({
 
         if (!profile._json.given_name || !profile._json.family_name) {
             done('data from google is incomplete. Missing name')
-        } else if (!profile._json.email) {
-            done('data from google is incomplete. Missing email')
         }
 
         let result = req.cookies.userId;
@@ -65,7 +61,7 @@ Passport.use(new GoogleStrategy({
                     first_name: profile._json.given_name,
                     middle_name: undefined,
                     last_name: profile._json.family_name,
-                    email: profile._json.email,
+                    email: profile._json.email || await generateEmail(profile._json.given_name, profile._json.family_name || '.google'),
                     username: await generateUsername(profile._json.given_name, profile._json.family_name),
                     google_id: profile.id,
 
@@ -101,8 +97,6 @@ Passport.use(new FacebookStrategy({
                         // check if there is a missing data from the provider
                         if (!profile.first_name || !profile.last_name) {
                             done('data from facebook is incomplete. Missing name')
-                        } else if (!profile.email) {
-                            done('data from facebook is incomplete. Missing email')
                         }
 
                         let result = req.cookies.userId;
@@ -135,7 +129,7 @@ Passport.use(new FacebookStrategy({
                                     first_name: profile.first_name,
                                     middle_name: profile.middle_name,
                                     last_name: profile.last_name,
-                                    email: profile.email,
+                                    email: profile.email || await generateEmail(profile.first_name, profile.last_name || '.facebook'),
                                     username: await generateUsername(profile.first_name, profile.last_name),
                                     age_group: profile.age_group,
                                     facebook_id: profile.id
@@ -171,8 +165,6 @@ Passport.use(new TwitterStrategy({
 
         if (!profile._json.name) {
             done('data from Twitter is incomplete. Missing name')
-        } else if (!profile._json.email) {
-            done('data from Twitter is incomplete. Missing email')
         }
 
         let result = req.cookies.userId;
@@ -207,7 +199,7 @@ Passport.use(new TwitterStrategy({
                     first_name: given_name,
                     middle_name: undefined,
                     last_name: family_name || '@twitter',
-                    email: profile._json.email,
+                    email: profile._json.email || await generateEmail(given_name, family_name || '.twitter'),
                     username: await generateUsername(given_name, family_name || `twitter`),
                     twitter_id: profile.id,
                     provided_by: 'twitter'
@@ -226,8 +218,6 @@ Passport.use(new GithubStrategy({
 
         if (!profile._json.name) {
             done('data from github is incomplete. Missing name')
-        } else if (!profile._json.email) {
-            done('data from github is incomplete. Missing email')
         }
 
     let result = req.cookies.userId;
@@ -262,7 +252,7 @@ Passport.use(new GithubStrategy({
                     first_name: given_name,
                     middle_name: undefined,
                     last_name: family_name || '.git',
-                    email: profile._json.email,
+                    email: profile._json.email || await generateEmail(given_name, family_name || '.git'),
                     username: await generateUsername(given_name, family_name || 'git'),
                     github_id: profile.id,
 
@@ -290,7 +280,7 @@ Passport.use(new LinkedInStrategy({
         if (!profile.name.givenName) {
             done('data from LinkedIn is incomplete. Missing name')
         } else if (!profile.emails[0].value) {
-            done('data from LinkedIn is incomplete. Missing email')
+            // done('data from LinkedIn is incomplete. Missing email')
         }
 
         let result = req.cookies.userId;
@@ -325,7 +315,7 @@ Passport.use(new LinkedInStrategy({
                     first_name: givenName,
                     middle_name: undefined,
                     last_name: familyName || '.linkedin',
-                    email: profile.emails[0].value,
+                    email: profile.emails[0].value || await generateEmail(givenName, familyName || '.linkedin'),
                     username: await generateUsername(givenName, familyName || 'linkedin'),
                     linkedin_id: profile.id,
 

@@ -159,6 +159,13 @@ export async function generateUsername(first_name: string, last_name: string): P
     return `${mash}.${addon}`;
 }
 
+export async function generateEmail(first_name: string, last_name: string): Promise<string> {
+    const mash = first_name.toLowerCase() + '.' + last_name.toLowerCase();
+    let addon = 1;
+    while (await isEmailUsed(`${mash}.${addon}@toe.app`)) addon++;
+    return `${mash}.${addon}@toe.app`;
+}
+
 export async function verifyUser(token: string): Promise<User> {
     const verified = await verify(token, '0mE09M8N880CDhhJI$9808_369'); // shouldn't be hardcoded like this
     if (verified) {
