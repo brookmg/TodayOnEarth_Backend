@@ -205,7 +205,9 @@ export async function signInUser(email: string, password: string): Promise<strin
 export async function signUpUser(
     first_name: string, middle_name: string, last_name: string,
     phone_number: string, username: string, country: string,
-    email: string, password: string): Promise<User> {
+    email: string, password: string, google_id: string,
+    facebook_id: string, twitter_id: string, github_id: string,
+    linkedin_id: string, telegram_id: string): Promise<User> {
 
     return createUserScheme().then(async () => {
         if (!username) throw new Error('username is required')
@@ -218,8 +220,8 @@ export async function signUpUser(
         const hashed = await hash(password, 10)
         return insertUser({
             first_name, middle_name, last_name, phone_number, username, country,
-            email, password_hash: hashed
-        })
+            email, password_hash: hashed, google_id, facebook_id, twitter_id,
+            github_id, linkedin_id, telegram_id })
     })
 
 }
