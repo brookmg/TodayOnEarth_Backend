@@ -308,7 +308,7 @@ Passport.use(new LinkedInStrategy({
         } else {
             // new user, so send it to the front-end to get more info
 
-            let { givenName , familyName } = profile;
+            let { givenName , familyName } = profile.name;
 
             done(null, {
                 potential_user: {
