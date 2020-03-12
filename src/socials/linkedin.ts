@@ -2,29 +2,6 @@ import request from "request-promise-native";
 import {getTokensForUser} from "../db/token_table";
 import {getUser} from "../db/user_table";
 
-async function getLinkedinId (accessToken) {
-    let options = {
-        url: 'https://api.linkedin.com/v2/me',
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + accessToken,
-            'cache-control': 'no-cache',
-            'X-Restli-Protocol-Version': '2.0.0'
-        },
-        strictSSL: true,
-        timeout: 10000
-    };
-
-    try {
-        let response: any = await request(options);
-        console.dir(response);
-        return (JSON.parse(response.body).id)
-    } catch (e) {
-        console.error(e);
-        throw new Error(e)
-    }
-}
-
 async function postShare(accessToken: string, ownerId: string, title: string, text: string, shareUrl: string, shareThumbnailUrl: string) {
     let body = {
         "owner": "urn:li:person:" + ownerId,
@@ -81,6 +58,6 @@ export async function postOnToLinkedIn(uid: number, title: string, text: string,
 
     postShare(accessToken, linkedInId, title, text, shareUrl, shareThumbnailUrl).then(r => {
         console.log(r); // status 201 signal successful posting
-    }).catch(e => console.log(e));
+    }).catch(e => { throw new Error(e.toString()) });
 
 }
