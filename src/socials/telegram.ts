@@ -1,4 +1,4 @@
-import Bot from "../bot/bot";
+import { Bot } from "../bot/bot";
 import {getUser} from "../db/user_table";
 import * as fs from "fs";
 
@@ -17,7 +17,7 @@ async function userIsAdminOfChannel(channel: string, uid: number) : Promise<bool
     return ids.includes(Number(user.telegram_id));
 }
 
-export async function sendMessageToChannel(uid: number, channel: string, photo: string, text: string, includeAuthor: boolean = false) {
+export async function sendMessageToChannel(uid: number, channel: string, photo: string = "", text: string, includeAuthor: boolean = false) {
     if (!await userIsAdminOfChannel(channel, uid)) throw new Error('You are no admin of this telegram channel');
     if (includeAuthor) text += '\n\nauthor: ' + (await getUser(uid)).first_name;
 

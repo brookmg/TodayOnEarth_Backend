@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 import { Router } from './queue/arena'
 import { server } from './graphql/gql'
 import {verifyUser, verifyUserEmailWithToken} from "./db/user_table";
-import Bot from "./bot/bot";
+import { Bot } from "./bot/bot";
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -65,7 +65,7 @@ export function start() {
     const httpServer = http.createServer(app);
     server.installSubscriptionHandlers(httpServer);
 
-    Bot.launch().then(r => console.dir(r));
+    Bot.launch().then(r => console.dir(r)).catch(err => console.dir(err));
     httpServer.listen(process.env.PORT, () => {
         console.log(`🚀 GQL is 🔴 at ${process.env.HOST}:${process.env.PORT}${server.graphqlPath}`);
         console.log(`🚀 GQL Subscriptions are 🔴 at ${process.env.HOST}:${process.env.PORT}${server.subscriptionsPath}`);
