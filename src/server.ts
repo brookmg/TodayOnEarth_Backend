@@ -65,6 +65,7 @@ export function start() {
     const httpServer = http.createServer(app);
     server.installSubscriptionHandlers(httpServer);
 
+    Bot.launch().then(r => console.dir(r));
     httpServer.listen(process.env.PORT, () => {
         console.log(`🚀 GQL is 🔴 at ${process.env.HOST}:${process.env.PORT}${server.graphqlPath}`);
         console.log(`🚀 GQL Subscriptions are 🔴 at ${process.env.HOST}:${process.env.PORT}${server.subscriptionsPath}`);
