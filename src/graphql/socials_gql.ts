@@ -1,6 +1,7 @@
 import {postTweet} from "../socials/twitter";
 import {postOnToLinkedIn} from "../socials/linkedin";
 import {createWriteStream, unlink} from "fs";
+import {postContentToPage} from "../socials/facebook";
 
 const { gql } = require('apollo-server-express');
 
@@ -10,19 +11,20 @@ export const typeDef = gql`
         telegram: Boolean
         twitter: Boolean
         linkedin: Boolean
+        facebook: Boolean
         filename: String
         mimetype: String
         encoding: String
     }
     
     extend type Mutation {
-        postOnToSocials(text: String!, upload: Upload, telegram: Boolean, linkedin: Boolean, twitter: Boolean, channel: String) : PublishedPost
+        postOnToSocials(text: String!, upload: Upload, telegram: Boolean, linkedin: Boolean, twitter: Boolean, channel: String, facebook: Boolean, pageUrl: String) : PublishedPost
     }
 `;
 
 export const resolvers = {
     Mutation: {
-        postOnToSocials: async (_, {text, upload, telegram, linkedin, twitter, channel}, {user}) => {
+        postOnToSocials: async (_, {text, upload, telegram, linkedin, twitter, channel, facebook, pageUrl}, {user}) => {
             let u = await user.getUser();
             if (!u) throw new Error('You must be logged in.');
             let returnable:any = {};
@@ -59,6 +61,11 @@ export const resolvers = {
                     returnable.twitter = send?.status?.indexOf('error') == -1
                 } else returnable.twitter = false;
 
+                if (facebook && pageUrl) {
+                    let send = await postContentToPage( u.uid , pageUrl, text , [`${process.env.HOST}/medias/${filename}`]);
+                    returnable.facebook = !!send?.id
+                } else returnable.facebook = false;
+
                 return { ...returnable , text , filename, mimetype, encoding};
             }
 
@@ -77,6 +84,11 @@ export const resolvers = {
                 let send = await postTweet({ status: text} ,[] ,u.uid);
                 returnable.twitter = send?.status?.indexOf('error') == -1
             }
+
+            if (facebook && pageUrl) {
+                let send = await postContentToPage( u.uid , pageUrl, text);
+                returnable.facebook = !!send?.id
+            } else returnable.facebook = false;
 
             return { ...returnable , text };
         }
