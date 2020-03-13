@@ -23,8 +23,7 @@ export async function sendMessageToChannel(uid: number, channel: string, photo: 
 
     if (photo)
         return Bot.telegram.sendPhoto(channel , { source: fs.readFileSync(photo) }, {
-            caption: text,
-            parse_mode: "MarkdownV2"
+            caption: text
         });
     else
         return await Bot.telegram.sendMessage(channel, text)
