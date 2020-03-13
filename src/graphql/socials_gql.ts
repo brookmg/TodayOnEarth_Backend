@@ -6,7 +6,10 @@ const { gql } = require('apollo-server-express');
 
 export const typeDef = gql`
     type PublishedPost {
-        text: String,
+        text: String
+        telegram: Boolean
+        twitter: Boolean
+        linkedin: Boolean
         filename: String
         mimetype: String
         encoding: String
@@ -19,12 +22,13 @@ export const typeDef = gql`
 
 export const resolvers = {
     Mutation: {
-        postOnToSocials: async (_, {text, file, telegram, linkedin, twitter, channel}, {user}) => {
+        postOnToSocials: async (_, {text, upload, telegram, linkedin, twitter, channel}, {user}) => {
             let u = await user.getUser();
             if (!u) throw new Error('You must be logged in.');
+            let returnable:any = {};
 
-            if (file) {
-                const {createReadStream, filename, mimetype, encoding} = await file;
+            if (upload) {
+                const { createReadStream , filename, mimetype, encoding} = await upload;
                 const stream = createReadStream();
 
                 // Store the file in the filesystem.
@@ -42,36 +46,39 @@ export const resolvers = {
                 const { sendMessageToChannel } = require("../socials/telegram");
                 if (telegram && channel) {
                     let send = await sendMessageToChannel(u.uid, channel, `./medias/${filename}` , text, false);
-                    return { filename, encoding, mimetype, send }
-                } else if (linkedin) {
-                    let send = await postOnToLinkedIn(u.uid , text, text);
-                    return { filename, encoding, mimetype, send }
-                } else if (twitter) {
-                    let send = await postTweet({ status: text} , [`./medias/${filename}`], u.uid);
-                    return { filename, encoding, mimetype, send }
-                }
+                    returnable.telegram = !!send?.id;
+                } else returnable.telegram = false;
 
-                return await file;
+                if (linkedin) {
+                    let send : any = await postOnToLinkedIn(u.uid , text, text);
+                    returnable.linkedin = !!send?.error
+                } else returnable.linkedin = false;
+
+                if (twitter) {
+                    let send = await postTweet({ status: text} , [`./medias/${filename}`], u.uid);
+                    returnable.twitter = send?.status?.indexOf('error') == -1
+                } else returnable.twitter = false;
+
+                return { ...returnable , text , filename, mimetype, encoding};
             }
 
             const { sendMessageToChannel } = require("../socials/telegram");
             if (telegram && channel) {
                 let send = await sendMessageToChannel(u.uid, channel, "" , text, false);
-                return { send }
+                returnable.telegram = !!send?.id;
             }
 
             if (linkedin) {
-                let send = await postOnToLinkedIn(u.uid , text, text);
-                return { send }
+                let send : any = await postOnToLinkedIn(u.uid , text, text);
+                returnable.linkedin = !!send?.id
             }
 
             if (twitter) {
                 let send = await postTweet({ status: text} ,[] ,u.uid);
-                return { send }
+                returnable.twitter = send?.status?.indexOf('error') == -1
             }
 
-            return await file;
-
+            return { ...returnable , text };
         }
     }
 };
