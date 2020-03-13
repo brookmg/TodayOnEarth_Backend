@@ -37,7 +37,7 @@ authRouter.get('/google/callback' , function (req, res) {
 );
 
 authRouter.get('/facebook' , Passport.authenticate('facebook', {
-    authType: 'rerequest', accessType: 'offline', prompt: 'consent', scope: ['email' , 'public_profile', 'user_age_range', 'user_gender']}));
+    authType: 'rerequest', accessType: 'offline', prompt: 'consent', scope: ['email' , 'public_profile', 'user_age_range', 'user_gender', 'manage_pages', 'publish_pages']}));
 
 authRouter.get('/facebook/callback' , function(req, res, next) {
         Passport.authenticate('facebook', function (err, data) {
