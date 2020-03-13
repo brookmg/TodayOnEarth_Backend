@@ -50,7 +50,7 @@ async function postShare(accessToken: string, ownerId: string, title: string, te
 }
 
 export async function postOnToLinkedIn(uid: number, title: string, text: string, shareUrl: string = '', shareThumbnailUrl: string = '') {
-    let [accessToken] = (<any>await getTokensForUser(uid))[0].linkedin.split("|||");
+    let [accessToken] = (<any>await getTokensForUser(uid))[0]?.linkedin?.split("|||");
     let linkedInId = (await getUser(uid)).linkedin_id;
 
     if (!linkedInId) throw new Error('User doesn\'t have a linked LinkedIn account');
