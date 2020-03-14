@@ -21,6 +21,10 @@ const arena = Arena({
         name: "telegram_queue",
         hostId: "Telegram Queue",
     },
+    {
+        name: "email_verification",
+        hostId: "Email Verification"
+    }
   ]
 }, {
   basePath: '/c7a74dcab7e2928ca1236de34517fb94',    // md5 hash of arena_toe

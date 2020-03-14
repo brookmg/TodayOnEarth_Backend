@@ -48,6 +48,7 @@
     "lodash": "^4.17.15",
     "morgan": "^1.9.1",
     "node-addon-api": "^2.0.0",
+    "nodemailer": "^6.4.5",
     "nodemon": "^2.0.2",
     "objection": "^2.1.2",
     "passport": "^0.4.1",

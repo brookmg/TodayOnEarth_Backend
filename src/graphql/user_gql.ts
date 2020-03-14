@@ -4,7 +4,7 @@ import {
     getUsers,
     isEmailUsed,
     isUsernameTaken,
-    makeUserAdmin,
+    makeUserAdmin, sendVerificationEmail,
     signInUser,
     signUpUser
 } from "../db/user_table";
@@ -52,6 +52,7 @@ export const typeDef = gql`
     extend type Mutation {
         signIn(email: String!, password: String!) : Token
         signUp(new_user: IUser) : Token
+        sendVerification: Boolean
         makeUserAdmin(uid: Int) : Boolean
         signOut: Boolean
     }
@@ -110,6 +111,11 @@ export const resolvers = {
         signOut: async (_, __, {user}) => {
             return !await user.signOutUser();
         },
+
+        sendVerification: async (_ , __ , {user}) => {
+            let u = await user.getUser();
+            return sendVerificationEmail(u.uid)
+        }
     },
 
     Subscription: {
