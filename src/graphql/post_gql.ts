@@ -184,6 +184,7 @@ export const typeDef = gql`
         postOpened(postId: Int): Boolean,
         postLiked(postId: Int): Boolean,
         postDisLiked(postId: Int): Boolean,
+        postUnDisLiked(postId: Int): Boolean,
         postUnLiked(postId: Int): Boolean,
         postImpressionReceived(postId: Int, ms: Int) : Boolean 
     }
@@ -430,7 +431,36 @@ export const resolvers = {
                 }
             });
 
-        }
+        },
+        postUnDisLiked: async (_ , {postId} , { user }) => {    // If the user clicked on the 👎🏾 button again
+            user = await user.getUser();
+            if (!user) throw new Error('You must be authenticated to access this');
+
+            let interestsRow = (await getInterestsForUser(user.uid));
+            let keywordsFromPost = JSON.parse(await NativeClass.getKeywordFrequency(
+                JSON.stringify(await getPostById(postId)),
+                false
+            ));
+
+            let keywords = keywordsFromPost.map(k => k[0]);
+            let interests = interestsRow.map(i => i.interest);
+            interests.forEach(i => i.toLowerCase());
+            console.log(interests);
+
+            keywords.forEach(keyword => {
+                if (interests.includes(keyword.toLowerCase())) {
+                    let score = interestsRow.find(item => item.interest === keyword).score;
+                    if (!score) {
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return changeInterestScoreForUser(keyword, (score + (score * Number(process.env.POST_DISLIKED_MUTATION_VALUE))), user.uid)
+                } else {
+                    console.log(`adding keyword ${keyword}`);
+                    return addInterestForUser(keyword , Number(process.env.POST_DISLIKED_MUTATION_VALUE), user.uid)
+                        .catch(err => console.error(err));
+                }
+            });
+
+        },
     }
 
 };
