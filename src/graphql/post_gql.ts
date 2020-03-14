@@ -330,7 +330,7 @@ export const resolvers = {
 
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
-            interests.forEach(i => { i = i.toLowerCase(); });
+            interests.forEach(i => i.toLowerCase());
             console.log(interests);
 
             keywords.forEach(keyword => {
@@ -359,7 +359,7 @@ export const resolvers = {
 
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
-            interests.forEach(i => { i = i.toLowerCase(); });
+            interests.forEach(i => i.toLowerCase());
             console.log(interests);
 
             keywords.forEach(keyword => {
@@ -384,7 +384,7 @@ export const resolvers = {
 
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
-            interests.forEach(i => { i = i.toLowerCase(); });
+            interests.forEach(i => i.toLowerCase());
             console.log(interests);
 
             keywords.forEach(keyword => {
@@ -414,7 +414,7 @@ export const resolvers = {
 
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
-            interests.forEach(i => { i = i.toLowerCase(); });
+            interests.forEach(i => i.toLowerCase());
             console.log(interests);
 
             keywords.forEach(keyword => {
