@@ -309,12 +309,11 @@ export const resolvers = {
                     let score = interestsRow.find(item => item.interest === keyword).score;
 
                     if (!score) {
-                        console.error(`Problem setting score for ${keyword}`);
-                    } else changeInterestScoreForUser(keyword, (score + (score / Number(process.env.POST_OPENED_MUTATION_VALUE))), user.uid)
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return changeInterestScoreForUser(keyword, (score + (score / Number(process.env.POST_OPENED_MUTATION_VALUE))), user.uid)
                 } else {
                     console.log(`adding keyword ${keyword}`);
-                    addInterestForUser(keyword , Number(process.env.POST_OPENED_MUTATION_VALUE), user.uid)
-                        .catch(err => console.error(err));
+                    return addInterestForUser(keyword , Number(process.env.POST_OPENED_MUTATION_VALUE), user.uid)
                 }
             });
 
@@ -339,12 +338,11 @@ export const resolvers = {
                     let score = interestsRow.find(item => item.interest === keyword).score;
 
                     if (!score) {
-                        console.error(`Problem setting score for ${keyword}`);
-                    } else changeInterestScoreForUser(keyword, (score + (score / Number(process.env.POST_LIKED_MUTATION_VALUE))), user.uid)
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return changeInterestScoreForUser(keyword, (score + (score / Number(process.env.POST_LIKED_MUTATION_VALUE))), user.uid)
                 } else {
                     console.log(`adding keyword ${keyword}`);
-                    addInterestForUser(keyword , Number(process.env.POST_LIKED_MUTATION_VALUE), user.uid)
-                        .catch(err => console.error(err));
+                    return addInterestForUser(keyword , Number(process.env.POST_LIKED_MUTATION_VALUE), user.uid)
                 }
             });
 
@@ -369,8 +367,8 @@ export const resolvers = {
                     let score = interestsRow.find(item => item.interest === keyword).score;
 
                     if (!score) {
-                        console.error(`Problem setting score for ${keyword}`);
-                    } else changeInterestScoreForUser(keyword, (score + (score * Number(process.env.POST_LIKED_MUTATION_VALUE))), user.uid)
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return changeInterestScoreForUser(keyword, (score + (score * Number(process.env.POST_LIKED_MUTATION_VALUE))), user.uid)
                 }
             });
         },
@@ -394,11 +392,11 @@ export const resolvers = {
                     let score = interestsRow.find(item => item.interest === keyword).score;
 
                     if (!score) {
-                        console.error(`Problem setting score for ${keyword}`);
-                    } else changeInterestScoreForUser(keyword, (score + (score / Number(process.env.POST_DISLIKED_MUTATION_VALUE))), user.uid)
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return changeInterestScoreForUser(keyword, (score + (score / Number(process.env.POST_DISLIKED_MUTATION_VALUE))), user.uid)
                 } else {
                     console.log(`adding keyword ${keyword}`);
-                    addInterestForUser(keyword , Number(process.env.POST_DISLIKED_MUTATION_VALUE), user.uid)
+                    return addInterestForUser(keyword , Number(process.env.POST_DISLIKED_MUTATION_VALUE), user.uid)
                         .catch(err => console.error(err));
                 }
             });
@@ -424,12 +422,11 @@ export const resolvers = {
                     let score = interestsRow.find(item => item.interest === keyword).score;
 
                     if (!score) {
-                        console.error(`Problem setting score for ${keyword}`);
-                    } else changeInterestScoreForUser(keyword, (score + (score / (Number(process.env.POST_IMPRESSION_PER_MS_MUTATION_VALUE) * ms))), user.uid)
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return changeInterestScoreForUser(keyword, (score + (score / (Number(process.env.POST_IMPRESSION_PER_MS_MUTATION_VALUE) * ms))), user.uid)
                 } else {
                     console.log(`adding keyword ${keyword}`);
-                    addInterestForUser(keyword , Number(process.env.POST_IMPRESSION_PER_MS_MUTATION_VALUE) * ms, user.uid)
-                        .catch(err => console.error(err));
+                    return addInterestForUser(keyword , Number(process.env.POST_IMPRESSION_PER_MS_MUTATION_VALUE) * ms, user.uid)
                 }
             });
 
