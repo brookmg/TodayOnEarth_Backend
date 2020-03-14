@@ -7,6 +7,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 import { Router } from './queue/arena'
 import { server } from './graphql/gql'
+import {verifyUser, verifyUserEmailWithToken} from "./db/user_table";
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -36,6 +37,21 @@ app.use(cookieParser());
 
 app.use(require('express-session')({ secret: process.env.SESSION_SECRET, resave: true, saveUninitialized: true }));
 app.get('/', (req, res) => { res.send({ message: 'Hello' }) });
+app.get('/email_verify' , async (req, res) => {
+    let token = req.query.token;
+    if (!token) res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/auth_error?error=Invalid%20token`);
+
+    if (!req.cookies.userId) res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/auth_error?error=Login%20first`);
+    console.dir(req.cookies.userId);
+    let user = await verifyUser(req.cookies.userId);
+
+    verifyUserEmailWithToken(user.uid, token).then(v => {
+        res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/signin?reason=Email%20verified`);
+    }).catch(err => {
+        res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/auth_error?error=${err.toString()}`);
+    })
+});
+
 app.use('/auth', authRouter);
 
 export function start() {
