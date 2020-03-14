@@ -92,6 +92,12 @@ export async function sendVerificationEmail(uid: number) {
     } else throw new Error('User already verified')
 }
 
+export async function verifyUserEmailWithToken(uid: number, token: string) : Promise<boolean> {
+    let user = await getUser(uid);
+    if (token === user.verification_token) return !! await setUserVerification(uid, true);
+    else throw new Error('Token is incorrect');
+}
+
 export async function getUsers(page: number, range: number): Promise<User[]> {
     await createUserScheme();
     if (page >= 0 && range) return (await User.query().withGraphFetched({
