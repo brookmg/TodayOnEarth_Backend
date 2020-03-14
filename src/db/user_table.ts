@@ -24,6 +24,10 @@ export async function createUserScheme(): Promise<any> {
         table.string('country');
         table.string('last_location');  // comma separated geo data
         table.string('password_hash');
+
+        table.string('github_id').unique();
+        table.string('linkedin_id').unique();
+        table.string('telegram_id').unique();
     })
 
 }
