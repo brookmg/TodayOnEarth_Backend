@@ -28,6 +28,9 @@ export async function createUserScheme(): Promise<any> {
         table.string('github_id').unique();
         table.string('linkedin_id').unique();
         table.string('telegram_id').unique();
+
+        table.boolean('verified').defaultTo(false);
+        table.string('verification_token');
     })
 
 }
