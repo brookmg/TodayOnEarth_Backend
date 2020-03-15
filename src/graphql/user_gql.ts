@@ -1,3 +1,5 @@
+import {isPasswordResetTokenValid, passwordResetRequested, resetPasswordWithToken} from "../db/login_table";
+
 const { gql } = require('apollo-server-express');
 import {
     generateToken, getUser,
@@ -59,12 +61,15 @@ export const typeDef = gql`
         getAllUsers(page: Int, range: Int): [User]
         isUserNameTaken(username: String) : Boolean
         isEmailUsed(email: String) : Boolean
+        isPasswordResetTokenValid(token: String) : Boolean
     }
     
     extend type Mutation {
         signIn(email: String!, password: String!) : Token
         signUp(new_user: IUser) : Token
         sendVerification: Boolean
+        resetPassword(email: String): Boolean
+        resetPasswordWithToken(token: String, newPassword: String): Boolean
         makeUserAdmin(uid: Int) : Boolean
         signOut: Boolean
     }
@@ -96,6 +101,10 @@ export const resolvers = {
             returnableUser.password_hash = undefined;
             return returnableUser;
         },
+
+        isPasswordResetTokenValid: async (_ , { token }) => {
+            return isPasswordResetTokenValid(token)
+        }
     },
 
     Mutation: {
@@ -131,6 +140,14 @@ export const resolvers = {
         sendVerification: async (_ , __ , {user}) => {
             let u = await user.getUser();
             return sendVerificationEmail(u.uid)
+        },
+
+        resetPassword: async (_ , { email }) => {
+            return passwordResetRequested(email)
+        },
+
+        resetPasswordWithToken: async (_, { token , newPassword }) => {
+            return resetPasswordWithToken(token, newPassword)
         }
     },
 
