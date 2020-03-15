@@ -56,8 +56,7 @@ export async function postOnToLinkedIn(uid: number, title: string, text: string,
     if (!linkedInId) throw new Error('User doesn\'t have a linked LinkedIn account');
     if (!accessToken) throw new Error('Access Token Invalid');
 
-    postShare(accessToken, linkedInId, title, text, shareUrl, shareThumbnailUrl).then(r => {
-        console.log(r); // status 201 signal successful posting
-    }).catch(e => { throw new Error(e.toString()) });
+    return postShare(accessToken, linkedInId, title, text, shareUrl, shareThumbnailUrl)
+        .catch(e => { throw new Error(e.toString()) });
 
 }
