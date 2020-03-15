@@ -1,7 +1,10 @@
-import { Post } from '../model/post'
-import { KnexI } from './db'
-import { Keyword } from '../model/keyword';
-import { forEach } from '../utils'
+import {Post} from '../model/post'
+import {KnexI} from './db'
+import {Keyword} from '../model/keyword';
+import {forEach} from '../utils'
+import {getProvidersForUser, getProvidersForUsers} from "./provider_table";
+import {usersWithPotentiallySimilarInterest} from "./interest_table";
+import {Interest} from "../model/interest";
 
 Post.knex(KnexI);
 Keyword.knex(KnexI);
@@ -52,6 +55,7 @@ export async function createPostScheme() : Promise<any> {
         table.text('title', 'longtext');
         table.text('body', 'longtext');
         table.text('provider', 'longtext');
+        table.text('source' , 'mediumtext');
         table.text('source_link', 'mediumtext').unique();
 
         table.dateTime('published_on');
@@ -63,7 +67,19 @@ export async function createPostScheme() : Promise<any> {
 }
 
 export async function insertPost(postData) : Promise<Post> {
-    return createPostScheme().then(() => Post.query().insertGraph(postData));
+    return createPostScheme().then(() => {
+        let possibleSource = postData.source_link.split("/")[2];
+        postData.source = ((possibleSource: string) => {
+            console.log(possibleSource);
+            if (possibleSource.indexOf('facebook.com') != -1) return 'facebook';
+            else if (possibleSource.indexOf('instagram.com') != -1) return 'instagram';
+            else if (possibleSource.indexOf('twitter.com') != -1) return 'twitter';
+            else if (possibleSource.indexOf('t.me') != -1) return 'telegram';
+            else return 'unknown';
+        })(possibleSource);
+
+        return Post.query().insertGraph(postData)
+    });
 }
 
 export async function getAllPostsGraphed(page: number, range: number) : Promise<Post[]> {
@@ -79,9 +95,29 @@ export async function deletePost(postid: number) : Promise<number> {
     return Post.query().deleteById(postid);
 }
 
-export async function getAllPosts(page: number, range: number) : Promise<Post[]> {
-    if (page >= 0 && range) return (await Post.query().page(page, range)).results;
-    else return Post.query();
+export async function getAllPosts(page: number, range: number , uid: number = -1, fruitPunch: boolean = false, fruitLimit: number = 10) : Promise<Post[]> {
+    let mainQ = Post.query();
+    let mainQB;
+
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+
+        if (fruitPunch) {
+            mainQB = Post.query();
+            let providerListB = [];
+            let uids = (await usersWithPotentiallySimilarInterest(uid , 0.2)).map((item: any) => item.uid);
+            (await getProvidersForUsers(uids , 4))
+                .forEach(item => providerListB.push([item.provider , item.source]));
+            mainQB.whereIn(['provider' , 'source'] , providerListB).limit(fruitLimit)
+        }
+
+        mainQ.whereIn(['provider' , 'source'] , providerList);
+        if (mainQB) mainQ.unionAll([mainQB] , true)
+    }
+
+    if (page >= 0 && range) return (await mainQ.page(page, range)).results;
+    else return mainQ;
 }
 
 export async function getAllPostsOrdered(page: number, range: number, orderBy: string = '', order: string = '') : Promise<Post[]> {
@@ -177,7 +213,7 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
     return returnable;
 }
 
-export async function getPostsCustom(jsonQuery: QueryObject[], page: number, range: number, orderBy: string = '', order: string = ''): Promise<Post[]> {
+export async function getPostsCustom(jsonQuery: QueryObject[], page: number, range: number, orderBy: string = '', order: string = '', uid: number = -1): Promise<Post[]> {
     if (jsonQuery.length === 0) return getAllPosts(page, range);  // if the query was []
     let qBuilder = (page >= 0 && range) ? Post.query().withGraphFetched({
         keywords: true
@@ -228,6 +264,12 @@ export async function getPostsCustom(jsonQuery: QueryObject[], page: number, ran
 
     });
 
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+        qBuilder.whereIn(['provider' , 'source'] , providerList)
+    }
+
     if (page >= 0 && range) {
         return (await qBuilder).results;
     } else return qBuilder
@@ -242,11 +284,19 @@ export async function getAllPostsBeforeScrapedDate(time: number, page: number, r
     }).where('scraped_on' , '<' , new Date(time)).distinct([`post.*`]);
 }
 
-export async function getAllPostsSinceScrapedDate(time: number, page: number, range: number) : Promise<Post[]> {
-    if (page >= 0 && range) return (await Post.query().withGraphFetched({
+export async function getAllPostsSinceScrapedDate(time: number, page: number, range: number, uid: number = -1) : Promise<Post[]> {
+    let mainQ = Post.query();
+
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+        mainQ.whereIn(['provider' , 'source'] , providerList)
+    }
+
+    if (page >= 0 && range) return (await mainQ.withGraphFetched({
         keywords: true
     }).where('scraped_on' , '>=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
-    else return Post.query().withGraphFetched({
+    else return mainQ.withGraphFetched({
         keywords: true
     }).where('scraped_on' , '>=' , new Date(time)).distinct([`post.*`]);
 }
@@ -279,13 +329,21 @@ export async function getAllPostsBeforePublishedDate(time: number) : Promise<Pos
     }).where('published_on' , '<' , new Date(time)).distinct([`post.*`]);
 }
 
-export async function getAllPostsSincePublishedDate(time: number, page: number, range: number) : Promise<Post[]> {
+export async function getAllPostsSincePublishedDate(time: number, page: number, range: number, uid: number = -1) : Promise<Post[]> {
+    let mainQ = Post.query();
+
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+        mainQ.whereIn(['provider' , 'source'] , providerList)
+    }
+
     if (page >= 0 && range)
-        return (await Post.query().withGraphFetched({
+        return (await mainQ.withGraphFetched({
             keywords: true
         }).where('published_on' , '>=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
 
-    else return Post.query().withGraphFetched({
+    else return mainQ.withGraphFetched({
         keywords: true
     }).where('published_on' , '>=' , new Date(time)).distinct([`post.*`]);
 }
@@ -305,13 +363,21 @@ export async function getAllPostsBetweenPublishedDate(startTime: number, endTime
         .orderBy('published_on' , 'ASC');
 }
 
-export async function getAllPostsOnPublishedDate(time: number, page: number, range: number) : Promise<Post[]> {
+export async function getAllPostsOnPublishedDate(time: number, page: number, range: number, uid: number = -1) : Promise<Post[]> {
+    let mainQ = Post.query();
+
+    if (uid >= 0) {
+        let providerList = [];
+        (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
+        mainQ.whereIn(['provider' , 'source'] , providerList)
+    }
+
     if (page >= 0 && range)
-        return (await Post.query().withGraphFetched({
+        return (await mainQ.withGraphFetched({
             keywords: true
         }).where('published_on' , '=' , new Date(time)).distinct([`post.*`]).page(page, range)).results;
 
-    else return Post.query().withGraphFetched({
+    else return mainQ.withGraphFetched({
         keywords: true
     }).where('published_on' , '=' , new Date(time)).distinct([`post.*`]);
 }

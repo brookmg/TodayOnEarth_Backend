@@ -99,6 +99,21 @@ export async function unMuteOrResetInterestForUser(interest: string, uid: number
     });
 }
 
+export async function usersWithPotentiallySimilarInterest(uid: number, flex: number): Promise<number[]> {
+    return createInterestScheme().then(async () => {
+        let interestsOfSignedInUser = await getInterestsForUser(uid);
+        let mainQ = Interest.query().distinct(['uid']);
+        interestsOfSignedInUser.forEach(
+            interest => {
+                mainQ.orWhere('interest' , interest.interest)
+                    .andWhereBetween('score' , [ interest.score-flex , interest.score+flex ])
+            }
+        );
+
+        return (await mainQ).filter(item => item.uid !== uid);
+    })
+}
+
 export async function removeInterestForUser(interest: string, uid: number) {
     return createInterestScheme().then(async () => {
         return Interest.query().delete().where({
