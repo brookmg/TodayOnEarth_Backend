@@ -52,7 +52,6 @@ export const resolvers = {
                         .on('error', reject)
                         .on('finish', resolve)
                 });
-                console.log('-----------file written');
 
                 const { sendMessageToChannel } = require("../socials/telegram");
                 if (telegram && channel) {
@@ -76,7 +75,7 @@ export const resolvers = {
                 if (facebook && pageUrl) {
                     let send = await postContentToPage( u.uid , pageUrl, text , [`${process.env.HOST}/medias/${filename}`])
                         .catch(err => errors.facebook = err.toString());
-                    returnable.facebook = !errors.facebook;
+                    returnable.facebook = !!send?.id || !errors.facebook;
                 } else returnable.facebook = false;
 
                 return { ...returnable , errors, text , filename, mimetype, encoding};
