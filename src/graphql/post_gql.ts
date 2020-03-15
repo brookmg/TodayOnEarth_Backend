@@ -1,9 +1,16 @@
+import {forEach} from "../utils";
+
 const { gql, withFilter } = require('apollo-server-express');
 import {POST_ADDED, POST_REMOVED, PubSub} from "./gql";
 import {Interest} from "../model/interest";
 import {Post} from "../model/post";
 import {NativeClass} from "../native";
-import {activationFunction} from "../db/interest_table";
+import {
+    activationFunction,
+    addInterestForUser,
+    changeInterestScoreForUser,
+    getInterestsForUser, nChangeInterestScoreForUser
+} from "../db/interest_table";
 import {
     getAllPostsBetweenPublishedDate,
     getAllPostsBetweenScrapedDate,
@@ -175,6 +182,15 @@ export const typeDef = gql`
         getPostsPublishedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]    
     }
     
+    extend type Mutation { 
+        postOpened(postId: Int): Boolean,
+        postLiked(postId: Int): Boolean,
+        postDisLiked(postId: Int): Boolean,
+        postUnDisLiked(postId: Int): Boolean,
+        postUnLiked(postId: Int): Boolean,
+        postImpressionReceived(postId: Int, ms: Int) : Boolean 
+    }
+    
     extend type Subscription {
         postAdded: [Post]
         postRemoved: [Post]
@@ -182,7 +198,7 @@ export const typeDef = gql`
     
 `;
 
-function getVectorPairFromInterests(interests: Interest[]) {
+export function getVectorPairFromInterests(interests: Interest[]) {
     const returnable = [];
     interests.forEach(interest => returnable.push([ interest.interest , interest.score ]));
     return returnable;
@@ -271,5 +287,198 @@ export const resolvers = {
             return new Date(incoming.scraped_on).getTime() / 1000   // sec time instead of micro
         }
     },
+
+    Mutation: {
+        postOpened: async (_ , {postId} , { user }) => {
+            // Get keywords from the post.
+            // Add the keywords as interests for user if they don't exist
+            // If it exists, increment the value of interest by values defined in .env
+            user = await user.getUser();
+            if (!user) throw new Error('You must be authenticated to access this');
+
+            let interestsRow = (await getInterestsForUser(user.uid));
+            let post = await getPostById(postId);
+            if (!post) throw new Error('Post does\'t exist');
+
+            let keywordsFromPost = JSON.parse(await NativeClass.getKeywordFrequency(
+                JSON.stringify(post),
+                false
+            ));
+
+            let keywords = keywordsFromPost.map(k => k[0]);
+            let interests = interestsRow.map(i => i.interest);
+            interests.forEach(i => { i = i.toLowerCase(); });
+            console.log(interests);
+
+            return forEach(keywords,keyword => {
+                if (interests.includes(keyword.toLowerCase())) {
+                    let score = interestsRow.find(item => item.interest === keyword).score;
+
+                    if (score == undefined) {
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return nChangeInterestScoreForUser(keyword, (score + (Number(process.env.POST_OPENED_MUTATION_VALUE))), user.uid)
+                } else {
+                    console.log(`adding keyword ${keyword}`);
+                    return addInterestForUser(keyword , Number(process.env.POST_OPENED_MUTATION_VALUE), user.uid)
+                }
+            }).then(items => items.every(i => i === true));
+
+        },
+        postLiked: async (_ , {postId} , { user }) => { // If the user clicked on the 👍🏾 button
+            user = await user.getUser();
+            if (!user) throw new Error('You must be authenticated to access this');
+
+            let interestsRow = (await getInterestsForUser(user.uid));
+            let post = await getPostById(postId);
+            if (!post) throw new Error('Post does\'t exist');
+
+            let keywordsFromPost = JSON.parse(await NativeClass.getKeywordFrequency(
+                JSON.stringify(post),
+                false
+            ));
+
+            let keywords = keywordsFromPost.map(k => k[0]);
+            let interests = interestsRow.map(i => i.interest);
+            interests.forEach(i => i.toLowerCase());
+            console.log(interests);
+
+            return forEach(keywords,keyword => {
+                if (interests.includes(keyword.toLowerCase())) {
+                    let score = interestsRow.find(item => item.interest === keyword).score;
+
+                    if (score == undefined) {
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return nChangeInterestScoreForUser(keyword, (score + (Number(process.env.POST_LIKED_MUTATION_VALUE))), user.uid)
+                } else {
+                    console.log(`adding keyword ${keyword}`);
+                    return addInterestForUser(keyword , Number(process.env.POST_LIKED_MUTATION_VALUE), user.uid)
+                }
+            }).then(items => items.every(i => i === true));
+
+        },
+        postUnLiked: async (_ , {postId} , { user }) => { // If the user clicked on the 👍🏾 button twice
+            user = await user.getUser();
+            if (!user) throw new Error('You must be authenticated to access this');
+
+            let interestsRow = (await getInterestsForUser(user.uid));
+            let post = await getPostById(postId);
+            if (!post) throw new Error('Post does\'t exist');
+
+            let keywordsFromPost = JSON.parse(await NativeClass.getKeywordFrequency(
+                JSON.stringify(post),
+                false
+            ));
+
+            let keywords = keywordsFromPost.map(k => k[0]);
+            let interests = interestsRow.map(i => i.interest);
+            interests.forEach(i => i.toLowerCase());
+            console.log(interests);
+
+            return await forEach(keywords , keyword => {
+                if (interests.includes(keyword.toLowerCase())) {
+                    let score = interestsRow.find(item => item.interest === keyword).score;
+
+                    if (score == undefined) {
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return nChangeInterestScoreForUser(keyword, (score - (Number(process.env.POST_LIKED_MUTATION_VALUE))), user.uid)
+                }
+            }).then(items => items.every(i => i === true));
+        },
+        postDisLiked: async (_ , {postId} , { user }) => {    // If the user clicked on the 👎🏾 button
+            user = await user.getUser();
+            if (!user) throw new Error('You must be authenticated to access this');
+
+            let interestsRow = (await getInterestsForUser(user.uid));
+            let post = await getPostById(postId);
+            if (!post) throw new Error('Post does\'t exist');
+
+            let keywordsFromPost = JSON.parse(await NativeClass.getKeywordFrequency(
+                JSON.stringify(post),
+                false
+            ));
+
+            let keywords = keywordsFromPost.map(k => k[0]);
+            let interests = interestsRow.map(i => i.interest);
+            interests.forEach(i => i.toLowerCase());
+            console.log(interests);
+
+            return forEach(keywords,keyword => {
+                if (interests.includes(keyword.toLowerCase())) {
+                    let score = interestsRow.find(item => item.interest === keyword).score;
+
+                    if (score == undefined) {
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return nChangeInterestScoreForUser(keyword, (score + (Number(process.env.POST_DISLIKED_MUTATION_VALUE))), user.uid)
+                } else {
+                    console.log(`adding keyword ${keyword}`);
+                    return addInterestForUser(keyword , Number(process.env.POST_DISLIKED_MUTATION_VALUE), user.uid)
+                }
+            }).then(items => items.every(i => i === true));
+
+        },
+        postImpressionReceived: async (_ , { postId, ms } , { user }) => {
+            user = await user.getUser();
+            if (!user) throw new Error('You must be authenticated to access this');
+
+            let interestsRow = (await getInterestsForUser(user.uid));
+            let post = await getPostById(postId);
+            if (!post) throw new Error('Post does\'t exist');
+
+            let keywordsFromPost = JSON.parse(await NativeClass.getKeywordFrequency(
+                JSON.stringify(post),
+                false
+            ));
+
+            let keywords = keywordsFromPost.map(k => k[0]);
+            let interests = interestsRow.map(i => i.interest);
+            interests.forEach(i => i.toLowerCase());
+            console.log(interests);
+
+            return forEach(keywords,keyword => {
+                if (interests.includes(keyword.toLowerCase())) {
+                    let score = interestsRow.find(item => item.interest === keyword).score;
+
+                    if (score == undefined) {
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return nChangeInterestScoreForUser(keyword, (score + (score / (Number(process.env.POST_IMPRESSION_PER_MS_MUTATION_VALUE) * ms))), user.uid)
+                } else {
+                    console.log(`adding keyword ${keyword}`);
+                    return addInterestForUser(keyword , Number(process.env.POST_IMPRESSION_PER_MS_MUTATION_VALUE) * ms, user.uid)
+                }
+            }).then(items => items.every(i => i === true));
+
+        },
+        postUnDisLiked: async (_ , {postId} , { user }) => {    // If the user clicked on the 👎🏾 button again
+            user = await user.getUser();
+            if (!user) throw new Error('You must be authenticated to access this');
+
+            let interestsRow = (await getInterestsForUser(user.uid));
+            let post = await getPostById(postId);
+            if (!post) throw new Error('Post does\'t exist');
+
+            let keywordsFromPost = JSON.parse(await NativeClass.getKeywordFrequency(
+                JSON.stringify(post),
+                false
+            ));
+
+            let keywords = keywordsFromPost.map(k => k[0]);
+            let interests = interestsRow.map(i => i.interest);
+            interests.forEach(i => i.toLowerCase());
+            console.log(interests);
+
+            return forEach(keywords,keyword => {
+                if (interests.includes(keyword.toLowerCase())) {
+                    let score = interestsRow.find(item => item.interest === keyword).score;
+                    if (score == undefined) {
+                        throw new Error(`Problem setting score for ${keyword}`);
+                    } else return nChangeInterestScoreForUser(keyword, (score - (Number(process.env.POST_DISLIKED_MUTATION_VALUE))), user.uid)
+                } else {
+                    console.log(`adding keyword ${keyword}`);
+                    return addInterestForUser(keyword , Number(process.env.POST_DISLIKED_MUTATION_VALUE), user.uid)
+                }
+            }).then(items => items.every(i => i === true));
+
+        },
+    }
 
 };
