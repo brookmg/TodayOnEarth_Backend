@@ -52,6 +52,8 @@ export class User extends Model {
                 country: { type: 'string'},  // ISO3 or ISO2 of the country
                 last_location: { type: 'string'}, // long,lat <- in that form
                 password_hash: { type: 'string'},   //bcrypt all the way
+                verified: { type: 'boolean'},
+                verification_token: { type: 'string'}
             }
         }
     }

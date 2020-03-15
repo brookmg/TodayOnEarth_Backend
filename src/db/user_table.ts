@@ -1,8 +1,10 @@
 import { KnexI } from './db'
 import { User } from '../model/user'
 import { hash, compare } from 'bcrypt'
+import { randomBytes } from "crypto";
 import { verify, sign, TokenExpiredError } from 'jsonwebtoken'
 import {createInterestScheme} from "./interest_table";
+import {sendEmailVerification} from "../queue/queue";
 
 User.knex(KnexI);
 
@@ -24,6 +26,13 @@ export async function createUserScheme(): Promise<any> {
         table.string('country');
         table.string('last_location');  // comma separated geo data
         table.string('password_hash');
+
+        table.string('github_id').unique();
+        table.string('linkedin_id').unique();
+        table.string('telegram_id').unique();
+
+        table.boolean('verified').defaultTo(false);
+        table.string('verification_token');
     })
 
 }
@@ -38,6 +47,55 @@ export async function getUser(uid: Number): Promise<User> {
     return User.query().findById(uid).withGraphFetched({
         interests: true
     });
+}
+
+export async function isUserVerified(uid: number) : Promise<boolean> {
+    return (await User.query().findById(uid)).verified;
+}
+
+export async function getUserVerificationToken(uid: number) : Promise<boolean> {
+    return (await User.query().findById(uid)).verification_token;
+}
+
+export async function setUserVerification(uid: number, verified: boolean) : Promise<boolean> {
+    return !!await User.query().patchAndFetchById(uid, { verified })
+}
+
+export async function setUserVerificationToken(uid: number, verification_token: string) : Promise<boolean> {
+    return !!await User.query().patchAndFetchById(uid, { verification_token })
+}
+
+export async function sendVerificationEmail(uid: number) {
+    let user = await getUser(uid);
+    if (!user.verified) {
+        if (user.email.indexOf('@toe.app') === -1) {
+            let generateToken = (await randomBytes(48)).toString('hex');
+            let callBackUrl = `${process.env.HOST}/email_verify?token=${generateToken}`;
+
+            await setUserVerificationToken(uid, generateToken);
+
+            let genericEmail = `
+            <h1> Hello, ${user.first_name} </h1>
+            <h3> Verify your email address <code><${user.email}></code></h3>
+            <br>
+            
+            <p> The verification process is quiet easy. 
+            Just click on <a href="${callBackUrl}"> this </a> 
+            in your browser. If you are not using a browser, copy and paste <code>${callBackUrl}</code> into one.</p>
+            
+            <h4> Thanks for being our user. </h4>
+            <b><h4>Today On Earth [support@toe.app]</h4></b>
+            `;
+
+            return !!await sendEmailVerification({ email: user.email, subject: 'Email Verification', html: genericEmail })
+        } else throw new Error('User doesn\'t have a valid email');
+    } else throw new Error('User already verified')
+}
+
+export async function verifyUserEmailWithToken(uid: number, token: string) : Promise<boolean> {
+    let user = await getUser(uid);
+    if (token === user.verification_token) return !! await setUserVerification(uid, true);
+    else throw new Error('Token is incorrect');
 }
 
 export async function getUsers(page: number, range: number): Promise<User[]> {
