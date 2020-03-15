@@ -42,6 +42,7 @@ export async function createUserScheme(): Promise<any> {
 }
 
 export async function insertUser(userData: User): Promise<User> {
+    if (userData.username.indexOf('@') !== -1) throw new Error('Username cannot contain the @ character');
     return createUserScheme().then(() => User.query().insert(userData));
 }
 

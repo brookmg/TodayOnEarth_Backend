@@ -4,6 +4,7 @@ import {getUser, getUsersByEmail, updateUserById} from "./user_table";
 import {randomBytes} from "crypto";
 import {sendEmail} from "../queue/queue";
 import { hash , compare } from 'bcrypt'
+import {User} from "../model/user";
 
 Login.knex(KnexI);
 
@@ -28,12 +29,15 @@ export async function isPasswordResetTokenValid(token: string) : Promise<boolean
     return (await Login.query().where({ token })).length > 0
 }
 
-export async function passwordResetRequested(forEmail: string) : Promise<boolean> {
+export async function passwordResetRequested(forEmailOrUsername: string) : Promise<boolean> {
     await createLoginSchema();
 
-    if (forEmail.indexOf('@toe.app') === -1) {
-        let user: any = await getUsersByEmail(forEmail);
-        if (!user || user.length == 0) throw new Error('User doesn\'t exist');
+    let user: any = (forEmailOrUsername.indexOf('@') === -1) ?
+            (await User.query().where({ username: forEmailOrUsername }))[0] :
+            (await getUsersByEmail(forEmailOrUsername))[0];
+    if (!user) throw new Error('User doesn\'t exist');
+
+    if (forEmailOrUsername.indexOf('@toe.app') === -1) {
 
         let generateToken = (await randomBytes(48)).toString('hex');
         let callBackUrl = `${process.env.HOST}/password_reset?token=${generateToken}`;
