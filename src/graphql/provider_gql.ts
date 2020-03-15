@@ -36,9 +36,19 @@ export const typeDef = gql`
     extend type User {
         providers: [Provider]
     }
+
+    input ProviderQuery {
+        provider: String,
+        source: String,
+        
+        _provider: String,
+        _source: String,
+        
+        connector: String
+    }
     
     extend type Query {
-        getProviders: [Provider]
+        getProviders(filters: [ProviderQuery]!, page: Int, range: Int, order: String, orderBy: String): [Provider]
         getProvidersForUser: [Provider]
         getPostsForUser(page: Int, range: Int, fruitPunch: Boolean, fruitLimit: Int): [Post]
         getPostScrapedSinceForUser(time: Int, page: Int, range: Int): [Post]
@@ -58,7 +68,9 @@ export const typeDef = gql`
 
 export const resolvers = {
     Query: {
-        getProviders: async () => { return getProviders() },
+        getProviders: async (_ , { filters , page , range , order , orderBy}) => {
+            return getProviders(filters, page, range, orderBy, order)
+        },
         getProvidersForUser: async (_ , __ , { user }) => {
             if (!await user.getUser()) throw new Error('You must be authenticated to access this');
             return getProvidersForUser((await user.getUser()).uid);

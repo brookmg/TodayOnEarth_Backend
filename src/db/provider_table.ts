@@ -1,5 +1,6 @@
 import { Provider } from '../model/provider'
 import { KnexI } from './db'
+import {forEach} from "../utils";
 
 Provider.knex(KnexI);
 
@@ -43,8 +44,93 @@ export async function deleteProviderItem(provider : Provider) : Promise<number> 
     }));
 }
 
-export async function getProviders() : Promise<Provider[]> {
-    return createProviderScheme().then( () => Provider.query() );
+interface QueryObject {
+    provider?: string,
+    source?: string,
+
+    _provider?: string,
+    _source?: string,
+
+    connector: string
+}
+
+const acceptedProperties = [
+    'provider' , 'source' ,
+    '_provider' , '_source' ,
+];
+const acceptedConnectors = ['AND' , 'OR', ''];
+
+async function getWhereValues(processFrom: string[]) : Promise<string[]> {
+    let returnable = [];
+    console.log(processFrom);
+    if (processFrom.length < 2) throw new Error('query builder: something went wrong while building query');
+
+    switch(Number.parseInt(processFrom[0] , 10)) {
+        case 0: await returnable.push(['provider' , 'LIKE' , `%${processFrom[1]}%`]); break;
+        case 1: await returnable.push(['source' , 'LIKE' , `%${processFrom[1]}%`]); break;
+
+        case 2: await returnable.push(['provider' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
+        case 3: await returnable.push(['source' , 'NOT LIKE' , `%${processFrom[1]}%`]); break;
+
+        default: await returnable.push(['' , '' , '']);
+    }
+
+    return returnable;
+}
+
+export async function getProviders(filters: QueryObject[], page: number, range: number, orderBy: string = '', order: string = '') : Promise<Provider[]> {
+    if (filters.length === 0) return getAllProviders(page, range);  // if the query was []
+    let qBuilder = (page >= 0 && range) ? Provider.query().page(page, range) : Provider.query();
+    if (orderBy && order) qBuilder.orderBy(orderBy , order);
+
+    await forEach(filters, async (operationItem: QueryObject) => {
+
+        let props = Object.keys(operationItem);
+        let prevConnector = "";
+
+        if (props.length < 2 || !acceptedProperties.includes(props[0]) || props[1] !== 'connector') {
+            throw new Error(`parse error: Malformed properties found in operation: ${operationItem}`)
+        }
+
+        if (!acceptedConnectors.includes(operationItem[props[1]])) {
+            throw new Error(`parse error: An unknown connector found in operation: ${operationItem[props[1]]}`)
+        }
+
+        // check connector field
+        let thisIndex = filters.indexOf(operationItem);
+        if (thisIndex > 0 && filters[thisIndex-1].connector) {
+            prevConnector = filters[thisIndex-1].connector
+        }
+
+        let indexOfProp = acceptedProperties.indexOf(props[0]);
+        if (operationItem[props[0]] === null || operationItem[props[0]] === undefined
+            || operationItem[props[0]] === "") {
+            throw new Error(`parse error: Wrong value passed for property ${props[0]}`)
+        }
+
+        if (prevConnector === 'AND' || prevConnector === '') {
+            // we have an and connector so use `andWhere`
+            let whereArgs = (await getWhereValues([indexOfProp , operationItem[props[0]]]))[0];
+            qBuilder.andWhere(whereArgs[0] , whereArgs[1] , whereArgs[2]);
+        } else if (prevConnector === 'OR') {
+            // we have an or connector so use `orWhere`
+            let whereArgs = (await getWhereValues([indexOfProp , operationItem[props[0]]]))[0];
+            qBuilder.orWhere(whereArgs[0] , whereArgs[1] , whereArgs[2]);
+        } else {
+            throw new Error(`parse error: Connector value not identified`);
+        }
+
+    });
+
+    qBuilder.distinct(['provider.provider' , 'provider.source']);
+
+    if (page >= 0 && range) return (await qBuilder).results;
+    else return qBuilder;
+}
+
+export async function getAllProviders(page: number, range: number) {
+    if (page >= 0 && range) return (await Provider.query().page(page, range)).results;
+    else return Provider.query();
 }
 
 export async function getProviderById(id : number) : Promise<Provider> {
