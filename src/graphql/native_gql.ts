@@ -18,6 +18,7 @@ export const typeDef = gql`
         getPostTopics(postId: Int, semantics: Boolean) : [Interest]
         getTodaysTrendingKeywords(semantics: Boolean, page: Int, range: Int) : [Interest]
         getPostRelevance(postId: Int!, keywords: [String]!, semantics: Boolean) : [Interest]
+        getPostRelevancePerUserInterests(postId: Int!, semantics: Boolean) : [Interest]
         getPostsSortedByUserInterest(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean): [Post]
     }
 `;
@@ -144,6 +145,33 @@ export const resolvers = {
                 interestComputations.push({
                     interest: keyword,
                     score: postComputations[0][`score_interest_:${keyword}`]
+                })
+            });
+
+            return interestComputations;
+        },
+        getPostRelevancePerUserInterests: async (_ , { postId, semantics}, { user }) => {
+            let userObject = (await user.getUser());
+            if (!userObject) throw new Error('You must be authenticated & be an admin to access this');
+
+            let post = await getPostById(postId);
+            if (!post) throw new Error('Post is not found or available');
+
+            let fakeInterests = [];
+            let keywords = await getInterestsForUser(userObject.uid);
+            keywords.forEach(keyword => fakeInterests.push([ keyword.interest , keyword.score ]));
+
+            let postComputations = JSON.parse(await NativeClass.sortByUserInterest(
+                JSON.stringify([post]),
+                JSON.stringify(fakeInterests),
+                semantics
+            ));
+
+            let interestComputations = [];
+            keywords.forEach(keyword => {
+                interestComputations.push({
+                    interest: keyword.interest,
+                    score: postComputations[0][`score_interest_:${keyword.interest}`]
                 })
             });
 
