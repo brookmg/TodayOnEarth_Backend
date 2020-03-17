@@ -5,26 +5,12 @@ const router = express.Router();
 
 const arena = Arena({
   queues: [
-    {
-      name: "twitter_queue",
-      hostId: "Twitter Queue",
-    },
-    {
-        name: "facebook_queue",
-        hostId: "Facebook Queue",
-    },
-    {
-        name: "instagram_queue",
-        hostId: "Instagram Queue",
-    },
-    {
-        name: "telegram_queue",
-        hostId: "Telegram Queue",
-    },
-    {
-        name: "email_verification",
-        hostId: "Email Verification"
-    }
+      { name: "twitter_queue", hostId: "Twitter Queue" },
+      { name: "facebook_queue", hostId: "Facebook Queue" },
+      { name: "instagram_queue", hostId: "Instagram Queue" },
+      { name: "telegram_queue", hostId: "Telegram Queue" },
+      { name: "email_verification", hostId: "Email Verification"},
+      { name: "provider_fetch_issuer", hostId: "Provider Fetch Issuer" }
   ]
 }, {
   basePath: '/c7a74dcab7e2928ca1236de34517fb94',    // md5 hash of arena_toe
