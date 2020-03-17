@@ -16,7 +16,8 @@ const app = express();
 
 const whitelist = [
     `${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}`,
-    `${process.env.HOST}:${process.env.PORT}`
+    `${process.env.HOST}:${process.env.PORT}`,
+    `https://todayonearth.netlify.com`
 ]
 const corsOptions = {
     credentials: true,
