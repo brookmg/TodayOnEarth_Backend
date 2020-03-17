@@ -101,18 +101,32 @@ export async function getAllPosts(page: number, range: number , uid: number = -1
 
     if (uid >= 0) {
         let providerList = [];
+        let rawWhereQuery = ``;
         (await getProvidersForUser(uid)).forEach(item => providerList.push([item.provider , item.source]));
 
         if (fruitPunch) {
             mainQB = Post.query();
             let providerListB = [];
+            let rawWhereQueryB = ``;
             let uids = (await usersWithPotentiallySimilarInterest(uid , 0.2)).map((item: any) => item.uid);
             (await getProvidersForUsers(uids , 4))
                 .forEach(item => providerListB.push([item.provider , item.source]));
-            mainQB.whereIn(['provider' , 'source'] , providerListB).limit(fruitLimit)
+            providerListB.forEach(provider => {
+                rawWhereQueryB += (rawWhereQueryB.endsWith(')')) ?
+                    `OR (provider ILIKE '${provider[0]}' AND source = '${provider[1]}')` :
+                    `(provider ILIKE '${provider[0]}' AND source = '${provider[1]}')`;
+            });
+
+            mainQB.whereRaw(rawWhereQueryB).limit(fruitLimit)
         }
 
-        mainQ.whereIn(['provider' , 'source'] , providerList);
+        providerList.forEach(provider => {
+            rawWhereQuery += (rawWhereQuery.endsWith(')')) ?
+                `OR (provider ILIKE '${provider[0]}' AND source = '${provider[1]}')` :
+                `(provider ILIKE '${provider[0]}' AND source = '${provider[1]}')`;
+        });
+
+        mainQ.whereRaw(rawWhereQuery);
         if (mainQB) mainQ.unionAll([mainQB] , true)
     }
 
