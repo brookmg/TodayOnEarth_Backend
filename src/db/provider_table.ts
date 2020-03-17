@@ -25,9 +25,11 @@ export async function insertProvider(providerData: Provider) : Promise<Provider>
     return createProviderScheme().then(async () => {
         if ((await Provider.query().where({
             'uid': providerData.uid,
-            'provider': providerData.provider,
-            'source': providerData.source
+            'provider': providerData.provider.toLowerCase(),
+            'source': providerData.source.toLowerCase()
         })).length > 0) throw new Error('Provider record is already present.');
+        providerData.provider = providerData.provider.toLowerCase();
+        providerData.source = providerData.source.toLowerCase();
         return Provider.query().insert(providerData)
     });
 }
@@ -145,6 +147,8 @@ export async function updateProviderById(id : number , update : Provider) : Prom
 export async function updateProviderOfUser(update: Provider, provider: string, source: string, uid: number) : Promise<Provider> {
     return createProviderScheme().then(async () => {
         let itemToUpdate = await Provider.query().findOne({ uid , provider, source });
+        update.provider = update.provider.toLowerCase();
+        update.source = update.source.toLowerCase();
         return itemToUpdate.$query().patchAndFetch(update);
     });
 }
