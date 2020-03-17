@@ -128,9 +128,9 @@ export async function getProviders(filters: QueryObject[], page: number, range: 
     else return qBuilder;
 }
 
-export async function getAllProviders(page: number, range: number) {
-    if (page >= 0 && range) return (await Provider.query().page(page, range)).results;
-    else return Provider.query();
+export async function getAllProviders(page: number = -1, range: number = 0) {
+    if (page >= 0 && range) return (await Provider.query().distinct(['provider.provider' , 'provider.source']).page(page, range)).results;
+    else return Provider.query().distinct(['provider.provider' , 'provider.source']);
 }
 
 export async function getProviderById(id : number) : Promise<Provider> {
@@ -156,7 +156,7 @@ export async function addProviderListForUser(providers: Provider[], uid: number 
     for (const provider of providers) {
         provider.provider = provider.provider.toLowerCase();
         provider.source = provider.source.toLowerCase();
-        
+
         promises.push(insertProvider(Provider.fromJson({ uid , ...provider, added_on: new Date().toUTCString() })));
     }
 
