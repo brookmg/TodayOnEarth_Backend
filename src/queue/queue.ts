@@ -11,7 +11,7 @@ const TwitterQueue = new Queue('twitter_queue');
 const FacebookQueue = new Queue('facebook_queue');
 const InstagramQueue = new Queue('instagram_queue');
 const TelegramQueue = new Queue('telegram_queue');
-const EmailVerificationQueue = new Queue('email_verification');
+const EmailQueue = new Queue('email_queue');
 const ProviderFetchIssuer = new Queue('provider_fetch_issuer');
 
 const dotenv = require('dotenv');
@@ -97,7 +97,7 @@ TelegramQueue.process((job) => {
     );
 })
 
-EmailVerificationQueue.process(async job => {
+EmailQueue.process(async job => {
     // This is for a test , We should replace this with actual account
 
     let transporter = NodeMailer.createTransport({
@@ -149,8 +149,8 @@ async function addToTelegram(taskData : object) {
     TelegramQueue.add(taskData)
 }
 
-async function sendEmailVerification(taskData : object) {
-    return EmailVerificationQueue.add(taskData)
+async function sendEmail(taskdata : object) {
+    return EmailQueue.add(taskdata)
 }
 
 async function startIssuer(cron : string = '20 * * * * *') {
@@ -162,6 +162,6 @@ export {
     addToFacebook,
     addToInstagram,
     addToTelegram,
-    sendEmailVerification,
+    sendEmail,
     startIssuer
 }

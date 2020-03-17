@@ -4,7 +4,7 @@ import { hash, compare } from 'bcrypt'
 import { randomBytes } from "crypto";
 import { verify, sign, TokenExpiredError } from 'jsonwebtoken'
 import {createInterestScheme} from "./interest_table";
-import {sendEmailVerification} from "../queue/queue";
+import {sendEmail} from "../queue/queue";
 
 User.knex(KnexI);
 
@@ -42,6 +42,7 @@ export async function createUserScheme(): Promise<any> {
 }
 
 export async function insertUser(userData: User): Promise<User> {
+    if (userData.username.indexOf('@') !== -1) throw new Error('Username cannot contain the @ character');
     return createUserScheme().then(() => User.query().insert(userData));
 }
 
@@ -91,7 +92,7 @@ export async function sendVerificationEmail(uid: number) {
             <b><h4>Today On Earth [support@toe.app]</h4></b>
             `;
 
-            return !!await sendEmailVerification({ email: user.email, subject: 'Email Verification', html: genericEmail })
+            return !!await sendEmail({ email: user.email, subject: 'Email Verification', html: genericEmail })
         } else throw new Error('User doesn\'t have a valid email');
     } else throw new Error('User already verified')
 }
