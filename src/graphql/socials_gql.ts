@@ -61,7 +61,7 @@ export const resolvers = {
                 } else returnable.telegram = false;
 
                 if (linkedin) {
-                    let send : any = await postOnToLinkedIn(u.uid , text, text)
+                    let send : any = await postOnToLinkedIn(u.uid , text, text, '', '', [`./medias/${filename}`])
                         .catch(err => errors.linkedin = err.toString());
                     returnable.linkedin = !!send?.error || !errors.linkedin;
                 } else returnable.linkedin = false;
