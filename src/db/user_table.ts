@@ -27,6 +27,10 @@ export async function createUserScheme(): Promise<any> {
         table.string('last_location');  // comma separated geo data
         table.string('password_hash');
 
+        table.string('google_id').unique();
+        table.string('facebook_id').unique();
+        table.string('twitter_id').unique();
+
         table.string('github_id').unique();
         table.string('linkedin_id').unique();
         table.string('telegram_id').unique();
@@ -98,6 +102,21 @@ export async function verifyUserEmailWithToken(uid: number, token: string) : Pro
     else throw new Error('Token is incorrect');
 }
 
+export enum SocialType { 'google_id' , 'facebook_id' , 'twitter_id', 'instagram_id' , 'github_id' , 'linkedin_id', 'telegram_id'}
+
+export async function addSocialId(uid: number, type: SocialType , socialId: string ): Promise<User> {
+    return User.query().patchAndFetchById(uid, {
+        [SocialType[type]]: socialId
+    })
+}
+
+export async function socialIdExists (type: SocialType , socialId: string): Promise<User> {
+    console.log(type, SocialType[type]);
+    const count: User[] = await User.query().where( `${SocialType[type]}` , socialId);
+    if (count.length === 0) return undefined;
+    else return count[0];
+}
+
 export async function getUsers(page: number, range: number): Promise<User[]> {
     await createUserScheme();
     if (page >= 0 && range) return (await User.query().withGraphFetched({
@@ -140,6 +159,13 @@ export async function generateUsername(first_name: string, last_name: string): P
     return `${mash}.${addon}`;
 }
 
+export async function generateEmail(first_name: string, last_name: string): Promise<string> {
+    const mash = first_name.toLowerCase() + '.' + last_name.toLowerCase();
+    let addon = 1;
+    while (await isEmailUsed(`${mash}.${addon}@toe.app`)) addon++;
+    return `${mash}.${addon}@toe.app`;
+}
+
 export async function verifyUser(token: string): Promise<User> {
     const verified = await verify(token, '0mE09M8N880CDhhJI$9808_369'); // shouldn't be hardcoded like this
     if (verified) {
@@ -179,7 +205,9 @@ export async function signInUser(email: string, password: string): Promise<strin
 export async function signUpUser(
     first_name: string, middle_name: string, last_name: string,
     phone_number: string, username: string, country: string,
-    email: string, password: string): Promise<User> {
+    email: string, password: string, google_id: string,
+    facebook_id: string, twitter_id: string, github_id: string,
+    linkedin_id: string, telegram_id: string): Promise<User> {
 
     return createUserScheme().then(async () => {
         if (!username) throw new Error('username is required')
@@ -192,8 +220,8 @@ export async function signUpUser(
         const hashed = await hash(password, 10)
         return insertUser({
             first_name, middle_name, last_name, phone_number, username, country,
-            email, password_hash: hashed
-        })
+            email, password_hash: hashed, google_id, facebook_id, twitter_id,
+            github_id, linkedin_id, telegram_id })
     })
 
 }

@@ -16,6 +16,7 @@ export class Token extends Model {
             required: ['uid'],
             properties: {
                 uid: { type: 'integer'},
+                google: { type: 'string'},
                 facebook: { type: 'string'},    // 0Auth tokens probably spaced by a | or ,
                 twitter: { type: 'string'}, // 0Auth tokens probably spaced by a | or ,
                 instagram: { type: 'string'} // 0Auth tokens probably spaced by a | or ,

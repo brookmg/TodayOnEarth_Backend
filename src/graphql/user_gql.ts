@@ -21,7 +21,13 @@ export const typeDef = gql`
         phone_number: String,
         interests: [Interest],
         country: String,
-        last_location: String
+        last_location: String,
+        google_id: String,
+        facebook_id: String,
+        twitter_id: String,
+        github_id: String,
+        linkedin_id: String,
+        telegram_id: String
     }
 
     input IUser {
@@ -33,7 +39,13 @@ export const typeDef = gql`
         phone_number: String,
         country: String,
         last_location: String,
-        password: String!
+        password: String!,
+        google_id: String,
+        facebook_id: String,
+        twitter_id: String,
+        github_id: String,
+        linkedin_id: String,
+        telegram_id: String
     }
 
     type Token {
@@ -102,8 +114,12 @@ export const resolvers = {
 
         signUp: async (_, {new_user}, {user}) => {
             let token = await signUpUser(new_user.first_name, new_user.middle_name, new_user.last_name,
-                new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password);
-            const generatedToken = await generateToken(token)
+                new_user.phone_number, new_user.username, new_user.country, new_user.email, new_user.password,
+                new_user.google_id, new_user.facebook_id, new_user.twitter_id, new_user.github_id,
+                new_user.linkedin_id, new_user.telegram_id
+            );
+
+            const generatedToken = await generateToken(token);
             await user.signInUser(generatedToken);
             return {token: generatedToken}
         },

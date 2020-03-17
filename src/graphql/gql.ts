@@ -7,6 +7,7 @@ import { typeDef as PostType , resolvers as PostResolver } from "./post_gql";
 import { typeDef as InterestType , resolvers as InterestResolver } from "./interest_gql";
 import { typeDef as NativeType , resolvers as NativeResolver } from "./native_gql";
 import { typeDef as ProviderType , resolvers as ProviderResolver } from "./provider_gql";
+import { typeDef as SocialsType , resolvers as SocialsResolver } from "./socials_gql";
 
 import {RedisPubSub} from "graphql-redis-subscriptions";
 const cookie = require('cookie');
@@ -49,8 +50,8 @@ async function getCookieFromWebSocket(webSocket): Promise<any> {
 }
 
 export const server = new ApolloServer({
-    typeDefs: [ UserType , PostType , InterestType , NativeType , ProviderType] ,
-    resolvers: merge(UserResolver, PostResolver, InterestResolver, NativeResolver, ProviderResolver),
+    typeDefs: [ UserType , PostType , InterestType , NativeType , SocialsType , ProviderType] ,
+    resolvers: merge(UserResolver, PostResolver, InterestResolver, NativeResolver, SocialsResolver, ProviderResolver),
     subscriptions: {
         onConnect: async (connectionParams, webSocket) => {
             if (connectionParams.authToken) {
