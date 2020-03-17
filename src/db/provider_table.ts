@@ -154,6 +154,9 @@ export async function addProviderListForUser(providers: Provider[], uid: number 
     if (clear) await Provider.query().delete().where('uid' , uid);
 
     for (const provider of providers) {
+        provider.provider = provider.provider.toLowerCase();
+        provider.source = provider.source.toLowerCase();
+        
         promises.push(insertProvider(Provider.fromJson({ uid , ...provider, added_on: new Date().toUTCString() })));
     }
 
