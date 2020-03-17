@@ -25,9 +25,11 @@ export async function insertProvider(providerData: Provider) : Promise<Provider>
     return createProviderScheme().then(async () => {
         if ((await Provider.query().where({
             'uid': providerData.uid,
-            'provider': providerData.provider,
-            'source': providerData.source
+            'provider': providerData.provider.toLowerCase(),
+            'source': providerData.source.toLowerCase()
         })).length > 0) throw new Error('Provider record is already present.');
+        providerData.provider = providerData.provider.toLowerCase();
+        providerData.source = providerData.source.toLowerCase();
         return Provider.query().insert(providerData)
     });
 }
@@ -128,9 +130,9 @@ export async function getProviders(filters: QueryObject[], page: number, range: 
     else return qBuilder;
 }
 
-export async function getAllProviders(page: number, range: number) {
-    if (page >= 0 && range) return (await Provider.query().page(page, range)).results;
-    else return Provider.query();
+export async function getAllProviders(page: number = -1, range: number = 0) {
+    if (page >= 0 && range) return (await Provider.query().distinct(['provider.provider' , 'provider.source']).page(page, range)).results;
+    else return Provider.query().distinct(['provider.provider' , 'provider.source']);
 }
 
 export async function getProviderById(id : number) : Promise<Provider> {
@@ -145,6 +147,8 @@ export async function updateProviderById(id : number , update : Provider) : Prom
 export async function updateProviderOfUser(update: Provider, provider: string, source: string, uid: number) : Promise<Provider> {
     return createProviderScheme().then(async () => {
         let itemToUpdate = await Provider.query().findOne({ uid , provider, source });
+        update.provider = update.provider.toLowerCase();
+        update.source = update.source.toLowerCase();
         return itemToUpdate.$query().patchAndFetch(update);
     });
 }
@@ -154,6 +158,9 @@ export async function addProviderListForUser(providers: Provider[], uid: number 
     if (clear) await Provider.query().delete().where('uid' , uid);
 
     for (const provider of providers) {
+        provider.provider = provider.provider.toLowerCase();
+        provider.source = provider.source.toLowerCase();
+
         promises.push(insertProvider(Provider.fromJson({ uid , ...provider, added_on: new Date().toUTCString() })));
     }
 

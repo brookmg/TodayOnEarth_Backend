@@ -5,12 +5,14 @@ import FacebookFetcher from '../PostFetchers/FacebookFetcher'
 import TelegramFetcher from '../PostFetchers/TelegramFetcher'
 import InstagramFetcher from '../PostFetchers/InstagramFetcher'
 import * as NodeMailer from 'nodemailer'
+import {getAllProviders} from "../db/provider_table";
 
 const TwitterQueue = new Queue('twitter_queue');
 const FacebookQueue = new Queue('facebook_queue');
 const InstagramQueue = new Queue('instagram_queue');
 const TelegramQueue = new Queue('telegram_queue');
 const EmailVerificationQueue = new Queue('email_verification');
+const ProviderFetchIssuer = new Queue('provider_fetch_issuer');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -116,24 +118,43 @@ EmailVerificationQueue.process(async job => {
     console.dir(info)
 });
 
-async function addToTwitter(taskdata : object, cron : string = '20 * * * * *') {
-    TwitterQueue.add(taskdata , {repeat: { cron: cron }})
+ProviderFetchIssuer.process(async () => {
+    // get all the providers in the system. Place them in the appropriate queue one by one.
+    let providers = await getAllProviders();
+    for (const provider of providers) {
+        console.log(`Handing off ... ${provider.provider} to ${provider.source.toLowerCase()} queue`);
+        switch (provider.source.toLowerCase()) {
+            case 'facebook': await addToFacebook({from: -1, source: provider.provider}); break;
+            case 'twitter': await addToTwitter({from: -1, source: provider.provider}); break;
+            case 'telegram': await addToTelegram({from: -1, source: provider.provider}); break;
+            case 'instagram': await addToInstagram({from: -1, source: provider.provider}); break;
+            default: console.error(`unknown source: ${provider.source.toLowerCase()} `);
+        }
+    }
+});
+
+async function addToTwitter(taskData : object) {
+    TwitterQueue.add(taskData)
 }
 
-async function addToFacebook(taskdata : object, cron : string = '20 * * * * *') {
-    FacebookQueue.add(taskdata , {repeat: { cron: cron }})
+async function addToFacebook(taskData : object) {
+    FacebookQueue.add(taskData)
 }
 
-async function addToInstagram(taskdata : object, cron : string = '20 * * * * *') {
-    InstagramQueue.add(taskdata , {repeat: { cron: cron }})
+async function addToInstagram(taskData : object) {
+    InstagramQueue.add(taskData)
 }
 
-async function addToTelegram(taskdata : object, cron : string = '20 * * * * *') {
-    TelegramQueue.add(taskdata , {repeat: { cron: cron }})
+async function addToTelegram(taskData : object) {
+    TelegramQueue.add(taskData)
 }
 
-async function sendEmailVerification(taskdata : object) {
-    return EmailVerificationQueue.add(taskdata)
+async function sendEmailVerification(taskData : object) {
+    return EmailVerificationQueue.add(taskData)
+}
+
+async function startIssuer(cron : string = '20 * * * * *') {
+    ProviderFetchIssuer.add({} , {repeat: {cron: cron}})
 }
 
 export {
@@ -141,5 +162,6 @@ export {
     addToFacebook,
     addToInstagram,
     addToTelegram,
-    sendEmailVerification
+    sendEmailVerification,
+    startIssuer
 }
