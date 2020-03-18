@@ -127,6 +127,16 @@ export async function getUsers(page: number, range: number): Promise<User[]> {
     });
 }
 
+export async function getTelegramLinkedUsers(page: number = -1, range: number = 0) {
+    await createUserScheme();
+    if (page >= 0 && range) return (await User.query().whereNotNull('telegram_id').withGraphFetched({
+        interests: true, providers: true
+    }).page(page, range)).results;
+    else return User.query().whereNotNull('telegram_id').withGraphFetched({
+        interests: true, providers: true
+    });
+}
+
 export async function makeUserAdmin(uid: number): Promise<boolean> {
     await createUserScheme();
     return await User.query().patch({'role': 4}).where('uid', uid) === 1

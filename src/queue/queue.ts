@@ -6,6 +6,7 @@ import TelegramFetcher from '../PostFetchers/TelegramFetcher'
 import InstagramFetcher from '../PostFetchers/InstagramFetcher'
 import * as NodeMailer from 'nodemailer'
 import {getAllProviders} from "../db/provider_table";
+import {getTelegramLinkedUsers} from "../db/user_table";
 
 const {REDIS_URL} = process.env;
 const Redis = require('ioredis');
@@ -31,6 +32,7 @@ const InstagramQueue = new Queue('instagram_queue', opts);
 const TelegramQueue = new Queue('telegram_queue', opts);
 const EmailQueue = new Queue('email_queue', opts);
 const ProviderFetchIssuer = new Queue('provider_fetch_issuer', opts);
+const DailyGistQueue = new Queue('daily_gist_queue', opts);
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -151,6 +153,18 @@ ProviderFetchIssuer.process(async () => {
     }
 });
 
+DailyGistQueue.process(async () => {
+    const {prepareGistForUser, sendMessageOnTelegram} = require("../socials/telegram");
+
+    let telegramLinkedUsers = await getTelegramLinkedUsers();
+    for (const user of telegramLinkedUsers) {
+        console.log(`Sending daily gist for ... ${user.uid}`);
+        let telegraphUrl = await prepareGistForUser(user.uid);
+        await sendMessageOnTelegram(user.uid ,
+            `Hello, ${user.first_name} \n We have prepared your daily gist of the things happening on Earth. \n\n ${telegraphUrl} \nIf you don't want this, send /nogist to this bot`)
+    }
+});
+
 async function addToTwitter(taskData : object) {
     TwitterQueue.add(taskData)
 }
@@ -175,11 +189,16 @@ async function startIssuer(cron : string = '20 * * * * *') {
     ProviderFetchIssuer.add({} , {repeat: {cron: cron}})
 }
 
+async function startGistSender(cron : string = '20 * * * * *') {
+    DailyGistQueue.add({} , {repeat: {cron: cron}})
+}
+
 export {
     addToTwitter,
     addToFacebook,
     addToInstagram,
     addToTelegram,
     sendEmail,
-    startIssuer
+    startIssuer,
+    startGistSender
 }
