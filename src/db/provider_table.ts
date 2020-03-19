@@ -64,7 +64,6 @@ const acceptedConnectors = ['AND' , 'OR', ''];
 
 async function getWhereValues(processFrom: string[]) : Promise<string[]> {
     let returnable = [];
-    console.log(processFrom);
     if (processFrom.length < 2) throw new Error('query builder: something went wrong while building query');
 
     switch(Number.parseInt(processFrom[0] , 10)) {

@@ -50,7 +50,7 @@ TwitterQueue.process((job) => {
                 }
                 insertPost(post).then(() => {
                     if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
-                }).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                }).catch(e => { if (job.data.log) console.error(`failed to add ${post.source_link} with ${e}`); })
             }
         )
     )
@@ -70,7 +70,7 @@ FacebookQueue.process((job) => {
                 }
                 insertPost(post).then(() => {
                     if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
-                }).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                }).catch(e => { if (job.data.log) console.error(`failed to add ${post.source_link} with ${e}`); })
             }
         )
     )
@@ -89,7 +89,7 @@ InstagramQueue.process((job) => {
                 }
                 insertPost(post).then(() => {
                     if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
-                }).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                }).catch(e => { if (job.data.log) console.error(`failed to add ${post.source_link} with ${e}`); })
             }
         )
     )
@@ -109,7 +109,7 @@ TelegramQueue.process((job) => {
 
                 insertPost(post).then(() => {
                     if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
-                }).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                }).catch(e => { if (job.data.log) console.error(`failed to add ${post.source_link} with ${e}`); })
             }
         )
     );
