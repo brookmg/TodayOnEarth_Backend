@@ -7,12 +7,30 @@ import InstagramFetcher from '../PostFetchers/InstagramFetcher'
 import * as NodeMailer from 'nodemailer'
 import {getAllProviders} from "../db/provider_table";
 
-const TwitterQueue = new Queue('twitter_queue');
-const FacebookQueue = new Queue('facebook_queue');
-const InstagramQueue = new Queue('instagram_queue');
-const TelegramQueue = new Queue('telegram_queue');
-const EmailQueue = new Queue('email_queue');
-const ProviderFetchIssuer = new Queue('provider_fetch_issuer');
+const {REDIS_URL} = process.env;
+const Redis = require('ioredis');
+const client = new Redis(REDIS_URL);
+const subscriber = new Redis(REDIS_URL);
+
+const opts = {
+    createClient: function (type) {
+        switch (type) {
+            case 'client':
+                return client;
+            case 'subscriber':
+                return subscriber;
+            default:
+                return new Redis(REDIS_URL);
+        }
+    }
+};
+
+const TwitterQueue = new Queue('twitter_queue' , opts);
+const FacebookQueue = new Queue('facebook_queue', opts);
+const InstagramQueue = new Queue('instagram_queue', opts);
+const TelegramQueue = new Queue('telegram_queue', opts);
+const EmailQueue = new Queue('email_queue', opts);
+const ProviderFetchIssuer = new Queue('provider_fetch_issuer', opts);
 
 const dotenv = require('dotenv');
 dotenv.config();
