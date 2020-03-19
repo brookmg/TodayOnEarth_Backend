@@ -1,4 +1,5 @@
 const { ApolloServer } = require('apollo-server-express');
+const Redis = require('ioredis');
 import { merge } from 'lodash';
 import { verifyUser } from '../db/user_table';
 
@@ -12,7 +13,12 @@ import { typeDef as SocialsType , resolvers as SocialsResolver } from "./socials
 import {RedisPubSub} from "graphql-redis-subscriptions";
 const cookie = require('cookie');
 
-export const PubSub = new RedisPubSub();
+const redisurl = process.env.REDIS_URL;
+
+export const PubSub = new RedisPubSub({
+    publisher: new Redis(redisurl),
+    subscriber: new Redis(redisurl)
+});
 
 export const [ POST_ADDED, POST_REMOVED, USER_ADDED, USER_REMOVED ] = [ "post_added" , "post_removed", "user_added", "user_removed" ];
 

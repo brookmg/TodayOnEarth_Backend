@@ -308,7 +308,6 @@ export const resolvers = {
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
             interests.forEach(i => { i = i.toLowerCase(); });
-            console.log(interests);
 
             return forEach(keywords,keyword => {
                 if (interests.includes(keyword.toLowerCase())) {
@@ -318,7 +317,6 @@ export const resolvers = {
                         throw new Error(`Problem setting score for ${keyword}`);
                     } else return nChangeInterestScoreForUser(keyword, (score + (Number(process.env.POST_OPENED_MUTATION_VALUE))), user.uid)
                 } else {
-                    console.log(`adding keyword ${keyword}`);
                     return addInterestForUser(keyword , Number(process.env.POST_OPENED_MUTATION_VALUE), user.uid)
                 }
             }).then(items => items.every(i => i === true));
@@ -340,7 +338,6 @@ export const resolvers = {
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
             interests.forEach(i => i.toLowerCase());
-            console.log(interests);
 
             return forEach(keywords,keyword => {
                 if (interests.includes(keyword.toLowerCase())) {
@@ -350,7 +347,6 @@ export const resolvers = {
                         throw new Error(`Problem setting score for ${keyword}`);
                     } else return nChangeInterestScoreForUser(keyword, (score + (Number(process.env.POST_LIKED_MUTATION_VALUE))), user.uid)
                 } else {
-                    console.log(`adding keyword ${keyword}`);
                     return addInterestForUser(keyword , Number(process.env.POST_LIKED_MUTATION_VALUE), user.uid)
                 }
             }).then(items => items.every(i => i === true));
@@ -372,7 +368,6 @@ export const resolvers = {
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
             interests.forEach(i => i.toLowerCase());
-            console.log(interests);
 
             return await forEach(keywords , keyword => {
                 if (interests.includes(keyword.toLowerCase())) {
@@ -400,7 +395,6 @@ export const resolvers = {
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
             interests.forEach(i => i.toLowerCase());
-            console.log(interests);
 
             return forEach(keywords,keyword => {
                 if (interests.includes(keyword.toLowerCase())) {
@@ -410,7 +404,7 @@ export const resolvers = {
                         throw new Error(`Problem setting score for ${keyword}`);
                     } else return nChangeInterestScoreForUser(keyword, (score + (Number(process.env.POST_DISLIKED_MUTATION_VALUE))), user.uid)
                 } else {
-                    console.log(`adding keyword ${keyword}`);
+
                     return addInterestForUser(keyword , Number(process.env.POST_DISLIKED_MUTATION_VALUE), user.uid)
                 }
             }).then(items => items.every(i => i === true));
@@ -432,7 +426,6 @@ export const resolvers = {
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
             interests.forEach(i => i.toLowerCase());
-            console.log(interests);
 
             return forEach(keywords,keyword => {
                 if (interests.includes(keyword.toLowerCase())) {
@@ -442,7 +435,7 @@ export const resolvers = {
                         throw new Error(`Problem setting score for ${keyword}`);
                     } else return nChangeInterestScoreForUser(keyword, (score + (score / (Number(process.env.POST_IMPRESSION_PER_MS_MUTATION_VALUE) * ms))), user.uid)
                 } else {
-                    console.log(`adding keyword ${keyword}`);
+
                     return addInterestForUser(keyword , Number(process.env.POST_IMPRESSION_PER_MS_MUTATION_VALUE) * ms, user.uid)
                 }
             }).then(items => items.every(i => i === true));
@@ -464,7 +457,6 @@ export const resolvers = {
             let keywords = keywordsFromPost.map(k => k[0]);
             let interests = interestsRow.map(i => i.interest);
             interests.forEach(i => i.toLowerCase());
-            console.log(interests);
 
             return forEach(keywords,keyword => {
                 if (interests.includes(keyword.toLowerCase())) {
@@ -473,7 +465,7 @@ export const resolvers = {
                         throw new Error(`Problem setting score for ${keyword}`);
                     } else return nChangeInterestScoreForUser(keyword, (score - (Number(process.env.POST_DISLIKED_MUTATION_VALUE))), user.uid)
                 } else {
-                    console.log(`adding keyword ${keyword}`);
+
                     return addInterestForUser(keyword , Number(process.env.POST_DISLIKED_MUTATION_VALUE), user.uid)
                 }
             }).then(items => items.every(i => i === true));

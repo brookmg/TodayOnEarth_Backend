@@ -112,7 +112,6 @@ export async function addSocialId(uid: number, type: SocialType , socialId: stri
 }
 
 export async function socialIdExists (type: SocialType , socialId: string): Promise<User> {
-    console.log(type, SocialType[type]);
     const count: User[] = await User.query().where( `${SocialType[type]}` , socialId);
     if (count.length === 0) return undefined;
     else return count[0];

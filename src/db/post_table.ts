@@ -70,7 +70,6 @@ export async function insertPost(postData) : Promise<Post> {
     return createPostScheme().then(() => {
         let possibleSource = postData.source_link.split("/")[2];
         postData.source = ((possibleSource: string) => {
-            console.log(possibleSource);
             if (possibleSource.indexOf('facebook.com') != -1) return 'facebook';
             else if (possibleSource.indexOf('instagram.com') != -1) return 'instagram';
             else if (possibleSource.indexOf('twitter.com') != -1) return 'twitter';
@@ -199,7 +198,6 @@ export async function getAllPostsWithBody(body: string, page: number, range: num
 
 async function getWhereValues(processFrom: string[]) : Promise<string[]> {
     let returnable = [];
-    console.log(processFrom);
     if (processFrom.length < 2) throw new Error('query builder: something went wrong while building query');
 
     switch(Number.parseInt(processFrom[0] , 10)) {
