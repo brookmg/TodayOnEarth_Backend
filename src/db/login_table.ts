@@ -8,6 +8,9 @@ import {User} from "../model/user";
 
 Login.knex(KnexI);
 
+/**
+ * Method used for creating the table, not used anymore as knex migrations are implemented now.
+ */
 export async function createLoginSchema() : Promise<any> {
     if (await KnexI.schema.hasTable('login')) return null; // We don't need to create it again
 
@@ -24,11 +27,19 @@ export async function createLoginSchema() : Promise<any> {
 
 }
 
+/**
+ * Method the validity of a password reset token
+ * @param token - the token which is being tested
+ */
 export async function isPasswordResetTokenValid(token: string) : Promise<boolean> {
     await createLoginSchema();
     return (await Login.query().where({ token })).length > 0
 }
 
+/**
+ * Method to request a password reset and potentially email the user
+ * @param forEmailOrUsername - the username or the email of the user
+ */
 export async function passwordResetRequested(forEmailOrUsername: string) : Promise<boolean> {
     await createLoginSchema();
 
@@ -74,6 +85,11 @@ export async function passwordResetRequested(forEmailOrUsername: string) : Promi
     }
 }
 
+/**
+ * Method to reset password of a user with a valid token
+ * @param token - password reset token received in the email of the user
+ * @param newPassword - the new password to be placed for the user
+ */
 export async function resetPasswordWithToken(token: string, newPassword: string) : Promise<boolean>{
     await createLoginSchema();
 
