@@ -20,6 +20,9 @@ export const PubSub = new RedisPubSub({
     subscriber: new Redis(redisurl)
 });
 
+/**
+ * Used for graphql subscriptions
+ */
 export const [ POST_ADDED, POST_REMOVED, USER_ADDED, USER_REMOVED ] = [ "post_added" , "post_removed", "user_added", "user_removed" ];
 
 export class UserHandler {
@@ -42,9 +45,9 @@ export class UserHandler {
     }
 
     async getUser() {
-        let token = this.req.headers.authorization;
+        let token = this.req.headers.authorization; // give priority to Authorization header
 
-        if (!token && this.req.cookies) token = this.req.cookies.userId || '';
+        if (!token && this.req.cookies) token = this.req.cookies.userId || ''; // fallback to cookies if that was empty
 
         if (token) return await verifyUser(token);
         else return null
@@ -52,9 +55,12 @@ export class UserHandler {
 }
 
 async function getCookieFromWebSocket(webSocket): Promise<any> {
-    return new Promise((resolve , reject) => resolve(cookie.parse(webSocket.upgradeReq.headers.cookie)));
+    return new Promise((resolve) => resolve(cookie.parse(webSocket.upgradeReq.headers.cookie)));
 }
 
+/**
+ * Main apollo server object. We call listen on this object on the server.ts
+ */
 export const server = new ApolloServer({
     typeDefs: [ UserType , PostType , InterestType , NativeType , SocialsType , ProviderType] ,
     resolvers: merge(UserResolver, PostResolver, InterestResolver, NativeResolver, SocialsResolver, ProviderResolver),
