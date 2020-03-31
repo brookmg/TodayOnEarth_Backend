@@ -23,7 +23,7 @@ dotenv.config();
 Passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/google/callback`,
+        callbackURL: `${process.env.HOST}/auth/google/callback`,
         passReqToCallback: true
     }, async (req, accessToken , refreshToken, profile, done) => {
 
@@ -81,7 +81,7 @@ Passport.use(new GoogleStrategy({
 Passport.use(new FacebookStrategy({
         clientID: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/facebook/callback`,
+        callbackURL: `${process.env.HOST}/auth/facebook/callback`,
         graphAPIVersion: 'v6.0',
         enableProof: true,
         passReqToCallback: true
@@ -156,7 +156,7 @@ Passport.use(new FacebookStrategy({
 Passport.use(new TwitterStrategy({
         consumerKey: process.env.TWITTER_CONSUMER_ID,   // 266033008053-06q(MORE).apps.googleusercontent.com
         consumerSecret: process.env.TWITTER_CONSUMER_SECRET, // eEriCU9KEX(MORE)
-        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/twitter/callback`,
+        callbackURL: `${process.env.HOST}/auth/twitter/callback`,
         includeEmail: true,
         includeStatus: false,
         includeEntities: false,
@@ -212,7 +212,7 @@ Passport.use(new TwitterStrategy({
 Passport.use(new GithubStrategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/github/callback`,
+        callbackURL: `${process.env.HOST}/auth/github/callback`,
         passReqToCallback: true
     }, async (req, accessToken , refreshToken, profile, done) => {
 
@@ -271,7 +271,7 @@ Passport.use(new GithubStrategy({
 Passport.use(new LinkedInStrategy({
         clientID: process.env.LINKEDIN_CLIENT_ID,
         clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-        callbackURL: `${process.env.HOST}:${process.env.PORT}/auth/linkedin/callback`,
+        callbackURL: `${process.env.HOST}/auth/linkedin/callback`,
         scope: ['r_emailaddress' , 'r_liteprofile' , 'w_member_social'],
         state: true,
         passReqToCallback: true
