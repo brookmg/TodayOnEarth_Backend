@@ -4,16 +4,43 @@ import TwitterFetcher from '../PostFetchers/TwitterFetcher'
 import FacebookFetcher from '../PostFetchers/FacebookFetcher'
 import TelegramFetcher from '../PostFetchers/TelegramFetcher'
 import InstagramFetcher from '../PostFetchers/InstagramFetcher'
+import * as NodeMailer from 'nodemailer'
+import {getAllProviders} from "../db/provider_table";
+import {getTelegramLinkedUsers} from "../db/user_table";
 
-const TwitterQueue = new Queue('twitter_queue'); 
-const FacebookQueue = new Queue('facebook_queue'); 
-const InstagramQueue = new Queue('instagram_queue'); 
-const TelegramQueue = new Queue('telegram_queue');
+const {REDIS_URL} = process.env;
+const Redis = require('ioredis');
+const client = new Redis(REDIS_URL);
+const subscriber = new Redis(REDIS_URL);
+
+const opts = {
+    createClient: function (type) {
+        switch (type) {
+            case 'client':
+                return client;
+            case 'subscriber':
+                return subscriber;
+            default:
+                return new Redis(REDIS_URL);
+        }
+    }
+};
+
+const TwitterQueue = new Queue('twitter_queue' , opts);
+const FacebookQueue = new Queue('facebook_queue', opts);
+const InstagramQueue = new Queue('instagram_queue', opts);
+const TelegramQueue = new Queue('telegram_queue', opts);
+const EmailQueue = new Queue('email_queue', opts);
+const ProviderFetchIssuer = new Queue('provider_fetch_issuer', opts);
+const DailyGistQueue = new Queue('daily_gist_queue', opts);
+
+const dotenv = require('dotenv');
+dotenv.config();
 
 TwitterQueue.process((job) => {
     // twitter scraper module => push to db
     // ,then
-    
+
     return new TwitterFetcher(job.data.from , job.data.source).getPosts().then(
         posts => posts.forEach(
             post => {
@@ -23,9 +50,9 @@ TwitterQueue.process((job) => {
                     if (post.metadata.keywords != undefined) post.keywords = post.metadata.keywords
                     post.metadata.keywords = undefined
                 }
-                insertPost(post).then(() => 
-                    console.log(`added ${post.source_link} from ${post.provider}`)
-                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                insertPost(post).then(() => {
+                    if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
+                }).catch(e => { if (job.data.log) console.error(`failed to add ${post.source_link} with ${e}`); })
             }
         )
     )
@@ -43,9 +70,9 @@ FacebookQueue.process((job) => {
                     post.keywords = post.metadata.keywords
                     post.metadata.keywords = undefined
                 }
-                insertPost(post).then(() => 
-                    console.log(`added ${post.source_link} from ${post.provider}`)                
-                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                insertPost(post).then(() => {
+                    if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
+                }).catch(e => { if (job.data.log) console.error(`failed to add ${post.source_link} with ${e}`); })
             }
         )
     )
@@ -62,9 +89,9 @@ InstagramQueue.process((job) => {
                     post.keywords = post.metadata.keywords
                     post.metadata.keywords = undefined
                 }
-                insertPost(post).then(() => 
-                    console.log(`added ${post.source_link} from ${post.provider}`)
-                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                insertPost(post).then(() => {
+                    if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
+                }).catch(e => { if (job.data.log) console.error(`failed to add ${post.source_link} with ${e}`); })
             }
         )
     )
@@ -82,33 +109,95 @@ TelegramQueue.process((job) => {
                     post.metadata.keywords = undefined
                 }
 
-                insertPost(post).then(() => 
-                    console.log(`added ${post.source_link} from ${post.provider}`)
-                ).catch(e => console.error(`failed to add ${post.source_link} with ${e}`))
+                insertPost(post).then(() => {
+                    if (job.data.log) console.log(`added ${post.source_link} from ${post.provider}`)
+                }).catch(e => { if (job.data.log) console.error(`failed to add ${post.source_link} with ${e}`); })
             }
         )
     );
 })
 
-async function addToTwitter(taskdata : object, cron : string = '20 * * * * *') {
-    TwitterQueue.add(taskdata , {repeat: { cron: cron }})
+EmailQueue.process(async job => {
+    // This is for a test , We should replace this with actual account
+
+    let transporter = NodeMailer.createTransport({
+        service: 'Gmail', // upgrade later with STARTTLS
+        auth: {
+            user: process.env.GMAIL_DUMMY_ACCOUNT,
+            pass: process.env.GMAIL_DUMMY_ACCOUNT_PASSWORD
+        }
+    });
+
+    let info = await transporter.sendMail({
+        from: '"Today On Earth" <toe@toe.app>',
+        to: job.data.email || process.env.GMAIL_DUMMY_ACCOUNT,
+        subject: job.data.subject || 'NO SUBJECT EMAIL>>>',
+        html: job.data.html || '<h1> NO HTML BODY ? </h1>'
+    });
+
+});
+
+ProviderFetchIssuer.process(async () => {
+    // get all the providers in the system. Place them in the appropriate queue one by one.
+    let providers = await getAllProviders();
+    for (const provider of providers) {
+        console.log(`Handing off ... ${provider.provider} to ${provider.source.toLowerCase()} queue`);
+        switch (provider.source.toLowerCase()) {
+            case 'facebook': await addToFacebook({from: -1, source: provider.provider}); break;
+            case 'twitter': await addToTwitter({from: -1, source: provider.provider}); break;
+            case 'telegram': await addToTelegram({from: -1, source: provider.provider}); break;
+            case 'instagram': await addToInstagram({from: -1, source: provider.provider}); break;
+            default: console.error(`unknown source: ${provider.source.toLowerCase()} `);
+        }
+    }
+});
+
+DailyGistQueue.process(async () => {
+    const {prepareGistForUser, sendMessageOnTelegram} = require("../socials/telegram");
+
+    let telegramLinkedUsers = await getTelegramLinkedUsers();
+    for (const user of telegramLinkedUsers) {
+        console.log(`Sending daily gist for ... ${user.uid}`);
+        let telegraphUrl = await prepareGistForUser(user.uid);
+        await sendMessageOnTelegram(user.uid ,
+            `Hello, ${user.first_name} \n We have prepared your daily gist of the things happening on Earth. \n\n ${telegraphUrl} \nIf you don't want this, send /nogist to this bot`)
+    }
+});
+
+async function addToTwitter(taskData : object) {
+    TwitterQueue.add(taskData)
 }
 
-async function addToFacebook(taskdata : object, cron : string = '20 * * * * *') {
-    FacebookQueue.add(taskdata , {repeat: { cron: cron }})
+async function addToFacebook(taskData : object) {
+    FacebookQueue.add(taskData)
 }
 
-async function addToInstagram(taskdata : object, cron : string = '20 * * * * *') {
-    InstagramQueue.add(taskdata , {repeat: { cron: cron }})
+async function addToInstagram(taskData : object) {
+    InstagramQueue.add(taskData)
 }
 
-async function addToTelegram(taskdata : object, cron : string = '20 * * * * *') {
-    TelegramQueue.add(taskdata , {repeat: { cron: cron }})
+async function addToTelegram(taskData : object) {
+    TelegramQueue.add(taskData)
+}
+
+async function sendEmail(taskdata : object) {
+    return EmailQueue.add(taskdata)
+}
+
+async function startIssuer(cron : string = '20 * * * * *') {
+    ProviderFetchIssuer.add({} , {repeat: {cron: cron}})
+}
+
+async function startGistSender(cron : string = '20 * * * * *') {
+    DailyGistQueue.add({} , {repeat: {cron: cron}})
 }
 
 export {
     addToTwitter,
     addToFacebook,
     addToInstagram,
-    addToTelegram
+    addToTelegram,
+    sendEmail,
+    startIssuer,
+    startGistSender
 }

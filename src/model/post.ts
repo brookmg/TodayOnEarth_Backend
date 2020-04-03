@@ -1,11 +1,12 @@
 const { Model } = require('objection')
 import { Keyword } from './keyword'
+import { PubSub , POST_ADDED , POST_REMOVED } from '../graphql/gql'
 
 export class Post extends Model {
 
     $parseDatabaseJson(json) {
         json = super.$parseDatabaseJson(json);
-        
+
         if (json.metadata && typeof json.metadata == 'string') {
             json.metadata = JSON.parse(json.metadata)
         }
@@ -21,14 +22,14 @@ export class Post extends Model {
             json.keywords.forEach(element => {
                 if (typeof element === 'object') {
                     if (element instanceof Keyword) finalKeywords.push(element)    // nothing to do here
-                    // but if ☝ is false ... something is messed up so don't push anything 
+                    // but if ☝ is false ... something is messed up so don't push anything
                 } else if (typeof element === 'string') {
                     finalKeywords.push(Keyword.fromJson({"keyword" : element}));
                 }
             });
             json.keywords = finalKeywords
         }
-        
+
         return json
     }
 
@@ -42,9 +43,21 @@ export class Post extends Model {
         return json
     }
 
+    static afterInsert(args) {
+        PubSub.publish(POST_ADDED, {
+            "postAdded": args.inputItems
+        })
+    }
+
+    static afterDelete(args) {
+        PubSub.publish(POST_REMOVED, {
+            "postRemoved": args.items
+        })
+    }
+
     static get tableName() {
         return 'post';
-    } 
+    }
 
     static get idColumn() {
         return 'postid';
@@ -70,7 +83,8 @@ export class Post extends Model {
                 title: { type: 'string' },
                 body: { type: 'string' },
                 provider: { type: 'string' },
-                source_link: { type: 'string' }, 
+                source: { type: 'string'},
+                source_link: { type: 'string' },
                 keywords: { type: 'array'},
                 published_on: { type: 'date'},
                 scraped_on: { type: 'date'},

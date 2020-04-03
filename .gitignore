@@ -68,3 +68,5 @@ build
 .idea
 cmake-build-debug
 *.pyc
+
+knex/staging

@@ -12,7 +12,7 @@ const utils = {
 }
 
 export async function forEach(arr, callback) {
-    return await Promise.all(arr.map(async item => (await callback(item))))
+    return Promise.all(arr.map(async item => (await callback(item))));
 }
 
 export default utils;

@@ -1,11 +1,15 @@
 import { Router } from "express";
 import Passport  from './passport'
+import {addSocialId, generateToken, generateUsername, socialIdExists, SocialType, verifyUser} from "../db/user_table";
+const TGLogin = require('node-telegram-login');
 
 export const authRouter = Router();
 require('dotenv').config();
 
 authRouter.use(Passport.initialize());
 authRouter.use(Passport.session());
+
+const TelegramLogin = new TGLogin(process.env.TELEGRAM_BOT_TOKEN);
 
 let redirectionHandlerMiddleware = (req, res, err: string, data: any) => {
     if (err) {
@@ -33,7 +37,7 @@ authRouter.get('/google/callback' , function (req, res) {
 );
 
 authRouter.get('/facebook' , Passport.authenticate('facebook', {
-    authType: 'rerequest', accessType: 'offline', prompt: 'consent', scope: ['email' , 'public_profile', 'user_age_range', 'user_gender']}));
+    authType: 'rerequest', accessType: 'offline', prompt: 'consent', scope: ['email' , 'public_profile', 'user_age_range', 'user_gender', 'manage_pages', 'publish_pages']}));
 
 authRouter.get('/facebook/callback' , function(req, res, next) {
         Passport.authenticate('facebook', function (err, data) {
@@ -61,3 +65,58 @@ authRouter.get('/github/callback' ,
         })(req,res);
     }
 );
+
+authRouter.get('/linkedin' , Passport.authenticate('linkedin', { accessType: 'offline' }));
+
+authRouter.get('/linkedin/callback' ,
+    function (req, res) {
+        Passport.authenticate('linkedin', (err, data) => {
+            redirectionHandlerMiddleware(req, res, err, data)
+        })(req,res);
+    }
+);
+
+authRouter.get('/telegram/callback' , TelegramLogin.defaultMiddleware(), async (req, res) => {
+    function done(err, data: object = {}) { redirectionHandlerMiddleware(req,res,err,data) }
+
+    if (res.locals.telegram_user) {
+        let profile = res.locals.telegram_user;
+
+        let result = req.cookies.userId;
+        let clientIdExists = await socialIdExists(SocialType.telegram_id, profile.id);
+
+        if (result && !clientIdExists) {
+            // we have a user ... just modify the token table
+
+            let user = await verifyUser(result);
+            let addSocial = await addSocialId(user.uid , SocialType.telegram_id , profile.id);
+
+            done(null,{
+                token: await generateToken(user)
+            });
+        } else if (clientIdExists) {
+            if (result && (await verifyUser(result)).uid !== clientIdExists.uid) {
+                return done('This social account is liked with someone else')
+            }
+
+            return done(null, {
+                token: await generateToken(clientIdExists)
+            });
+        } else {
+            // new user, so send it to the front-end to get more info
+
+            let { first_name , last_name } = profile;
+
+            done(null, {
+                potential_user: {
+                    first_name: first_name,
+                    middle_name: undefined,
+                    last_name: last_name || '.telegram',
+                    email: `${first_name}.${last_name}.${profile.id.substring(0,4)}@toe.app`,
+                    username: await generateUsername(first_name, last_name || 'tg'),
+                    telegram_id: profile.id
+                }
+            });
+        }
+    }
+});
