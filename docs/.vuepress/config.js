@@ -12,7 +12,7 @@ module.exports = {
         repo: 'brookmg/TodayOnEarth_Backend',
         repoLabel: 'Contribute ⚡',
         docsDir: 'docs',
-        docsBranch: 'docs',
+        docsBranch: 'doc',
         editLinks: true,
         editLinkText: 'Contribute to this project by editing this page'
 
