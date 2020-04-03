@@ -7,10 +7,6 @@ This model is used to store interests of a user with their predicted score value
 
 Properties you would find in the token model are:
 
-::: details interest_id
-- An integer value that uniquely identifies the interest
-:::
-
 ::: details interest <Badge text="required" type="warning" />
 - Contains interest keyword
 :::
@@ -24,17 +20,12 @@ Properties you would find in the token model are:
 - An integer value that uniquely identifies the user in which the interest belong to.
 :::
 
-## JSON Schema
-The json schema for this model is defined as:
-```js
-{
-    type: 'object',
-    required: ['interest' , 'score'],
-    properties: {
-        interest_id: { type: 'integer'},
-        interest: { type: 'string'},
-        score: { type: 'float'},
-        uid: { type: 'integer' }
-    }
+## Graphql Schema
+The gql schema for this model is defined as:
+```graphql
+type Interest {
+    interest: String,
+    score: Float,
+    uid: Int
 }
 ```

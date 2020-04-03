@@ -1,5 +1,5 @@
 ---
-prev: ./token
+prev: ./socials
 next: ./interest
 ---
 # Post
@@ -27,10 +27,6 @@ Properties you would find in the token model are:
 - The link that points to the post. Also, used us to filter duplicate posts as title and body can't be trusted for digest value.
 :::
 
-::: details keywords <Badge text="unused" type="error" />
-- This has been replaced by native modules that compute keywords from post at runtime
-:::
-
 ::: details published_on <Badge text="required" type="warning" />
 - Timestamp of actual time the post was first published
 :::
@@ -43,22 +39,17 @@ Properties you would find in the token model are:
 - A json string containing more detail around a post. It's different from source to source, and we will see all the possible content it could have.
 :::
 
-## JSON Schema
-The json schema for this model is defined as:
-```js
-{
-    type: 'object',
-    required: ['provider' , 'source_link' , 'published_on' , 'scraped_on'],
-    properties: {
-        postid: { type: 'interger' },
-        title: { type: 'string' },
-        body: { type: 'string' },
-        provider: { type: 'string' },
-        source_link: { type: 'string' }, 
-        keywords: { type: 'array'},
-        published_on: { type: 'date'},
-        scraped_on: { type: 'date'},
-        metadata: { type: 'string|object' }
-    }
+## Graphql Schema
+The gql schema for this model is defined as:
+```graphql
+type Post {
+    postid: Int,
+    title: String,
+    body: String,
+    provider: String,
+    source_link: String,
+    published_on: Int,
+    scraped_on: Int,
+    metadata: Metadata
 }
 ```

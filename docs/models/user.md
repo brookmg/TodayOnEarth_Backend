@@ -58,26 +58,50 @@ Properties you would find in the user model are:
 - We currently use `bcrypt` for hashing with 10 round folding. 
 :::
 
-## JSON Schema
-The json schema for this model looks like
-```js
-{
-    type: 'object',
-    required: ['email', 'first_name' , 'last_name', 'password_hash', 'username'],
-    properties: {
-        uid: { type: 'integer'},
-        first_name: { type: 'string', minLength: 3},
-        middle_name: { type: 'string' },
-        last_name: { type: 'string', minLength: 2},
-        email: { type: 'email', format: 'email' },
-        role: { type: 'integer'},    
-        phone_number: { type: 'string'},
-        username: { type: 'string' },
-        last_login_time: { type: 'date' },
-        country: { type: 'string'}, 
-        last_location: { type: 'string'}, 
-        password_hash: { type: 'string'}, 
-    }
+::: details google_id
+- If the account is liked to some google account, this will be the add of the linked account.
+:::
+
+::: details facebook_id
+- If the account is liked to some facebook account, this will be the add of the linked account.
+:::
+
+::: details twitter_id
+- If the account is liked to some twitter account, this will be the add of the linked account.
+:::
+
+::: details github_id
+- If the account is liked to some github account, this will be the add of the linked account.
+:::
+
+::: details linkedin_id
+- If the account is liked to some linkedin account, this will be the add of the linked account.
+:::
+
+::: details telegram_id
+- If the account is liked to some telegram account, this will be the add of the linked account.
+:::
+
+## Graphql Schema
+The gql schema for this model looks like
+```graphql
+type User {
+    uid: Int!,
+    first_name: String!,
+    middle_name: String,
+    last_name: String!,
+    email: String!,
+    username: String!,
+    phone_number: String,
+    interests: [Interest],
+    country: String,
+    last_location: String,
+    google_id: String,
+    facebook_id: String,
+    twitter_id: String,
+    github_id: String,
+    linkedin_id: String,
+    telegram_id: String
 }
 ```
     
