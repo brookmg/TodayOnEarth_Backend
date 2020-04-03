@@ -7,6 +7,7 @@ import {
 } from "../db/interest_table";
 
 export const typeDef = gql`
+    # Interest type for a user
     type Interest {
         interest: String,
         score: Float,

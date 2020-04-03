@@ -32,6 +32,19 @@ export const typeDef = gql`
 
 export const resolvers = {
     Mutation: {
+        /**
+         * Mutation to post content on different platforms at once
+         * @param _ - Unused
+         * @param text - the text part of the content
+         * @param upload - a single image to post if present
+         * @param telegram - boolean to post on telegram channel
+         * @param linkedin - boolean to post on linkedin
+         * @param twitter - boolean to post on twitter
+         * @param channel - the telegram channel to post to ( user and bot must be admins for this to work )
+         * @param facebook - boolean to post on facebook
+         * @param pageUrl - the link to the facebook page to post onto
+         * @param user - current logged in user
+         */
         postOnToSocials: async (_, {text, upload, telegram, linkedin, twitter, channel, facebook, pageUrl}, {user}) => {
             let u = await user.getUser();
             if (!u) throw new Error('You must be logged in.');

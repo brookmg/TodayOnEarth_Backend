@@ -5,7 +5,9 @@ import {forEach} from "../utils";
 Provider.knex(KnexI);
 
 // --- Create scheme functions ----
-
+/**
+ * Method used for creating the table, not used anymore as knex migrations are implemented now.
+ */
 export async function createProviderScheme() : Promise<any> {
     if (await KnexI.schema.hasTable('provider')) return null; // We don't need to create it again
 
@@ -21,6 +23,10 @@ export async function createProviderScheme() : Promise<any> {
 
 }
 
+/**
+ * Method to insert a provider into the db
+ * @param providerData - the provider data to insert into db
+ */
 export async function insertProvider(providerData: Provider) : Promise<Provider> {
     return createProviderScheme().then(async () => {
         if ((await Provider.query().where({
@@ -79,6 +85,14 @@ async function getWhereValues(processFrom: string[]) : Promise<string[]> {
     return returnable;
 }
 
+/**
+ * Method to give all providers that fulfil a custom query of sort
+ * @param filters - array of QueryObject connected with each other
+ * @param page - number of the page requested
+ * @param range - number of items per page
+ * @param orderBy - the column in which the providers should be ordered by
+ * @param order - ASC or DESC
+ */
 export async function getProviders(filters: QueryObject[], page: number, range: number, orderBy: string = '', order: string = '') : Promise<Provider[]> {
     if (filters.length === 0) return getAllProviders(page, range);  // if the query was []
     let qBuilder = (page >= 0 && range) ? Provider.query().page(page, range) : Provider.query();
@@ -143,6 +157,13 @@ export async function updateProviderById(id : number , update : Provider) : Prom
         .updateAndFetchById(id, update));
 }
 
+/**
+ * Method to update provider for a specific user
+ * @param update - the update that's going to be pushed into the db
+ * @param provider - the provider to be updated
+ * @param source - the source in which that provider belongs to
+ * @param uid - the user id of the user to modify the provider for
+ */
 export async function updateProviderOfUser(update: Provider, provider: string, source: string, uid: number) : Promise<Provider> {
     return createProviderScheme().then(async () => {
         let itemToUpdate = await Provider.query().findOne({ uid , provider, source });
@@ -152,6 +173,12 @@ export async function updateProviderOfUser(update: Provider, provider: string, s
     });
 }
 
+/**
+ * Method to add list of providers to a user
+ * @param providers - array of provider
+ * @param uid - the user id where the providers are added to
+ * @param clear - boolean to remove any provider in the user before inserting the new ones
+ */
 export async function addProviderListForUser(providers: Provider[], uid: number , clear: boolean = false) : Promise<boolean> {
     let promises = [];
     if (clear) await Provider.query().delete().where('uid' , uid);

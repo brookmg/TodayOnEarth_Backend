@@ -25,6 +25,16 @@ export const typeDef = gql`
 
 export const resolvers = {
     Query: {
+        /**
+         * Query to return sorted posts by community interactions ( retweets , views , likes .... )
+         * @param _ - Unused
+         * @param jsonQuery - the custom query sent from the client side
+         * @param page - number of the page requested
+         * @param range - number of items per page
+         * @param orderBy - the column in which the posts should be ordered by
+         * @param order - ASC or DESC
+         * @param workingOn - the specific interaction to sort by `like` , `retweet`
+         */
         getPostsSortedByCommunityInteraction: async (_, { jsonQuery, page, range, orderBy, order, workingOn }) => {
             let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
             customQueryPosts.forEach(item => item.keywords = []);
@@ -37,6 +47,17 @@ export const resolvers = {
             return JSON.parse(value);
         },
 
+        /**
+         * Query to return sorted posts by community interactions ( retweets , views , likes .... )
+         * relative to the other posts in the query.
+         * @param _ - Unused
+         * @param jsonQuery - the custom query sent from the client side
+         * @param page - number of the page requested
+         * @param range - number of items per page
+         * @param orderBy - the column in which the posts should be ordered by
+         * @param order - ASC or DESC
+         * @param workingOn - the specific interaction to sort by `like` , `retweet`
+         */
         getPostsSortedByRelativeCommunityInteraction: async (_, { jsonQuery, page, range, orderBy, order, workingOn }) => {
             let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
             customQueryPosts.forEach(item => item.keywords = []);
@@ -47,6 +68,17 @@ export const resolvers = {
             ));
         },
 
+        /**
+         * Query to sort posts by the value they have against list of keyword
+         * @param _ - Unused
+         * @param jsonQuery - the custom query sent from the client side
+         * @param page - number of the page requested
+         * @param range - number of items per page
+         * @param orderBy - the column in which the posts should be ordered by
+         * @param order - ASC or DESC
+         * @param semantics - consider semantics relationship between words
+         * @param keywords - the keywords to sort the post by
+         */
         getPostsSortedByCustomKeywords: async (_, { jsonQuery, page, range, orderBy, order, semantics, keywords }) => {
             let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
             customQueryPosts.forEach(item => item.keywords = []);
@@ -59,6 +91,17 @@ export const resolvers = {
                 semantics
             ));
         },
+
+        /**
+         * Query to sort posts by the most frequent keyword in the posts
+         * @param _ - Unused
+         * @param jsonQuery - the custom query sent from the client side
+         * @param page - number of the page requested
+         * @param range - number of items per page
+         * @param orderBy - the column in which the posts should be ordered by
+         * @param order - ASC or DESC
+         * @param semantics - consider semantics relationship between words
+         */
         getPostsSortedByTrendingKeyword: async (_, { jsonQuery, page, range, orderBy, order, semantics }) => {
             let customQueryPosts = await getPostsCustom(jsonQuery , page, range, orderBy , order);
             customQueryPosts.forEach(item => item.keywords = []);
@@ -68,6 +111,13 @@ export const resolvers = {
                 semantics
             ));
         },
+
+        /**
+         * Query to get list of keywords from a specific post
+         * @param _ - Unused
+         * @param postId - the id of the post to look at
+         * @param semantics - consider semantics relationship between words
+         */
         getPostTopics: async (_ , { postId, semantics }) => {
             let post = await getPostById(postId);
             if (!post) throw new Error(`Post doesn't exist`);
@@ -79,6 +129,14 @@ export const resolvers = {
             }));
             return returnable;
         },
+
+        /**
+         * Query to get the most frequent keywords in the posts found today
+         * @param _ - Unused
+         * @param semantics - consider semantics relationship between words
+         * @param page - the page number requested ( starts from 0 )
+         * @param range - the number of items on a single page
+         */
         getTodaysTrendingKeywords: async (_ , { semantics, page, range }) => {
             let posts = await getAllPostsBetweenPublishedDate(
                 (new Date().getTime() - (24 * 60 * 60 * 1000)) / 1000,
@@ -97,6 +155,18 @@ export const resolvers = {
             }));
             return returnable;
         },
+
+        /**
+         * Query to sort posts by the value they have against list of interest from a user
+         * @param _ - Unused
+         * @param jsonQuery - the custom query sent from the client side
+         * @param page - number of the page requested
+         * @param range - number of items per page
+         * @param orderBy - the column in which the posts should be ordered by
+         * @param order - ASC or DESC
+         * @param semantics - consider semantics relationship between words
+         * @param user - the current logged in user
+         */
         getPostsSortedByUserInterest: async (_, { jsonQuery, page, range, orderBy, order, semantics }, { user }) => {
             let userObject = (await user.getUser());
             if (!userObject) throw new Error('You must be authenticated & be an admin to access this');
@@ -127,6 +197,14 @@ export const resolvers = {
             return postsPre;
 
         },
+
+        /**
+         * Query to get post relevance against a list of keywords
+         * @param _ - Unused
+         * @param postId - id of the post to check
+         * @param keywords - list of keywords to find relevance for
+         * @param semantics - consider semantics relation between words
+         */
         getPostRelevance: async (_ , { postId, keywords , semantics}) => {
             let post = await getPostById(postId);
             if (!post) throw new Error('Post is not found or available');
@@ -150,7 +228,15 @@ export const resolvers = {
 
             return interestComputations;
         },
-        getPostRelevancePerUserInterests: async (_ , { postId, semantics}, { user }) => {
+
+        /**
+         * Query to get post relevance against a list of interests from user
+         * @param _ - Unused
+         * @param postId - id of the post to check
+         * @param semantics - consider semantics relation between words
+         * @param user - the current logged in user
+         */
+        getPostRelevancePerUserInterests: async (_ , { postId, semantics }, { user }) => {
             let userObject = (await user.getUser());
             if (!userObject) throw new Error('You must be authenticated & be an admin to access this');
 

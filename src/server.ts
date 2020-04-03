@@ -15,6 +15,7 @@ dotenv.config();
 
 const app = express();
 
+// CORS whitelist
 const whitelist = [
     `${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}`,
     `${process.env.HOST}:${process.env.PORT}`,
@@ -22,7 +23,8 @@ const whitelist = [
     `http://todayonearth.netlify.com`,
     `https://toeapi.herokuapp.com`,
     `http://toeapi.herokuapp.com`
-]
+];
+
 const corsOptions = {
     credentials: true,
     origin: function (origin, callback) {
@@ -32,7 +34,7 @@ const corsOptions = {
             callback(new Error('Not allowed by CORS'))
         }
     }
-}
+};
 
 app.use(cors(corsOptions));
 app.use(json());
@@ -41,13 +43,14 @@ app.use(Router);
 app.use(cookieParser());
 
 app.use(require('express-session')({ secret: process.env.SESSION_SECRET, resave: true, saveUninitialized: true }));
-app.get('/', (req, res) => { res.send({ message: 'Hello' }) });
+app.get('/', (req, res) => { res.send({ message: 'Hello' }) }); // dummy to test
+
+// Endpoint for verifying email address
 app.get('/email_verify' , async (req, res) => {
     let token = req.query.token;
     if (!token) res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/auth_error?error=Invalid%20token`);
 
     if (!req.cookies.userId) res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/auth_error?error=Login%20first`);
-    console.dir(req.cookies.userId);
     let user = await verifyUser(req.cookies.userId);
 
     verifyUserEmailWithToken(user.uid, token).then(v => {

@@ -30,6 +30,12 @@ export async function getTokenById(id : number) : Promise<Token> {
     return Token.query().findById(id);
 }
 
+/**
+ * Method to add a specific platform token to a user
+ * @param type - type of token ( can only be ['google', 'facebook' , 'twitter' , 'instagram' , 'github' , 'linkedin'] )
+ * @param token - the token string ( usually two tokens separated by ||| )
+ * @param uid - the user id to add the token to
+ */
 export async function addTokenForUser(type: string, token: string, uid: number) : Promise<boolean> {
     const allowedTypes = ['google', 'facebook' , 'twitter' , 'instagram' , 'github' , 'linkedin'];
     if (!allowedTypes.includes(type)) throw new Error('Token provided for unknown source');
@@ -44,9 +50,14 @@ export async function addTokenForUser(type: string, token: string, uid: number) 
     })
 }
 
+/**
+ * Method to remove the token of a type from a user
+ * @param type - type of token ( can only be ['google', 'facebook' , 'twitter' , 'instagram' , 'github' , 'linkedin'] )
+ * @param uid - the user id to remove the token from
+ */
 export async function removeTokenForUser(type: string, uid: number) : Promise<boolean> {
-    const allowedTypes = ['facebook' , 'twitter' , 'instagram']
-    if (!allowedTypes.includes(type)) throw new Error('Removing token for unknown source')
+    const allowedTypes = ['facebook' , 'twitter' , 'instagram'];
+    if (!allowedTypes.includes(type)) throw new Error('Removing token for unknown source');
 
     return await createTokenScheme().then(async () => {
         const countOfToken = (await Token.query().where('uid' , uid)).length;
@@ -56,7 +67,7 @@ export async function removeTokenForUser(type: string, uid: number) : Promise<bo
                 JSON.parse(`{ "${type}" : "" }`)
             ).where('uid' , uid) === 1
         }
-        else { 
+        else {
             return await Token.query().patch(
                 JSON.parse(`{ "${type}": "" }`)
             ).where('uid' , uid) === 1

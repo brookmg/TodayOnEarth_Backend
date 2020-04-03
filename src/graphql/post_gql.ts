@@ -216,6 +216,8 @@ function filterFn(actualPayload , variables , { currentUser }) {
         )
     );
 
+    // publish a new post inserted event using gql subs only if the post
+    // seems interesting enough for the specific user
     return activationFunction(interestScore[0].score_interest_total) > 0.5;
 }
 

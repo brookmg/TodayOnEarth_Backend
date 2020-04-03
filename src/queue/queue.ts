@@ -135,7 +135,6 @@ EmailQueue.process(async job => {
         html: job.data.html || '<h1> NO HTML BODY ? </h1>'
     });
 
-    console.dir(info)
 });
 
 ProviderFetchIssuer.process(async () => {

@@ -28,7 +28,6 @@ export async function postTweet(tweet: any, medias: string[], uid: number) {
                 return pushMedia(T, mediaBuffer);
             }
         ))).reduce((i , j) => `${i},${j}`);
-        console.dir(tweet, { depth: null })
     }
 
     return T.post('statuses/update', tweet);

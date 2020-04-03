@@ -1,8 +1,8 @@
-import { KnexI } from './db'
-import { User } from '../model/user'
-import { hash, compare } from 'bcrypt'
-import { randomBytes } from "crypto";
-import { verify, sign, TokenExpiredError } from 'jsonwebtoken'
+import {KnexI} from './db'
+import {User} from '../model/user'
+import {compare, hash} from 'bcrypt'
+import {randomBytes} from "crypto";
+import {sign, verify} from 'jsonwebtoken'
 import {createInterestScheme} from "./interest_table";
 import {sendEmail} from "../queue/queue";
 
@@ -54,6 +54,10 @@ export async function getUser(uid: Number): Promise<User> {
     });
 }
 
+/**
+ * Method to check if the user's email is verified
+ * @param uid - id of user to check
+ */
 export async function isUserVerified(uid: number) : Promise<boolean> {
     return (await User.query().findById(uid)).verified;
 }
@@ -156,16 +160,13 @@ export async function isEmailUsed(email: string): Promise<boolean> {
 
 export async function getUsersByEmail(email: string): Promise<User[]> {
     await createUserScheme();
-    const users: User[] = await User.query().where('email' , email);
-    return users
+    return User.query().where('email', email);
 }
 
 export async function generateUsername(first_name: string, last_name: string): Promise<string> {
     const mash = first_name.toLowerCase() + '.' + last_name.toLowerCase();
     let addon = 1;
-    while (await isUsernameTaken(`${mash}.${addon}`)) {
-        addon++;
-    }
+    while (await isUsernameTaken(`${mash}.${addon}`)) addon++;
     return `${mash}.${addon}`;
 }
 
@@ -184,8 +185,8 @@ export async function verifyUser(token: string): Promise<User> {
 }
 
 export async function generateToken(user: User): Promise<string> {
-    const token = await sign({ uid: user.uid } , '0mE09M8N880CDhhJI$9808_369'); // shouldn't be hardcoded like this
-    return token;
+     // shouldn't be hardcoded like this
+    return await sign({uid: user.uid}, '0mE09M8N880CDhhJI$9808_369');
 }
 
 export async function deleteUser(id: number): Promise<number> {
@@ -206,7 +207,7 @@ export async function signInUser(email: string, password: string): Promise<strin
     const correct = await compare(password , user.password_hash);
     if (correct) {
         // change last_login_time
-        await User.query().patch({ last_login_time: new Date().toUTCString() }).where('uid' , user.uid)
+        await User.query().patch({ last_login_time: new Date().toUTCString() }).where('uid' , user.uid);
         return generateToken(user);
     }
     else throw new Error('email or password incorrect');
@@ -220,14 +221,14 @@ export async function signUpUser(
     linkedin_id: string, telegram_id: string): Promise<User> {
 
     return createUserScheme().then(async () => {
-        if (!username) throw new Error('username is required')
-        else if (await isUsernameTaken(username)) throw new Error('username already taken')
+        if (!username) throw new Error('username is required');
+        else if (await isUsernameTaken(username)) throw new Error('username already taken');
 
-        if (!email) throw new Error('email is required')
-        else if (await isEmailUsed(email)) throw new Error('email already used by someone else')
+        if (!email) throw new Error('email is required');
+        else if (await isEmailUsed(email)) throw new Error('email already used by someone else');
 
-        if (!password) throw new Error('password is required')
-        const hashed = await hash(password, 10)
+        if (!password) throw new Error('password is required');
+        const hashed = await hash(password, 10);
         return insertUser({
             first_name, middle_name, last_name, phone_number, username, country,
             email, password_hash: hashed, google_id, facebook_id, twitter_id,
