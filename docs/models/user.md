@@ -1,6 +1,6 @@
 ---
 prev: ../guide/setup
-next: ./token
+next: ./socials
 ---
 # User
 This model defines the properties of a single user. Every user has a `uid` which uniquely identifies them. It also includes other information such as email and phone number.
