@@ -1,6 +1,6 @@
 ---
 prev: ../models/provider
-next: ./user
+next: ./post
 ---
 
 # User Queries
