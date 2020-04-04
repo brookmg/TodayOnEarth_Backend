@@ -16,5 +16,6 @@ module.exports = {
         editLinks: true,
         editLinkText: 'Contribute to this project by editing this page'
 
-    }
+    },
+    dest: 'docs/public'
 };
