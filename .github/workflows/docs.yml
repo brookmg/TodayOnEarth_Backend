@@ -25,5 +25,9 @@ jobs:
     - run: npm install
     - run: npm run build --if-present
     - run: npm run doc:build
+    - run: git config --global user.name 'Brook Mezgebu'
+    - run: git config --global user.email 'brook.mezgebu.dev@gmail.com'
+    - run: git commit -am "Docs built by action"
+    - run: git push
       env:
         CI: true
