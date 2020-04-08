@@ -25,7 +25,7 @@ export const typeDef = gql`
     }
     
     extend type Query {
-        getInterestsOfUser: [Interest]
+        getInterestsOfUser(page: Int, range: Int): [Interest]
     }
     
     type Mutation {
@@ -42,10 +42,10 @@ export const typeDef = gql`
 
 export const resolvers = {
     Query: {
-        getInterestsOfUser: async ( _ , __ , { user }) => {
+        getInterestsOfUser: async ( _ , { page, range } , { user }) => {
             user = await user.getUser();
             if (!user) throw new Error('You must be authenticated to access this');
-            return getInterestsForUser(user.uid);
+            return getInterestsForUser(user.uid, page, range);
         },
     },
 
