@@ -21,6 +21,8 @@ const whitelist = [
     `${process.env.HOST}:${process.env.PORT}`,
     `https://todayonearth.netlify.com`,
     `http://todayonearth.netlify.com`,
+    `https://todayonearth.netlify.app`,
+    `http://todayonearth.netlify.app`,
     `https://toeapi.herokuapp.com`,
     `http://toeapi.herokuapp.com`
 ];
