@@ -6,43 +6,43 @@ next: ./post
 # User Queries
 These are the queries defined under the user model, there are used to fetch data from the api regarding users
 
-### getUserWithId
+## getUserWithId
 ```graphql
     getUserWithId(uid: Int) : User
 ```
 used to get user using just their id
 
-### me
+## me
 ```graphql
     me: User
 ```
 used to get user data for currently logged in user
 
-### getUser
+## getUser
 ```graphql
     getUser: User
 ```
 name alias for `me` query
 
-### getAllUsers
+## getAllUsers
 ```graphql
     getAllUsers(page: Int, range: Int): [User]
 ```
 used to get all the users as array. only admin users has access to this query
 
-### isUserNameTaken
+## isUserNameTaken
 ```graphql
     isUserNameTaken(username: String) : Boolean
 ```
 Query to check if a username is taken not.
 
-### isEmailUsed
+## isEmailUsed
 ```graphql
     isEmailUsed(email: String) : Boolean
 ```
 Query to check if an email is taken not.
 
-### isPasswordResetTokenValid
+## isPasswordResetTokenValid
 ```graphql
     isPasswordResetTokenValid(token: String) : Boolean
 ```

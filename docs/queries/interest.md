@@ -6,7 +6,7 @@ next: ./provider
 # Interest Queries
 These are the queries defined under the interest gql module.
 
-### getInterestsOfUser
+## getInterestsOfUser
 ```graphql
     getInterestsOfUser: [Interest]
 ```

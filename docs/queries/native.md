@@ -1,12 +1,12 @@
 ---
 prev: ./provider
-next: ./native
+next: ../mutations/user
 ---
 
 # Native Queries
 These are the queries defined under the native module, there are used to do some NLP related tasks that are CPU intensive
 
-### getPostsSortedByCommunityInteraction
+## getPostsSortedByCommunityInteraction
 ```graphql
     getPostsSortedByCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
 ```
@@ -20,7 +20,7 @@ Query to return sorted posts by community interactions ( retweets , views , like
 - semantics: consider semantic relation between words
 - workingOn: the specific interaction to sort by `like` , `retweet`
 
-### getPostsSortedByRelativeCommunityInteraction
+ getPostsSortedByRelativeCommunityInteraction
 ```graphql
     getPostsSortedByRelativeCommunityInteraction(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, workingOn: [String]): [Post]
 ```
@@ -33,7 +33,7 @@ Query to return sorted posts by community interactions ( retweets , views , like
 - order: ASC or DESC
 - workingOn: the specific interaction to sort by `like` , `retweet`
 
-### getPostsSortedByCustomKeywords
+## getPostsSortedByCustomKeywords
 ```graphql
     getPostsSortedByCustomKeywords(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean, keywords: [String]): [Post]
 ```
@@ -47,7 +47,7 @@ Query to sort posts by the value they have against list of keyword. filters will
 - semantics - consider semantics relationship between words
 - keywords - the keywords to sort the post by
 
-### getPostsSortedByTrendingKeyword
+## getPostsSortedByTrendingKeyword
 ```graphql
     getPostsSortedByTrendingKeyword(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean): [Post]
 ```
@@ -60,7 +60,7 @@ Query to sort posts by the most frequent keyword in the posts. filters will be a
 - order: ASC or DESC
 - semantics - consider semantics relationship between words
 
-### getPostTopics
+## getPostTopics
 ```graphql
     getPostTopics(postId: Int, semantics: Boolean) : [Interest]
 ```
@@ -68,7 +68,7 @@ Query to get list of topics mentioned in a post.
 - postId: id of the post
 - semantics: consider semantic relation between words in the post 
 
-### getTodaysTrendingKeywords
+## getTodaysTrendingKeywords
 ```graphql
     getTodaysTrendingKeywords(semantics: Boolean, page: Int, range: Int) : [Interest]
 ```
@@ -78,7 +78,7 @@ Query to get list of topics that are trending in today's posts from different so
 - range: number of items per page. starts from 1
 
 
-### getPostRelevance
+## getPostRelevance
 ```graphql
     getPostRelevance(postId: Int!, keywords: [String]!, semantics: Boolean) : [Interest]
 ```
@@ -87,7 +87,7 @@ Query to get post relevance against a list of keywords
 - semantics: consider semantic relation between words in the post 
 - keywords: list of keywords to check post relevance
 
-### getPostRelevancePerUserInterests
+## getPostRelevancePerUserInterests
 ```graphql
     getPostRelevancePerUserInterests(postId: Int!, semantics: Boolean) : [Interest]
 ```
@@ -95,7 +95,7 @@ Query to get post relevance against a list of interests found for the current lo
 - postId: id of the post
 - semantics: consider semantic relation between words in the post 
 
-### getPostsSortedByUserInterest
+## getPostsSortedByUserInterest
 ```graphql
     getPostsSortedByUserInterest(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String, semantics: Boolean): [Post]
 ```
