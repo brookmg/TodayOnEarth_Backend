@@ -42,6 +42,7 @@ export class UserHandler {
         let time = new Date().getTime() + (process.env.USER_SESSION_EXPIRES_AFTER);   // one week
         const cookieOptions = { httpOnly: false, domain: '.netlify.app', expires: new Date(time) };
         this.res.cookie('userId', token, cookieOptions);
+        this.res.cookie('userId', token, { httpOnly: cookieOptions.httpOnly, expires: cookieOptions.expires });
     }
 
     async getUser() {
