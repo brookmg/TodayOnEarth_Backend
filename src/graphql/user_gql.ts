@@ -24,7 +24,7 @@ export const typeDef = gql`
         interests: [Interest],
         country: String,
         last_location: String,
-        verified: Boolean,
+        is_verified: Boolean,
         google_id: String,
         facebook_id: String,
         twitter_id: String,
