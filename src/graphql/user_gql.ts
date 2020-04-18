@@ -5,7 +5,7 @@ import {
     generateToken, getUser,
     getUsers,
     isEmailUsed,
-    isUsernameTaken,
+    isUsernameTaken, isUserVerified,
     makeUserAdmin, sendVerificationEmail,
     signInUser,
     signUpUser
@@ -62,6 +62,7 @@ export const typeDef = gql`
         isUserNameTaken(username: String) : Boolean
         isEmailUsed(email: String) : Boolean
         isPasswordResetTokenValid(token: String) : Boolean
+        isEmailVerified: Boolean
     }
     
     extend type Mutation {
@@ -104,6 +105,12 @@ export const resolvers = {
 
         isPasswordResetTokenValid: async (_ , { token }) => {
             return isPasswordResetTokenValid(token)
+        },
+
+        isEmailVerified: async (_ , __ , { user }) => {
+            let userObject = (await user.getUser());
+            if (!userObject) throw new Error('You must be authenticated & be an admin to access this');
+            return await isUserVerified(userObject.uid);
         }
     },
 
