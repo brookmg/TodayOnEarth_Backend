@@ -18,7 +18,8 @@ let redirectionHandlerMiddleware = (req, res, err: string, data: any) => {
         if (data.potential_user) res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/signup?data=${encodeURI(JSON.stringify(data))}`);
         else if (data.token) {
             let time = new Date().getTime() + (process.env.USER_SESSION_EXPIRES_AFTER);   // one week
-            res.cookie('userId', data.token , {expires: new Date(time)});
+            res.cookie('userId', data.token , {httpOnly: false, domain: '.netlify.app', expires: new Date(time)});
+            res.cookie('userId', data.token , {httpOnly: false, expires: new Date(time)});
             res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/signin`);
         }
         else {res.redirect(`${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}/auth_error?error=${encodeURI('Unknown operation')}`)}
