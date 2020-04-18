@@ -1,12 +1,12 @@
 ---
 prev: ./post
-next: ./provider
+next: ./native
 ---
 
 # Provider Queries
 These are the queries defined under the provider gql module, used for setting up what the user what's to follow
 
-### getProviders
+## getProviders
 ```graphql
     getProviders(filters: [ProviderQuery]!, page: Int, range: Int, order: String, orderBy: String): [Provider]
 ```
@@ -18,37 +18,37 @@ used to fetch list of provider the same way one would fetch posts. filters will 
 - orderBy: the number of the field to sort by
 - order: ASC or DESC
 
-### getProvidersForUser
+## getProvidersForUser
 ```graphql
     getProvidersForUser: [Provider]
 ```
 used to get list of providers the user set out to follow
 
-### getPostsForUser
+## getPostsForUser
 ```graphql
     getPostsForUser(page: Int, range: Int, fruitPunch: Boolean, fruitLimit: Int): [Post]
 ```
 used to get list of posts for the user filtered out only by providers they are following
 
-### getPostScrapedSinceForUser
+## getPostScrapedSinceForUser
 ```graphql
     getPostScrapedSinceForUser(time: Int, page: Int, range: Int): [Post]
 ```
 used to get list of posts for the user filtered out only by providers they are following and scraped after the specified time
 
-### getPostFromForUser
+## getPostFromForUser
 ```graphql
     getPostFromForUser(time: Int, page: Int, range: Int): [Post]
 ```
 used to get list of posts for the user filtered out only by providers they are following and published after the specified time
 
-### getPostPublishedOnForUser
+## getPostPublishedOnForUser
 ```graphql
     getPostPublishedOnForUser(time: Int, page: Int, range: Int): [Post]
 ```
 used to get list of posts for the user filtered out only by providers they are following and published on the specified time
 
-### getPostCustomizedForUser
+## getPostCustomizedForUser
 ```graphql
     getPostCustomizedForUser(jsonQuery: [FilterQuery!]!, page: Int, range: Int): [Post]
 ```

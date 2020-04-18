@@ -204,7 +204,11 @@ export async function addInterestListForUser(interests: Interest[], uid: number 
 /**
  * Method to get list of interests in user
  * @param uid - user id to get interests from
+ * @param page - the page to fetch in this call
+ * @param range - the number of items on each page
  */
-export async function getInterestsForUser(uid : number) : Promise<Interest[]> {
-    return createInterestScheme().then(() => Interest.query().where('uid' , uid))
+export async function getInterestsForUser(uid : number, page: number = -1, range: number = 0) : Promise<Interest[]> {
+    await createInterestScheme();
+    if (page >= 0 && range) return (await Interest.query().where('uid' , uid).page(page, range)).results;
+    else return Interest.query().where('uid' , uid);
 }

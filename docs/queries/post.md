@@ -6,7 +6,7 @@ next: ./interest
 # Post Queries
 These are the queries defined under post gql module, things related to post querying can be found here partially
 
-### getPosts
+## getPosts
 ```graphql
     getPosts(page: Int, range: Int, orderBy: String, order: String): [Post]
 ```
@@ -16,13 +16,13 @@ used for querying list of post paginated and in specific order
 - orderBy: the number of the field to sort by
 - order: ASC or DESC
 
-### getPost
+## getPost
 ```graphql
     getPost(id: Int) : Post
 ```
 used for querying a post item using the post id.
 
-### getPostFromProvider
+## getPostFromProvider
 ```graphql
     getPostFromProvider(provider: String, page: Int, range: Int): [Post]
 ```
@@ -31,7 +31,7 @@ used for querying list of posts from a specific provider
 - page: what page to fetch. starts from 0
 - range: number of items per page. starts from 1
 
-### getPostFromSource
+## getPostFromSource
 ```graphql
     getPostFromSource(source: String, page: Int, range: Int): [Post]
 ```
@@ -40,25 +40,25 @@ used for querying list of posts from a specific provider
 - page: what page to fetch. starts from 0
 - range: number of items per page. starts from 1
 
-### getPostScrapedSince
+## getPostScrapedSince
 ```graphql
     getPostScrapedSince(time: Int, page: Int, range: Int): [Post]
 ```
 used for querying list of posts that are scraped after the specified time
 
-### getPostFrom
+## getPostFrom
 ```graphql
     getPostFrom(time: Int, page: Int, range: Int): [Post]
 ```
 used for querying list of posts that are published after the specified time
 
-### getPostPublishedOn
+## getPostPublishedOn
 ```graphql
     getPostPublishedOn(time: Int, page: Int, range: Int): [Post]
 ```
 used for querying list of posts that are published on the specified time
 
-### getPostCustomized
+## getPostCustomized
 ```graphql
     getPostCustomized(jsonQuery: [FilterQuery!]!, page: Int, range: Int, orderBy: String, order: String): [Post]
 ```
@@ -70,7 +70,7 @@ this is the most powerful query of them all. It allows to fetch a list of posts 
 - orderBy: the number of the field to sort by
 - order: ASC or DESC
 
-### getPostsScrapedBetween
+## getPostsScrapedBetween
 ```graphql
     getPostsScrapedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]
 ```
@@ -82,7 +82,7 @@ used for querying list of posts that are scraped between the startTime and endTi
 - orderBy: the number of the field to sort by
 - order: ASC or DESC
 
-### getPostsPublishedBetween
+## getPostsPublishedBetween
 ```graphql
     getPostsPublishedBetween(startTime: Int, endTime: Int, page: Int, range: Int, orderBy: String, order: String): [Post]  
 ```
