@@ -5,7 +5,7 @@ import {
     generateToken, getUser,
     getUsers,
     isEmailUsed,
-    isUsernameTaken,
+    isUsernameTaken, isUserVerified,
     makeUserAdmin, sendVerificationEmail,
     signInUser,
     signUpUser
@@ -24,6 +24,7 @@ export const typeDef = gql`
         interests: [Interest],
         country: String,
         last_location: String,
+        verified: Boolean,
         google_id: String,
         facebook_id: String,
         twitter_id: String,
@@ -62,6 +63,7 @@ export const typeDef = gql`
         isUserNameTaken(username: String) : Boolean
         isEmailUsed(email: String) : Boolean
         isPasswordResetTokenValid(token: String) : Boolean
+        isEmailVerified: Boolean
     }
     
     extend type Mutation {
@@ -104,6 +106,12 @@ export const resolvers = {
 
         isPasswordResetTokenValid: async (_ , { token }) => {
             return isPasswordResetTokenValid(token)
+        },
+
+        isEmailVerified: async (_ , __ , { user }) => {
+            let userObject = (await user.getUser());
+            if (!userObject) throw new Error('You must be authenticated');
+            return await isUserVerified(userObject.uid);
         }
     },
 
