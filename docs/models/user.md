@@ -62,6 +62,10 @@ Properties you would find in the user model are:
 - This will hold the status of the email verification for the user.
 :::
 
+::: details token 
+- The current token being used for authenticating the user. Can be used for verification purposes
+:::
+
 ::: details google_id
 - If the account is liked to some google account, this will be the add of the linked account.
 :::
@@ -100,6 +104,7 @@ type User {
     interests: [Interest],
     country: String,
     is_verified: Boolean,
+    token: String,
     last_location: String,
     google_id: String,
     facebook_id: String,
