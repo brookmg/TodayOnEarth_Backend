@@ -54,6 +54,12 @@ Query to check if a password reset token is valid
 ```
 Query to check if the user's email address is verified.
 
+## getCurrentUserToken
+```graphql
+    getCurrentUserToken: Token
+```
+Query to get the current used token
+
 ## Graphql Schema
 gql schema for this model goes 
 ```graphql
@@ -66,5 +72,6 @@ extend type Query {
     isEmailUsed(email: String) : Boolean
     isPasswordResetTokenValid(token: String) : Boolean
     isEmailVerified: Boolean
+    getCurrentUserToken: Token
 }
 ```

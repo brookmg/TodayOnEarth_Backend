@@ -182,6 +182,7 @@ export async function verifyUser(token: string): Promise<User> {
     if (verified) {
         let user = await getUser(verified.uid)
         user.is_verified = user.verified;
+        user.token = token;
         return user;
     }
 }
