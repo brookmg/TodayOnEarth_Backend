@@ -5,6 +5,12 @@ module.exports = {
         lineNumbers: true
     },
     themeConfig: {
+
+        algolia: {
+            apiKey: process.env.ALGOLIA_API_KEY,
+            indexName: 'toeapi'
+        },
+
         sidebar: [
             '/',
             {

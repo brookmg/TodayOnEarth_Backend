@@ -48,6 +48,12 @@ Query to check if an email is taken not.
 ```
 Query to check if a password reset token is valid
 
+## isEmailVerified
+```graphql
+    isEmailVerified: Boolean
+```
+Query to check if the user's email address is verified.
+
 ## Graphql Schema
 gql schema for this model goes 
 ```graphql
@@ -59,5 +65,6 @@ extend type Query {
     isUserNameTaken(username: String) : Boolean
     isEmailUsed(email: String) : Boolean
     isPasswordResetTokenValid(token: String) : Boolean
+    isEmailVerified: Boolean
 }
 ```
