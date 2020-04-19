@@ -58,6 +58,10 @@ Properties you would find in the user model are:
 - We currently use `bcrypt` for hashing with 10 round folding. 
 :::
 
+::: details is_verified 
+- This will hold the status of the email verification for the user.
+:::
+
 ::: details google_id
 - If the account is liked to some google account, this will be the add of the linked account.
 :::
@@ -95,6 +99,7 @@ type User {
     phone_number: String,
     interests: [Interest],
     country: String,
+    is_verified: Boolean,
     last_location: String,
     google_id: String,
     facebook_id: String,

@@ -180,7 +180,9 @@ export async function generateEmail(first_name: string, last_name: string): Prom
 export async function verifyUser(token: string): Promise<User> {
     const verified = await verify(token, '0mE09M8N880CDhhJI$9808_369'); // shouldn't be hardcoded like this
     if (verified) {
-        return getUser(verified.uid)
+        let user = await getUser(verified.uid)
+        user.is_verified = user.verified;
+        return user;
     }
 }
 

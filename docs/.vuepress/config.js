@@ -5,6 +5,12 @@ module.exports = {
         lineNumbers: true
     },
     themeConfig: {
+
+        algolia: {
+            apiKey: process.env.ALGOLIA_API_KEY,
+            indexName: 'toeapi'
+        },
+
         sidebar: [
             '/',
             {
@@ -16,7 +22,7 @@ module.exports = {
             },
             {
                 title: "Models",
-                collapsable: false,
+                collapsable: true,
                 sidebarDepth: 0,
                 children: [
                     ["/models/user", "User"],
@@ -28,7 +34,7 @@ module.exports = {
             },
             {
                 title: "Queries",
-                collapsable: false,
+                collapsable: true,
                 children: [
                     ["/queries/user", "User"],
                     ["/queries/post", "Post"],
@@ -39,13 +45,29 @@ module.exports = {
             },
             {
                 title: "Mutations",
-                collapsable: false,
+                collapsable: true,
                 children: [
                     ["/mutations/user", "User"],
                     ["/mutations/post", "Post"],
                     ["/mutations/interest", "Interest"],
                     ["/mutations/provider", "Provider"],
                     ["/mutations/socials", "Socials"]
+                ]
+            },
+            {
+                title: "Subscriptions",
+                collapsable: true,
+                children: [
+                    ["/subscriptions/post", "Post"],
+                    ["/subscriptions/user", "User"]
+                ]
+            },
+            {
+                title: "Contribution",
+                collapsable: true,
+                children: [
+                    ["/contribution/tech", "Technologies Used"],
+                    ["/contribution/people", "People Involved"]
                 ]
             },
         ],
