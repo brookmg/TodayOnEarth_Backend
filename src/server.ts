@@ -19,6 +19,7 @@ const app = express();
 const whitelist = [
     `${process.env.GATSBY_HOST}:${process.env.GATSBY_PORT}`,
     `${process.env.HOST}:${process.env.PORT}`,
+    `^(https?://(?:.+\\.)?netlify\\.com(?::\\d{1,5})?)$`,
     `https://todayonearth.netlify.com`,
     `http://todayonearth.netlify.com`,
     `https://todayonearth.netlify.app`,
