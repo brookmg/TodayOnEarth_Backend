@@ -1,7 +1,7 @@
 ---
 prev: ../
 next: ../models/user
-serverLocation: https://toeapi.heroku.app/graphql
+serverLocation: https://toeapi.herokuapp.com/graphql
 ---
 # Setup
 Our API is 99% graphql based (the 1% accounts for the auth process involving 0Auth). All the tasks you want to command should be given as either gql queries or mutations.
@@ -39,7 +39,7 @@ mutation {
 ## Installation <Badge text="Advanced" type="warning"/>
 
 ::: tip 
-You can just use our API located at {{ $page.frontmatter.serverLocation }} if you don't want to set up your own.
+You can just use our API located at [Heroku]({{ $page.frontmatter.serverLocation }}) if you don't want to set up your own.
 :::
 
 You can also get a copy of this API to run on your local machine or host. To get started:
