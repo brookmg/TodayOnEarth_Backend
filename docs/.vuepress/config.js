@@ -7,7 +7,7 @@ module.exports = {
     themeConfig: {
 
         algolia: {
-            apiKey: process.env.ALGOLIA_API_KEY,
+            apiKey: '9fec1d1ad0cbbd09ecdbeb2a2f260948',
             indexName: 'toeapi'
         },
 
