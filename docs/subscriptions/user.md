@@ -1,6 +1,6 @@
 ---
 prev: ./post
-next: ./contribution/tech
+next: ../contribution/tech
 ---
 
 # User Subscriptions
