@@ -1,6 +1,6 @@
 ---
 prev: ./provider
-next: ../contribution/tech
+next: ../subscriptions/post
 ---
 
 # Socials Mutations
