@@ -200,7 +200,7 @@ export async function deleteUser(id: number): Promise<number> {
 export async function updateUserById(id: number , update: User): Promise<User> {
     await createUserScheme();
     return User.query()
-        .updateAndFetchById(id, update);
+        .patchAndFetchById(id, update);
 }
 
 export async function signInUser(email: string, password: string): Promise<string> {
