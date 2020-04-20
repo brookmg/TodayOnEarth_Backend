@@ -51,7 +51,7 @@ export async function passwordResetRequested(forEmailOrUsername: string) : Promi
     if (forEmailOrUsername.indexOf('@toe.app') === -1) {
 
         let generateToken = (await randomBytes(48)).toString('hex');
-        let callBackUrl = `${process.env.HOST}/password_reset?token=${generateToken}`;
+        let callBackUrl = `${process.env.GATSBY_HOST}/reset?token=${generateToken}`;
 
         await Login.query().insert(<any>{
             token: generateToken,
@@ -94,13 +94,6 @@ export async function resetPasswordWithToken(token: string, newPassword: string)
     await createLoginSchema();
 
     const { uid } = <any>(await Login.query().where({token}))[0];
-    if (uid) {
-        if (compare(newPassword , (await getUser(uid)).password_hash))
-            throw new Error('Password is already in use by user.');
-        else {
-            return !!await updateUserById(uid, { password_hash: await hash(newPassword, 10) })
-        }
-    } else {
-        throw new Error('Invalid token')
-    }
+    if (uid) return !!await updateUserById(uid, { password_hash: await hash(newPassword, 10) })
+    else throw new Error('Invalid token')
 }

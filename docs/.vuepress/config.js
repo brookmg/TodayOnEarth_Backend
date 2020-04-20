@@ -4,6 +4,7 @@ module.exports = {
     markdown: {
         lineNumbers: true
     },
+    theme: '@vuepress/vue',
     themeConfig: {
 
         algolia: {
@@ -83,5 +84,16 @@ module.exports = {
         editLinkText: 'Contribute to this project by editing this page'
 
     },
+    plugins: [
+        ['@vuepress/pwa', {
+            serviceWorker: true,
+            updatePopup: true
+        }],
+        ['container', {
+            type: 'vue',
+            before: '<pre class="vue-container"><code>',
+            after: '</code></pre>'
+        }]
+    ],
     dest: 'docs/public'
 };
