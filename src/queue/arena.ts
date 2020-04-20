@@ -9,7 +9,7 @@ const arena = Arena({
       { name: "facebook_queue", hostId: "Facebook Queue", redis:  process.env.REDIS_URL },
       { name: "instagram_queue", hostId: "Instagram Queue", redis:  process.env.REDIS_URL },
       { name: "telegram_queue", hostId: "Telegram Queue", redis:  process.env.REDIS_URL },
-      { name: "email_verification", hostId: "Email Verification", redis:  process.env.REDIS_URL },
+      { name: "email_queue", hostId: "Email Verification", redis:  process.env.REDIS_URL },
       { name: "provider_fetch_issuer", hostId: "Provider Fetch Issuer", redis:  process.env.REDIS_URL },
       { name: "daily_gist_queue" , hostId: "Daily Gist Queue", redis:  process.env.REDIS_URL}
   ]
