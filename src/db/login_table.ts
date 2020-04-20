@@ -51,7 +51,7 @@ export async function passwordResetRequested(forEmailOrUsername: string) : Promi
     if (forEmailOrUsername.indexOf('@toe.app') === -1) {
 
         let generateToken = (await randomBytes(48)).toString('hex');
-        let callBackUrl = `${process.env.HOST}/password_reset?token=${generateToken}`;
+        let callBackUrl = `${process.env.GATSBY_HOST}/reset?token=${generateToken}`;
 
         await Login.query().insert(<any>{
             token: generateToken,
