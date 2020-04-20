@@ -94,13 +94,6 @@ export async function resetPasswordWithToken(token: string, newPassword: string)
     await createLoginSchema();
 
     const { uid } = <any>(await Login.query().where({token}))[0];
-    if (uid) {
-        if (compare(newPassword , (await getUser(uid)).password_hash))
-            throw new Error('Password is already in use by user.');
-        else {
-            return !!await updateUserById(uid, { password_hash: await hash(newPassword, 10) })
-        }
-    } else {
-        throw new Error('Invalid token')
-    }
+    if (uid) return !!await updateUserById(uid, { password_hash: await hash(newPassword, 10) })
+    else throw new Error('Invalid token')
 }
