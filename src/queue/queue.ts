@@ -1,9 +1,9 @@
 import Queue from 'bull'
 import { insertPost } from '../db/post_table'
-import TwitterFetcher from '../PostFetchers/TwitterFetcher'
-import FacebookFetcher from '../PostFetchers/FacebookFetcher'
-import TelegramFetcher from '../PostFetchers/TelegramFetcher'
-import InstagramFetcher from '../PostFetchers/InstagramFetcher'
+import TwitterFetcher from '../post_fetchers/TwitterFetcher'
+import FacebookFetcher from '../post_fetchers/FacebookFetcher'
+import TelegramFetcher from '../post_fetchers/TelegramFetcher'
+import InstagramFetcher from '../post_fetchers/InstagramFetcher'
 import * as NodeMailer from 'nodemailer'
 import {getAllProviders} from "../db/provider_table";
 import {getTelegramLinkedUsers} from "../db/user_table";
