@@ -7,6 +7,7 @@ import InstagramFetcher from '../post_fetchers/InstagramFetcher'
 import * as NodeMailer from 'nodemailer'
 import {getAllProviders} from "../db/provider_table";
 import {getTelegramLinkedUsers} from "../db/user_table";
+const nodemailerSendgrid = require('nodemailer-sendgrid');
 
 const {REDIS_URL} = process.env;
 const Redis = require('ioredis');
@@ -120,16 +121,18 @@ TelegramQueue.process((job) => {
 EmailQueue.process(async job => {
     // This is for a test , We should replace this with actual account
 
-    let transporter = NodeMailer.createTransport({
-        service: 'Gmail', // upgrade later with STARTTLS
-        auth: {
-            user: process.env.GMAIL_DUMMY_ACCOUNT,
-            pass: process.env.GMAIL_DUMMY_ACCOUNT_PASSWORD
+    let transporter = NodeMailer.createTransport(
+        {
+            service: 'SendGrid',
+            auth: {
+                user: process.env.SEND_GRID_USER,
+                pass: process.env.SEND_GRID_KEY
+            }
         }
-    });
+    );
 
     let info = await transporter.sendMail({
-        from: '"Today On Earth" <toe@toe.app>',
+        from: '"Today On Earth" <playdummy759@gmail.com>',
         to: job.data.email || process.env.GMAIL_DUMMY_ACCOUNT,
         subject: job.data.subject || 'NO SUBJECT EMAIL>>>',
         html: job.data.html || '<h1> NO HTML BODY ? </h1>'
