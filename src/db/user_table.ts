@@ -178,7 +178,7 @@ export async function generateEmail(first_name: string, last_name: string): Prom
 }
 
 export async function verifyUser(token: string): Promise<User> {
-    const verified = await verify(token, '0mE09M8N880CDhhJI$9808_369'); // shouldn't be hardcoded like this
+    const verified = await verify(token, process.env.JWT_KEY);
     if (verified) {
         let user = await getUser(verified.uid)
         user.is_verified = user.verified;
@@ -188,8 +188,7 @@ export async function verifyUser(token: string): Promise<User> {
 }
 
 export async function generateToken(user: User): Promise<string> {
-     // shouldn't be hardcoded like this
-    return await sign({uid: user.uid}, '0mE09M8N880CDhhJI$9808_369');
+    return await sign({uid: user.uid}, process.env.JWT_KEY);
 }
 
 export async function deleteUser(id: number): Promise<number> {
