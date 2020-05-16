@@ -40,19 +40,6 @@ export default class TwitterFetcher extends PostFetcherBase {
 
             const tweetText = utils.removeRedundantWhitespace(tweetTextDirty)
 
-            const tweetKeywords = []
-
-            tweetText.split(" ").forEach((wordDirty, i) => {
-                const word = utils.fixNonAlphaNumeric(wordDirty);
-
-                if (word[0] === "#") { // if word is hashtag
-                    // extract just the hashtag, ignoring the url next to it
-                    tweetKeywords.push(word.match(/#[\w]+/gi)[0])
-                } else {
-                    tweetKeywords.push(word)
-                }
-            })
-
             const post = {
                 title: tweetText,
                 body: "", /* Twitter doesn't really have a "body" */
@@ -63,7 +50,7 @@ export default class TwitterFetcher extends PostFetcherBase {
                 scraped_on: Date.now(),
 
                 metadata: {
-                    keywords: tweetKeywords, // headlines should normally be used, but we have no choice here :(
+                    keywords: [],
 
                     community_interaction: {
                         replies: tweetReplies,

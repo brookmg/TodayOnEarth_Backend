@@ -57,32 +57,6 @@ export default class InstagramFetcher extends PostFetcherBase {
                     const postThumbnails = e.node.thumbnail_resources
                     const postAccessibilityCaption = e.node.accessibility_caption
 
-
-
-                    let allKeyWords = postText.split(" ");
-
-                    if (postAccessibilityCaption)
-                        allKeyWords = [...allKeyWords, ...postAccessibilityCaption.split(" ")];
-
-                    if (postLocation)
-                        allKeyWords = [...allKeyWords, ...postLocation.name.split(" ")];
-
-
-
-                    const postKeywords = []
-                    allKeyWords.forEach((wordDirty, i) => {
-                        const word = utils.fixNonAlphaNumeric(wordDirty);
-
-                        if (word.length > 0) {
-                            if (word[0] === "#") { // if word is hashtag
-                                // extract just the hashtag
-                                postKeywords.push(word.match(/#[\w]+/gi)[0])
-                            } else {
-                                postKeywords.push(word)
-                            }
-                        }
-                    })
-
                     const post = {
                         title: postText,
                         body: "",
@@ -93,7 +67,7 @@ export default class InstagramFetcher extends PostFetcherBase {
                         scraped_on: Date.now(),
 
                         metadata: {
-                            keywords: postKeywords,
+                            keywords: [],
 
                             community_interaction: {
                                 comments: postCommentCount,

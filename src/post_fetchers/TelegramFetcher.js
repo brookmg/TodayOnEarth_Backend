@@ -48,22 +48,6 @@ export default class TelegramFetcher extends PostFetcherBase {
                 .replace("K", "00")
                 .replace("M", "00000"))
 
-            let allKeyWords = messageText.split(" ");
-
-            const messageKeywords = [];
-            allKeyWords.forEach((wordDirty, i) => {
-                const word = utils.fixNonAlphaNumeric(wordDirty);
-
-                if (word.length > 0) {
-                    if (word[0] === "#") { // if word is hashtag
-                        // extract just the hashtag
-                        messageKeywords.push(word.match(/#[\w]+/gi)[0])
-                    } else {
-                        messageKeywords.push(word)
-                    }
-                }
-            })
-
 
             const post = {
                 title: messageText,
@@ -75,7 +59,7 @@ export default class TelegramFetcher extends PostFetcherBase {
                 scraped_on: Date.now(),
 
                 metadata: {
-                    keywords: messageKeywords,
+                    keywords: [],
 
                     community_interaction: {
                         views: messageViews,

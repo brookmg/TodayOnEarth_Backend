@@ -60,31 +60,6 @@ export default class FacebookFetcher extends PostFetcherBase {
             if (postMediaText.length > 0) postTitle = postMediaText
 
 
-            let allKeyWords = postTitle.split(" ");
-
-            if (postMediaMetadata.length > 0)
-                allKeyWords = [...allKeyWords, ...postMediaMetadata.split(" ")]
-
-
-            const postKeywords = []
-            allKeyWords.forEach((wordDirty, i) => {
-                const word = utils.fixNonAlphaNumeric(wordDirty);
-
-                if (word.length > 0) {
-                    if (word[0] === "#") { // if word is hashtag
-                        // extract just the hashtag
-                        if (word.match(/#[\w]+/gi) != null) // edge case where posts contain nothing after hash sign `# Hollywood` 
-                            postKeywords.push(word.match(/#[\w]+/gi)[0])
-                    } else {
-                        postKeywords.push(word)
-                    }
-                }
-            })
-
-
-
-
-
             const post = {
                 title: postTitle,
                 body: postText,
@@ -94,7 +69,7 @@ export default class FacebookFetcher extends PostFetcherBase {
                 published_on: Number(postTimestamp)*1000,
                 scraped_on: Date.now(),
 
-                keywords: postKeywords,
+                keywords: [],
 
                 metadata: {
                     post: {
