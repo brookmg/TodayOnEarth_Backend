@@ -24,7 +24,7 @@ export async function createKeywordScheme() : Promise<any> {
  * @param keywordData - the keyword data that fulfills model requirement
  */
 export async function insertItem(keywordData: Keyword) : Promise<Keyword> {
-    return createKeywordScheme().then(() => Keyword.query().insert(keywordData));
+    return createKeywordScheme(); //.then(() => Keyword.query().insert(keywordData));
 }
 
 /**
