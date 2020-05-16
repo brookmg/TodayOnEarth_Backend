@@ -11,6 +11,6 @@ start();
 **/
 createKeywordScheme().then(() => {
     createPostScheme().then(async () => {
-        await startIssuer("0 0/10 0 ? * *")
+        await startIssuer("0 */10 * * * *")
     })
 });
