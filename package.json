@@ -50,7 +50,7 @@
     "jest": "^25.1.0",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.20.8",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "morgan": "^1.9.1",
     "node-addon-api": "^2.0.0",
     "node-telegram-login": "^1.0.0",
