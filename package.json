@@ -70,7 +70,7 @@
     "telegraph-node": "^1.0.4",
     "twitter": "^1.7.1",
     "typescript": "^3.8.3",
-    "validator": "^12.2.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
